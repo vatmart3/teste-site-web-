@@ -174,7 +174,7 @@ export function Planning({
                   <div
                     key={jour}
                     data-colonne
-                    className={`relative flex-1 min-w-0 ${passe ? 'jour-passe' : ''}`}
+                    className="relative flex-1 min-w-0"
                     style={{ transformStyle: 'preserve-3d' }}
                   >
                     {poses.map((p, indexBloc) => {
@@ -195,7 +195,9 @@ export function Planning({
                           type="button"
                           onClick={() => onOuvrir(p.creneau)}
                           aria-current={actuel ? 'time' : undefined}
-                          className={`bloc-cours entree-bloc ${actuel ? 'bloc-actuel' : ''}`}
+                          className={`bloc-cours entree-bloc ${actuel ? 'bloc-actuel' : ''} ${
+                            passe ? 'bloc-passe' : ''
+                          }`}
                           style={
                             {
                               '--teinte': couleur,
@@ -221,12 +223,12 @@ export function Planning({
                             {m?.nomCourt ?? p.creneau.matiere}
                           </span>
                           {moyen ? (
-                            <span className="chiffre text-[0.66rem] opacity-90 mt-auto truncate font-semibold">
+                            <span className="chiffre text-[0.7rem] mt-auto truncate font-semibold opacity-95">
                               {p.creneau.debut.replace(':', 'h')} · {p.creneau.salle ?? 'salle ?'}
                             </span>
                           ) : null}
                           {grand && p.creneau.professeur ? (
-                            <span className="text-[0.7rem] font-bold opacity-90 truncate order-first">
+                            <span className="text-[0.72rem] font-bold truncate order-first opacity-95">
                               {p.creneau.professeur}
                             </span>
                           ) : null}

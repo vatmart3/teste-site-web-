@@ -330,6 +330,34 @@ modifiable dans le simulateur.
 
 La date d'examen par défaut est **mai 2028**, elle aussi d'après tes notes.
 
+## Où sont stockées tes données
+
+Deux niveaux, empilés — le site choisit tout seul, et l'affiche dans **Réglages →
+Sauvegarde** ainsi que par un point coloré en bas du menu.
+
+1. **Le navigateur** (`localStorage`), toujours actif. Instantané, mais propre à un
+   appareil : ce que tu saisis sur le téléphone n'apparaît pas sur l'ordinateur, et un
+   vidage du cache l'efface.
+2. **La base de l'application**, quand la page tourne comme Artifact claude.ai. Les
+   données sont alors stockées côté serveur, dans un document `registre/etat`. Elles
+   suivent d'un appareil à l'autre, en direct : une note ajoutée sur le téléphone apparaît
+   sur l'ordinateur sans rien faire.
+
+La base fait autorité dès qu'elle répond. À l'ouverture, le site compare les horodatages
+et garde la version la plus récente, dans les deux sens. Les écritures sont regroupées
+(900 ms d'inactivité) pour ne pas marteler la base à chaque frappe.
+
+Le code tient dans `src/lib/sauvegarde.ts` et `src/lib/useSauvegarde.ts` ; les champs
+persistés sont listés dans `CHAMPS_SAUVEGARDES`.
+
+### Sauvegarde en fichier
+
+**Réglages → Exporter un fichier de sauvegarde** produit un JSON qui contient tout :
+créneaux, notes, devoirs, séances, bloc-notes, chapitres cochés, réglages. **Restaurer
+depuis un fichier** le relit. C'est le filet de sécurité qui marche partout, y compris sur
+GitHub Pages et Vercel où la base n'existe pas — et le seul moyen de passer tes données
+d'une adresse à l'autre.
+
 ## Contraste
 
 Tous les textes du site sont au-dessus de **6:1** sur leur fond réel, la grande majorité
@@ -350,6 +378,17 @@ Ce que ça implique dans le code, si tu modifies les couleurs :
   donnait que 5,07:1.
 
 Les petits textes sont à 12 px minimum, jamais 11.
+
+Deux pièges rencontrés, à ne pas réintroduire :
+
+- **Ne jamais baisser l'opacité d'un conteneur qui porte des blocs colorés.** Le texte des
+  blocs est sombre sur fond clair : faire fondre le tout vers le fond de page donne du
+  noir sur noir. Une journée écoulée utilise un traitement dédié (`.bloc-passe` : surface
+  sombre, texte clair, filet dans la couleur de la matière), pas une opacité.
+- **Safari sur iOS ignore `color` sur les champs** et applique sa couleur système : le
+  texte saisi ressortait en noir. Il faut `-webkit-text-fill-color`, plus
+  `color-scheme: dark` et les sélecteurs `::-webkit-datetime-edit-*` pour les champs de
+  date.
 
 ## Accessibilité et confort
 

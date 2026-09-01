@@ -634,8 +634,8 @@ function BlocNotes({
         onChange={(e) => setTexte(e.target.value)}
         rows={6}
         placeholder="Ce que le prof a insisté, les pièges, les pages à relire…"
-        className="w-full bg-[var(--color-papier-vif)] p-3 resize-y leading-relaxed border"
-        style={{ borderColor: `${couleur}55` }}
+        className="champ resize-y leading-relaxed"
+        style={{ borderColor: `${couleur}66` }}
       />
       <p className="folio mt-1 h-4" aria-live="polite">
         {etat === 'en-cours' ? 'enregistrement…' : etat === 'enregistre' ? 'enregistré' : ''}

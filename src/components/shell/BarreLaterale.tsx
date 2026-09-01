@@ -32,6 +32,7 @@ export function BarreLaterale({
   devoirsOuverts,
   devoirsEnRetard,
   moyenne,
+  sauvegarde,
 }: {
   vue: Vue
   onVue: (v: Vue) => void
@@ -39,6 +40,7 @@ export function BarreLaterale({
   devoirsOuverts: number
   devoirsEnRetard: number
   moyenne: string | null
+  sauvegarde: 'locale' | 'connexion' | 'synchronise' | 'erreur'
 }) {
   const compteurs: Partial<Record<Vue, string>> = {
     matieres: String(matieres.filter((m) => m.epreuves.length).length),
@@ -124,7 +126,38 @@ export function BarreLaterale({
         ))}
       </nav>
 
-      <p className="folio mt-auto px-1 leading-relaxed">
+      <button
+        type="button"
+        onClick={() => onVue('reglages')}
+        className="mt-auto flex items-center gap-2.5 px-1 folio text-left"
+        title="État de la sauvegarde"
+      >
+        <span
+          aria-hidden="true"
+          style={{
+            width: 8,
+            height: 8,
+            borderRadius: 999,
+            flexShrink: 0,
+            background:
+              sauvegarde === 'synchronise'
+                ? 'var(--color-credit)'
+                : sauvegarde === 'erreur'
+                  ? 'var(--color-debit)'
+                  : 'var(--color-encre-clair)',
+          }}
+        />
+        <span>
+          {sauvegarde === 'synchronise'
+            ? 'Sauvegarde dans la base'
+            : sauvegarde === 'connexion'
+              ? 'Connexion à la base…'
+              : sauvegarde === 'erreur'
+                ? 'Base indisponible'
+                : 'Sauvegarde locale'}
+        </span>
+      </button>
+      <p className="folio px-1">
         <span className="chiffre">F</span> pour le plein écran.
       </p>
     </aside>

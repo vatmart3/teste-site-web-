@@ -2,6 +2,7 @@ import { Suspense, lazy, useCallback, useEffect, useMemo, useRef, useState } fro
 import type { Creneau, Jour, Matiere } from './types'
 import { useRegistre, MATIERES_REGISTRE, META_PLANNING } from './store/useRegistre'
 import { useMinute } from './lib/hooks'
+import { useSauvegarde } from './lib/useSauvegarde'
 import { classerDevoirs, coursEnCours, creneauActif } from './lib/selection'
 import { JOURS, enMinutes, formatDuree, joursRestants, jourDeLaDate, minutesDeLaDate } from './lib/temps'
 import { moyenneGenerale } from './lib/moyennes'
@@ -39,6 +40,7 @@ export default function App() {
   const [ouvert, setOuvert] = useState<{ matiere: Matiere; creneau: Creneau | null } | null>(null)
   const [decalageMois, setDecalageMois] = useState(0)
   const maintenant = useMinute()
+  const sauvegarde = useSauvegarde()
 
   const creneaux = useRegistre((s) => s.creneaux)
   const notes = useRegistre((s) => s.notes)
@@ -164,6 +166,7 @@ export default function App() {
             devoirsOuverts={devoirs.filter((d) => !d.fait).length}
             devoirsEnRetard={devoirs.filter((d) => d.enRetard).length}
             moyenne={generale.valeur !== null ? formatDecimal(generale.valeur) : null}
+            sauvegarde={sauvegarde.etat}
           />
         </div>
 
@@ -186,6 +189,7 @@ export default function App() {
                 devoirsOuverts={devoirs.filter((d) => !d.fait).length}
                 devoirsEnRetard={devoirs.filter((d) => d.enRetard).length}
                 moyenne={generale.valeur !== null ? formatDecimal(generale.valeur) : null}
+                sauvegarde={sauvegarde.etat}
               />
             </div>
           </div>
@@ -325,7 +329,11 @@ export default function App() {
                 </div>
               ) : null}
               {vue === 'reglages' ? (
-                <VueReglages etatNotifications={etatNotifs} onActiverNotifications={() => void activerNotifications()} />
+                <VueReglages
+                  etatNotifications={etatNotifs}
+                  onActiverNotifications={() => void activerNotifications()}
+                  sauvegarde={sauvegarde}
+                />
               ) : null}
             </main>
 

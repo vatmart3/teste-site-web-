@@ -74,3 +74,9 @@ export function formatDateCourte(iso: string): string {
 export function formatDateLongue(d: Date): string {
   return format(d, 'EEEE d MMMM', { locale: fr })
 }
+
+export function formatDateHeure(iso: string): string {
+  const d = new Date(iso)
+  if (Number.isNaN(d.getTime())) return iso
+  return format(d, "d MMM 'à' HH:mm", { locale: fr })
+}

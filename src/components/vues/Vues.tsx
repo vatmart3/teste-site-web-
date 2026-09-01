@@ -1,11 +1,14 @@
-import { useMemo, useState } from 'react'
+import { useMemo, useRef, useState } from 'react'
 import type { Matiere } from '../../types'
 import { useRegistre } from '../../store/useRegistre'
 import { classerDevoirs } from '../../lib/selection'
 import { moyenneGenerale, moyennePonderee, mention } from '../../lib/moyennes'
-import { formatDateCourte, formatDuree, isoAujourdhui } from '../../lib/temps'
+import { formatDateCourte, formatDateHeure, formatDuree, isoAujourdhui } from '../../lib/temps'
 import { formatDecimal } from '../../lib/compta'
 import { estAppleMobile, lienNotion, libelleOuverture } from '../../lib/liens'
+import { exporterDonnees, importerDonnees } from '../../lib/useSauvegarde'
+import { messageTelechargement, telecharger } from '../../lib/telechargement'
+import type { EtatSauvegarde } from '../../lib/sauvegarde'
 import { IconeLien } from '../shell/Icones'
 
 // ── Matières ────────────────────────────────────────────────────────────────
@@ -322,9 +325,11 @@ export function VueNotes({ matieres }: { matieres: Matiere[] }) {
 export function VueReglages({
   etatNotifications,
   onActiverNotifications,
+  sauvegarde,
 }: {
   etatNotifications: 'indisponible' | 'refusee' | 'a-demander' | 'active'
   onActiverNotifications: () => void
+  sauvegarde: { etat: EtatSauvegarde; majLe: string | null; libelle: string }
 }) {
   const dateExamen = useRegistre((s) => s.dateExamen)
   const definirDateExamen = useRegistre((s) => s.definirDateExamen)
@@ -337,9 +342,116 @@ export function VueReglages({
   const definirRappelsSysteme = useRegistre((s) => s.definirRappelsSysteme)
   const notionDansSafari = useRegistre((s) => s.notionDansSafari)
   const definirNotionDansSafari = useRegistre((s) => s.definirNotionDansSafari)
+  const notes = useRegistre((s) => s.notes)
+  const devoirs = useRegistre((s) => s.devoirs)
+  const seances = useRegistre((s) => s.seances)
+  const blocNotes = useRegistre((s) => s.blocNotes)
+  const chapitresFaits = useRegistre((s) => s.chapitresFaits)
+
+  const [messageFichier, setMessageFichier] = useState('')
+  const fichier = useRef<HTMLInputElement>(null)
+
+  const compte = {
+    notes: notes.length,
+    devoirs: devoirs.length,
+    seances: seances.length,
+    blocNotes: Object.values(blocNotes).filter((t) => t.trim()).length,
+    chapitres: Object.values(chapitresFaits).reduce((t, l) => t + l.length, 0),
+  }
+
+  const exporter = async () => {
+    const nom = `registre-sauvegarde-${isoAujourdhui()}.json`
+    const r = await telecharger(nom, exporterDonnees(), 'application/json')
+    setMessageFichier(messageTelechargement(r, nom))
+  }
+
+  const importer = async (f: File) => {
+    const texte = await f.text()
+    const r = importerDonnees(texte)
+    setMessageFichier(
+      r.ok ? `Sauvegarde restaurée — ${r.champs} rubriques reprises.` : r.message,
+    )
+  }
 
   return (
     <div className="grid gap-5 lg:grid-cols-2 items-start max-w-[64rem]">
+      <section className="carte p-5 lg:col-span-2">
+        <div className="flex flex-wrap items-baseline justify-between gap-3">
+          <h3 className="text-intitule font-extrabold">Sauvegarde</h3>
+          <span
+            className="folio px-2.5 py-1 rounded-full"
+            style={{
+              background:
+                sauvegarde.etat === 'synchronise'
+                  ? 'color-mix(in srgb, var(--color-credit) 22%, transparent)'
+                  : sauvegarde.etat === 'erreur'
+                    ? 'color-mix(in srgb, var(--color-debit) 22%, transparent)'
+                    : 'var(--color-bande)',
+              color:
+                sauvegarde.etat === 'synchronise'
+                  ? 'var(--color-credit)'
+                  : sauvegarde.etat === 'erreur'
+                    ? 'var(--color-debit)'
+                    : 'var(--color-encre-clair)',
+            }}
+          >
+            {sauvegarde.etat === 'synchronise'
+              ? 'base connectée'
+              : sauvegarde.etat === 'connexion'
+                ? 'connexion…'
+                : sauvegarde.etat === 'erreur'
+                  ? 'base indisponible'
+                  : 'navigateur'}
+          </span>
+        </div>
+        <p className="text-menu mt-1.5 leading-relaxed texte-doux">{sauvegarde.libelle}</p>
+        {sauvegarde.majLe ? (
+          <p className="folio mt-1">
+            Dernier enregistrement : <span className="chiffre">{formatDateHeure(sauvegarde.majLe)}</span>
+          </p>
+        ) : null}
+
+        <dl className="grid grid-cols-2 sm:grid-cols-5 gap-3 mt-4">
+          {(
+            [
+              ['Notes', compte.notes],
+              ['Devoirs', compte.devoirs],
+              ['Séances', compte.seances],
+              ['Bloc-notes', compte.blocNotes],
+              ['Chapitres', compte.chapitres],
+            ] as [string, number][]
+          ).map(([libelle, valeur]) => (
+            <div key={libelle} className="cellule p-3">
+              <dt className="folio">{libelle}</dt>
+              <dd className="chiffre text-[1.4rem] font-bold leading-tight">{valeur}</dd>
+            </div>
+          ))}
+        </dl>
+
+        <div className="flex flex-wrap items-center gap-3 mt-4">
+          <button type="button" onClick={() => void exporter()} className="bouton">
+            Exporter un fichier de sauvegarde
+          </button>
+          <button type="button" onClick={() => fichier.current?.click()} className="bouton">
+            Restaurer depuis un fichier
+          </button>
+          <input
+            ref={fichier}
+            type="file"
+            accept="application/json,.json"
+            className="invisible-lecteur"
+            onChange={(e) => {
+              const f = e.target.files?.[0]
+              if (f) void importer(f)
+              e.target.value = ''
+            }}
+          />
+          <p className="folio" aria-live="polite">
+            {messageFichier}
+          </p>
+        </div>
+      </section>
+
       <section className="carte p-5">
         <h3 className="text-intitule font-extrabold">Période en cours</h3>
         <p className="text-menu mt-1.5 leading-relaxed texte-doux">

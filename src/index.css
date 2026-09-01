@@ -104,7 +104,58 @@
   select,
   textarea {
     font: inherit;
-    color: inherit;
+    color: var(--color-encre);
+    /* Safari sur iOS ignore `color` sur les champs et applique la couleur
+       système — le texte saisi ressortait en noir sur fond sombre. */
+    -webkit-text-fill-color: var(--color-encre);
+    opacity: 1;
+  }
+
+  select,
+  textarea,
+  input:not([type='checkbox']):not([type='radio']) {
+    -webkit-appearance: none;
+    appearance: none;
+    background-color: var(--color-bande);
+  }
+
+  input[type='checkbox'],
+  input[type='radio'] {
+    -webkit-appearance: auto;
+    appearance: auto;
+    accent-color: var(--color-accent);
+  }
+
+  /* Champs de date et d'heure : le sélecteur natif reste noir sur iOS. */
+  input[type='date'],
+  input[type='time'] {
+    color-scheme: dark;
+  }
+  ::-webkit-datetime-edit,
+  ::-webkit-datetime-edit-fields-wrapper,
+  ::-webkit-datetime-edit-text,
+  ::-webkit-datetime-edit-day-field,
+  ::-webkit-datetime-edit-month-field,
+  ::-webkit-datetime-edit-year-field,
+  ::-webkit-datetime-edit-hour-field,
+  ::-webkit-datetime-edit-minute-field {
+    color: var(--color-encre);
+    -webkit-text-fill-color: var(--color-encre);
+  }
+  ::-webkit-calendar-picker-indicator {
+    filter: invert(1) brightness(1.6);
+    opacity: 0.75;
+    cursor: pointer;
+  }
+  ::-webkit-search-cancel-button {
+    filter: invert(1) brightness(1.6);
+  }
+
+  /* Le remplissage automatique de Safari repeint le fond en clair. */
+  input:-webkit-autofill,
+  input:-webkit-autofill:focus {
+    -webkit-text-fill-color: var(--color-encre);
+    -webkit-box-shadow: 0 0 0 1000px var(--color-bande) inset;
   }
 
   :focus-visible {
@@ -244,6 +295,12 @@
   }
   .champ::placeholder {
     color: #9aa0b4;
+    -webkit-text-fill-color: #9aa0b4;
+    opacity: 1;
+  }
+  .champ:disabled {
+    -webkit-text-fill-color: var(--color-encre-clair);
+    opacity: 1;
   }
   .champ option {
     background: var(--color-papier-vif);
@@ -417,10 +474,21 @@
     z-index: 20;
   }
 
-  /* Un jour écoulé doit se distinguer, pas devenir illisible. */
+  /* Un jour écoulé se distingue par son traitement, jamais par une opacité :
+     baisser l'opacité d'une colonne fait virer au noir sur noir le texte
+     sombre des blocs colorés — mesuré à 1,8:1. Ici le bloc devient une
+     surface sombre à texte clair, avec un filet dans sa couleur. */
+  .bloc-passe {
+    background: color-mix(in srgb, var(--teinte) 16%, var(--color-bande));
+    color: var(--color-encre-doux);
+    box-shadow: inset 4px 0 0 0 color-mix(in srgb, var(--teinte) 75%, transparent);
+  }
+  .bloc-passe:hover,
+  .bloc-passe:focus-visible {
+    background: color-mix(in srgb, var(--teinte) 26%, var(--color-bande));
+  }
   .jour-passe {
-    opacity: 0.6;
-    filter: saturate(0.6);
+    color: var(--color-encre-clair);
   }
 
   /* ── Cellule du mois ───────────────────────────────────────────────────── */
