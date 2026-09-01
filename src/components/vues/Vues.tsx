@@ -51,7 +51,7 @@ export function VueMatieres({
               </span>
             </div>
 
-            <p className="folio leading-relaxed">{m.objectif}</p>
+            <p className="text-menu leading-relaxed texte-doux">{m.objectif}</p>
 
             <div className="mt-auto">
               <div className="flex items-baseline justify-between gap-3">
@@ -65,7 +65,7 @@ export function VueMatieres({
               </div>
             </div>
 
-            <div className="flex flex-wrap items-center gap-x-4 gap-y-1 folio">
+            <div className="flex flex-wrap items-center gap-x-4 gap-y-1 folio texte-doux">
               <span>{m.professeur ?? 'professeur à venir'}</span>
               {minutes ? <span className="chiffre">{formatDuree(minutes)} travaillées</span> : null}
               {moy !== null ? <span className="chiffre">moyenne {formatDecimal(moy)}</span> : null}
@@ -342,7 +342,7 @@ export function VueReglages({
     <div className="grid gap-5 lg:grid-cols-2 items-start max-w-[64rem]">
       <section className="carte p-5">
         <h3 className="text-intitule font-extrabold">Période en cours</h3>
-        <p className="folio mt-1 leading-relaxed">
+        <p className="text-menu mt-1.5 leading-relaxed texte-doux">
           Certains créneaux ne tombent qu’à un semestre ou qu’une semaine sur deux. Le planning
           n’affiche que ceux qui te concernent.
         </p>
@@ -374,7 +374,7 @@ export function VueReglages({
 
       <section className="carte p-5">
         <h3 className="text-intitule font-extrabold">Examen</h3>
-        <p className="folio mt-1 leading-relaxed">
+        <p className="text-menu mt-1.5 leading-relaxed texte-doux">
           Session de mai 2028, d’après ta page Notion « KIT DE SURVIE BTS CG ».
         </p>
         <label className="block mt-4">
@@ -417,12 +417,12 @@ export function VueReglages({
               Notifications système activées
             </label>
           ) : etatNotifications === 'refusee' ? (
-            <p className="folio">
+            <p className="text-menu texte-doux">
               Les notifications sont bloquées pour ce site. Autorise-les dans les réglages du
               navigateur, puis recharge la page.
             </p>
           ) : etatNotifications === 'indisponible' ? (
-            <p className="folio">
+            <p className="text-menu texte-doux">
               Ce navigateur ne propose pas de notifications. Sur iPhone, ajoute d’abord le site à
               l’écran d’accueil depuis Safari.
             </p>
@@ -436,7 +436,7 @@ export function VueReglages({
 
       <section className="carte p-5">
         <h3 className="text-intitule font-extrabold">Notion</h3>
-        <p className="folio mt-1 leading-relaxed">
+        <p className="text-menu mt-1.5 leading-relaxed texte-doux">
           Sur iPhone et iPad, un lien Notion est détourné vers l’application. Cette option force
           l’ouverture dans Safari.
         </p>
@@ -449,7 +449,7 @@ export function VueReglages({
           />
           Ouvrir Notion dans Safari
         </label>
-        <p className="folio mt-2">
+        <p className="folio mt-2.5">
           {estAppleMobile()
             ? 'Appareil Apple détecté : le réglage s’applique.'
             : 'Sans effet sur cet appareil — les liens s’ouvrent déjà dans le navigateur.'}

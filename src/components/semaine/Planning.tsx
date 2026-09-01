@@ -208,8 +208,8 @@ export function Planning({
                           }
                         >
                           <span
-                            className={`anton block ${
-                              grand ? 'text-[clamp(0.8rem,1.25vw,1.05rem)]' : 'text-[clamp(0.65rem,1vw,0.82rem)]'
+                            className={`anton block leading-[1.42] ${
+                              grand ? 'text-[clamp(0.8rem,1.2vw,1rem)]' : 'text-[clamp(0.66rem,0.95vw,0.8rem)]'
                             }`}
                             style={{
                               display: '-webkit-box',
@@ -221,12 +221,12 @@ export function Planning({
                             {m?.nomCourt ?? p.creneau.matiere}
                           </span>
                           {moyen ? (
-                            <span className="chiffre text-[0.62rem] opacity-70 mt-auto truncate">
+                            <span className="chiffre text-[0.66rem] opacity-90 mt-auto truncate font-semibold">
                               {p.creneau.debut.replace(':', 'h')} · {p.creneau.salle ?? 'salle ?'}
                             </span>
                           ) : null}
                           {grand && p.creneau.professeur ? (
-                            <span className="text-[0.66rem] font-semibold opacity-75 truncate order-first">
+                            <span className="text-[0.7rem] font-bold opacity-90 truncate order-first">
                               {p.creneau.professeur}
                             </span>
                           ) : null}

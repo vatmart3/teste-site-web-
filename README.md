@@ -330,6 +330,27 @@ modifiable dans le simulateur.
 
 La date d'examen par défaut est **mai 2028**, elle aussi d'après tes notes.
 
+## Contraste
+
+Tous les textes du site sont au-dessus de **6:1** sur leur fond réel, la grande majorité
+entre 9 et 11:1 — mesuré avec un script qui parcourt chaque vue, lit la couleur calculée
+de chaque texte et remonte à son fond opaque. Les seuils WCAG AA demandent 4,5:1 pour le
+texte courant et 3:1 pour les gros titres : le site les dépasse partout.
+
+Ce que ça implique dans le code, si tu modifies les couleurs :
+
+- `--color-encre` (blanc) pour les titres et le texte principal ;
+- `--color-encre-doux` (`#E8EAF0`) pour les paragraphes et descriptions, via la classe
+  `.texte-doux` ;
+- `--color-encre-clair` (`#C2C6D6`) pour les étiquettes, métadonnées et en-têtes de
+  colonnes, via `.folio` et `.etiquette` ;
+- les couleurs de matière servent à la fois de **texte sur fond sombre** et de **fond avec
+  texte sombre** : elles doivent rester claires pour tenir des deux côtés ;
+- l'indigo d'accent est `#5F4FCB` et non `#6C5DD3` : sur ce dernier, du texte blanc ne
+  donnait que 5,07:1.
+
+Les petits textes sont à 12 px minimum, jamais 11.
+
 ## Accessibilité et confort
 
 - Responsive jusqu'au mobile ; la grille horaire défile horizontalement d'un bloc,

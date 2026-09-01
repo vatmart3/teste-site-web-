@@ -188,7 +188,7 @@ export function EcranMatiere({
         >
           <div className="flex items-start justify-between gap-6">
             <div className="min-w-0">
-              <p className="folio flex items-center gap-2 flex-wrap">
+              <p className="folio flex items-center gap-x-2.5 gap-y-1 flex-wrap">
                 <span aria-hidden="true">{matiere.icone}</span>
                 <span>{matiere.code}</span>
                 {matiere.epreuves.length ? <span>· {matiere.epreuves.join(' + ')} · coef. {matiere.coefficient}</span> : null}
@@ -235,7 +235,7 @@ export function EcranMatiere({
                 </button>
               </>
             )}
-            <p className="folio">
+            <p className="folio texte-doux">
               {minutesTravaillees > 0 ? `${formatDuree(minutesTravaillees)} déjà travaillées` : 'aucune séance enregistrée'}
               {enCours ? ' · cours en ce moment' : ''}
             </p>
@@ -278,7 +278,7 @@ export function EcranMatiere({
           {onglet === 'cours' ? (
             <div className="grid lg:grid-cols-[minmax(0,1fr)_22rem] gap-10 max-w-[100rem]" data-entree>
               <div className="min-w-0">
-                <p className="folio mb-4">
+                <p className="folio mb-4 texte-doux">
                   {sourceNotion === 'direct'
                     ? 'Contenu lu en direct dans ton Notion.'
                     : sourceNotion === 'chargement'
@@ -386,7 +386,7 @@ export function EcranMatiere({
                         id={`dev-${d.id}`}
                         style={{ accentColor: couleur }}
                       />
-                      <label htmlFor={`dev-${d.id}`} className={`flex-1 ${d.fait ? 'line-through opacity-50' : ''}`}>
+                      <label htmlFor={`dev-${d.id}`} className={`flex-1 ${d.fait ? 'line-through text-encre-clair' : ''}`}>
                         {d.intitule}
                       </label>
                       <span className={`chiffre text-folio ${d.enRetard ? 'text-debit' : ''}`}>
@@ -437,7 +437,7 @@ function RenduNotion({
           return (
             <p
               key={i}
-              className="pl-3 py-2 my-3 leading-relaxed"
+              className="pl-3.5 py-2.5 my-3 leading-relaxed rounded-r-[10px]"
               style={{ borderLeft: `3px solid ${bord}`, background: `${bord}14` }}
             >
               {b.icone ? <span className="mr-2" aria-hidden="true">{b.icone}</span> : null}
@@ -448,30 +448,36 @@ function RenduNotion({
         if (b.t === 'toggle') {
           const fait = chapitresFaits.includes(b.texte)
           return (
-            <label key={i} className="flex items-center gap-3 py-1.5 filet-b cursor-pointer">
+            <label
+              key={i}
+              className="flex items-center gap-3.5 py-2.5 px-2 -mx-2 rounded-[10px] filet-b cursor-pointer hover:bg-[var(--color-bande)] transition-colors"
+            >
               <input
                 type="checkbox"
                 checked={fait}
                 onChange={() => onBasculerChapitre(b.texte)}
+                className="w-[17px] h-[17px] shrink-0"
                 style={{ accentColor: couleur }}
               />
-              <span className={fait ? 'opacity-45 line-through' : ''}>{b.texte}</span>
+              <span className={fait ? 'text-encre-clair line-through' : 'texte-doux'}>{b.texte}</span>
             </label>
           )
         }
         if (b.t === 'todo') {
           return (
-            <p key={i} className="flex items-baseline gap-3 py-1">
-              <span className="chiffre text-folio">{b.fait ? '☑' : '☐'}</span>
-              <span>{b.texte}</span>
+            <p key={i} className="flex items-baseline gap-3 py-2">
+              <span aria-hidden="true" style={{ color: couleur }}>
+                {b.fait ? '☑' : '☐'}
+              </span>
+              <span className="texte-doux">{b.texte}</span>
             </p>
           )
         }
         if (b.t === 'liste') {
           return (
-            <p key={i} className="flex items-baseline gap-3 py-1">
+            <p key={i} className="flex items-baseline gap-3 py-2">
               <span style={{ color: couleur }}>—</span>
-              <span>{b.texte}</span>
+              <span className="texte-doux">{b.texte}</span>
             </p>
           )
         }
@@ -505,7 +511,7 @@ function RenduNotion({
           )
         }
         return (
-          <p key={i} className="leading-relaxed py-1">
+          <p key={i} className="leading-relaxed py-1.5 texte-doux">
             {b.texte}
           </p>
         )

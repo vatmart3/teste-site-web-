@@ -39,7 +39,7 @@ export function PanneauDroit({
     <aside className="carte w-[320px] shrink-0 flex flex-col gap-6 p-5 overflow-y-auto">
       <section>
         <h2 className="text-intitule font-extrabold">Ce qui arrive</h2>
-        <p className="folio mt-0.5">Les prochains cours, dans l’ordre.</p>
+        <p className="text-menu mt-1 texte-doux">Les prochains cours, dans l’ordre.</p>
 
         <div className="mt-3">
           {cours.length ? (
@@ -107,7 +107,7 @@ export function PanneauDroit({
               )
             })
           ) : (
-            <p className="folio py-3">Plus aucun cours cette semaine.</p>
+            <p className="text-menu py-3 texte-doux">Plus aucun cours cette semaine.</p>
           )}
         </div>
       </section>
@@ -160,7 +160,7 @@ export function PanneauDroit({
               )
             })
           ) : enRetard.length ? null : (
-            <p className="folio py-3">Rien à rendre. Profites-en pour ficher.</p>
+            <p className="text-menu py-3 texte-doux">Rien à rendre. Profites-en pour ficher.</p>
           )}
         </div>
       </section>

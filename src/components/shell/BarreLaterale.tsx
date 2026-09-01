@@ -58,7 +58,7 @@ export function BarreLaterale({
         </div>
         <div className="min-w-0">
           <p className="font-extrabold leading-tight">Registre</p>
-          <p className="folio leading-tight">BTS Comptabilité et Gestion</p>
+          <p className="folio leading-tight texte-doux">BTS Comptabilité et Gestion</p>
         </div>
       </div>
 
