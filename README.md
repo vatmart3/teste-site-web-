@@ -39,6 +39,9 @@ Autres commandes :
 | `F` | entrer ou sortir du mode Focus |
 | `Échap` | fermer l'écran de matière, sortir du mode Focus |
 
+Menu : **Planning**, **Matières**, **Devoirs**, **Notes**, puis **Outils BTS CG**,
+**Emploi du temps** et **Réglages**.
+
 Un clic sur un cours ouvre son écran : **Commencer** lance un chrono, **Terminer la
 séance** enregistre le temps passé dans cette matière.
 
@@ -56,6 +59,16 @@ Trois niveaux, du plus discret au plus insistant :
 3. **La notification système** — bouton « Activer les rappels » en bas de l'écran. Le
    navigateur demande l'autorisation, puis t'envoie une notification 10 minutes avant chaque
    cours. Elle ne part que si un onglet du site est ouvert quelque part.
+
+### Notion s'ouvre dans Safari, pas dans l'app
+
+Sur iPhone et iPad, un lien `notion.so` est un *universal link* : iOS le détourne vers
+l'application Notion. Le site contourne ça avec le schéma `x-safari-https://`, que Safari
+enregistre justement pour forcer l'ouverture dans le navigateur.
+
+C'est **activé par défaut**, et réglable dans **Réglages → Notion**. Sur les autres
+appareils le réglage n'a aucun effet : les liens s'ouvrent déjà dans le navigateur. Si le
+bouton ne réagit pas sur ton iPhone, décoche l'option — le lien redevient une URL normale.
 
 ### Sur iPhone
 
@@ -272,9 +285,12 @@ src/
     telechargement.ts       export de fichiers, avec repli selon l'hébergeur
     notion.ts               lecture directe de Notion + analyse du Markdown enrichi
     rappels.ts              cours à signaler, notifications système
+    liens.ts                ouverture de Notion dans Safari sur iOS
   store/useRegistre.ts      état persistant (Zustand + localStorage)
   components/
-    semaine/                le planning, en grand
+    shell/                  menu latéral, barre du haut, panneau de droite, icônes
+    semaine/                planning : vue semaine et vue mois
+    vues/                   matières, devoirs, notes, réglages
     fiche/                  écran de matière : chrono, Notion, notes, devoirs
     focus/                  mode plein écran et anneau Three.js
     outils/                 les sept outils BTS CG
@@ -327,7 +343,8 @@ La date d'examen par défaut est **mai 2028**, elle aussi d'après tes notes.
 ## Pile technique
 
 Vite · React 18 · TypeScript · Tailwind CSS v4 · GSAP · @react-three/fiber + drei ·
-Zustand · date-fns. Three.js n'est chargé qu'à l'entrée en mode Focus. **Anton est
+Zustand · date-fns. Anton pour les titres, Plus Jakarta Sans pour l'interface, IBM Plex
+Mono pour les chiffres. Three.js n'est chargé qu'à l'entrée en mode Focus. **Anton est
 embarquée dans la feuille de style** (sous-ensemble latin, 12 ko) : la police qui porte
 toute l'identité de l'écran ne dépend d'aucun CDN et fonctionne hors ligne.
 

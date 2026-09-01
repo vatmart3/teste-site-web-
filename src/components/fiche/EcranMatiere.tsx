@@ -7,6 +7,7 @@ import { classerDevoirs } from '../../lib/selection'
 import { enMinutes, formatDateCourte, formatDuree, isoAujourdhui, minutesDeLaDate } from '../../lib/temps'
 import { useEnregistrementDiffere, useMouvementReduit } from '../../lib/hooks'
 import { formatDecimal } from '../../lib/compta'
+import { libelleOuverture, lienNotion } from '../../lib/liens'
 import {
   blocsDuMiroir,
   lirePageNotion,
@@ -24,7 +25,8 @@ export function EcranMatiere({
   maintenant,
   onFermer,
 }: {
-  creneau: Creneau
+  /** Absent lorsqu'on ouvre la matière depuis la liste plutôt que du planning. */
+  creneau: Creneau | null
   matiere: Matiere
   matieres: Matiere[]
   maintenant: Date
@@ -48,6 +50,7 @@ export function EcranMatiere({
   const basculerChapitre = useRegistre((s) => s.basculerChapitre)
   const marquerRevision = useRegistre((s) => s.marquerRevision)
   const enregistrerSeance = useRegistre((s) => s.enregistrerSeance)
+  const notionDansSafari = useRegistre((s) => s.notionDansSafari)
 
   const code = matiere.code
   const couleur = matiere.couleur
@@ -74,10 +77,8 @@ export function EcranMatiere({
     [seances, code],
   )
 
-  const debut = enMinutes(creneau.debut)
-  const fin = enMinutes(creneau.fin)
   const m = minutesDeLaDate(maintenant)
-  const enCours = m >= debut && m < fin
+  const enCours = creneau ? m >= enMinutes(creneau.debut) && m < enMinutes(creneau.fin) : false
 
   // ── Séance chronométrée ───────────────────────────────────────────────────
   const [demarreeA, setDemarreeA] = useState<number | null>(null)
@@ -143,7 +144,7 @@ export function EcranMatiere({
       gsap.from('[data-entree]', { opacity: 0, y: 12, duration: 0.35, stagger: 0.05, delay: 0.12 })
     }, ecran)
     return () => ctx.revert()
-  }, [creneau.id, mouvementReduit])
+  }, [creneau?.id ?? matiere.code, mouvementReduit])
 
   const fermer = () => {
     if (demarreeA !== null) terminer()
@@ -191,9 +192,15 @@ export function EcranMatiere({
                 <span aria-hidden="true">{matiere.icone}</span>
                 <span>{matiere.code}</span>
                 {matiere.epreuves.length ? <span>· {matiere.epreuves.join(' + ')} · coef. {matiere.coefficient}</span> : null}
-                <span>· {creneau.debut.replace(':', 'h')}–{creneau.fin.replace(':', 'h')}</span>
-                <span>· {creneau.salle ?? 'salle non indiquée'}</span>
-                {creneau.professeur ? <span>· {creneau.professeur}</span> : null}
+                {creneau ? (
+                  <>
+                    <span>· {creneau.debut.replace(':', 'h')}–{creneau.fin.replace(':', 'h')}</span>
+                    <span>· {creneau.salle ?? 'salle non indiquée'}</span>
+                  </>
+                ) : null}
+                {(creneau?.professeur ?? matiere.professeur) ? (
+                  <span>· {creneau?.professeur ?? matiere.professeur}</span>
+                ) : null}
               </p>
               <h2
                 className="anton mt-1 text-[clamp(1.9rem,6vw,4.2rem)] leading-[0.9]"
@@ -234,12 +241,12 @@ export function EcranMatiere({
             </p>
             {matiere.notionUrl ? (
               <a
-                href={matiere.notionUrl}
+                href={lienNotion(matiere.notionUrl, notionDansSafari) ?? matiere.notionUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="bouton bouton-discret ml-auto"
+                className="bouton ml-auto"
               >
-                Ouvrir dans Notion
+                {libelleOuverture(notionDansSafari)}
               </a>
             ) : null}
           </div>

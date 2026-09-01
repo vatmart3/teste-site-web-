@@ -36,6 +36,10 @@ export interface EtatRegistre {
   rappelMinutes: number
   /** Notifications système demandées par l'utilisateur. */
   rappelsSysteme: boolean
+  /** Ouvrir Notion dans Safari plutôt que dans l'application (iPhone, iPad). */
+  notionDansSafari: boolean
+  /** Vue du planning : la semaine détaillée ou le mois d'ensemble. */
+  vuePlanning: 'semaine' | 'mois'
   /** Semestre et quinzaine en cours — pilotent le filtrage des créneaux. */
   semestre: 1 | 2
   quinzaine: 'Q1' | 'Q2'
@@ -68,6 +72,8 @@ export interface EtatRegistre {
   enregistrerSeance: (code: string, debut: string, duree: number) => void
   definirRappelMinutes: (minutes: number) => void
   definirRappelsSysteme: (actif: boolean) => void
+  definirNotionDansSafari: (actif: boolean) => void
+  definirVuePlanning: (vue: 'semaine' | 'mois') => void
 }
 
 const VERSION_PLANNING = 1
@@ -89,6 +95,8 @@ export const useRegistre = create<EtatRegistre>()(
       dateExamen: DATE_EXAMEN_PAR_DEFAUT,
       rappelMinutes: 10,
       rappelsSysteme: false,
+      notionDansSafari: true,
+      vuePlanning: 'semaine',
       semestre: 1,
       quinzaine: 'Q1',
       versionPlanning: VERSION_PLANNING,
@@ -156,20 +164,25 @@ export const useRegistre = create<EtatRegistre>()(
         ),
       definirRappelMinutes: (minutes) => set({ rappelMinutes: minutes }),
       definirRappelsSysteme: (actif) => set({ rappelsSysteme: actif }),
+      definirNotionDansSafari: (actif) => set({ notionDansSafari: actif }),
+      definirVuePlanning: (vue) => set({ vuePlanning: vue }),
     }),
     {
       name: 'registre-bts-cg',
-      version: 3,
+      version: 4,
       migrate: (etat, versionPrecedente) => {
         const e = etat as Partial<EtatRegistre>
+        // v4 : vue du planning et ouverture de Notion dans Safari.
         // v3 : ajout des séances et des rappels ; l'examen passe à mai 2028
         // (session confirmée par la page Notion « KIT DE SURVIE BTS CG »).
-        if (versionPrecedente < 3) {
+        if (versionPrecedente < 4) {
           return {
             ...e,
             seances: e.seances ?? [],
             rappelMinutes: e.rappelMinutes ?? 10,
             rappelsSysteme: e.rappelsSysteme ?? false,
+            notionDansSafari: e.notionDansSafari ?? true,
+            vuePlanning: e.vuePlanning ?? 'semaine',
             dateExamen:
               !e.dateExamen || e.dateExamen.startsWith('2027') ? DATE_EXAMEN_PAR_DEFAUT : e.dateExamen,
             epreuves: epreuvesInitiales(),

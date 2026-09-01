@@ -3,7 +3,7 @@ import type { Creneau, Jour, Matiere } from '../../types'
 import { enMinutes, formatHeure, jourDeLaDate, lundiDeLaSemaine, memeJour, minutesDeLaDate } from '../../lib/temps'
 import { creneauActif } from '../../lib/selection'
 
-const PX_PAR_MINUTE = 1.42
+const PX_PAR_MINUTE = 1.3
 const HAUT = 14
 
 interface Pose {
@@ -100,7 +100,7 @@ export function Planning({
 
   return (
     <div className="w-full overflow-x-auto">
-      <div className="min-w-[720px] px-3 sm:px-6">
+      <div className="min-w-[700px]">
         {/* En-tête : les jours */}
         <div className="flex items-end pb-2">
           <div className="w-[46px] sm:w-[58px] shrink-0" aria-hidden="true" />
@@ -184,7 +184,9 @@ export function Planning({
                       const m = parCode[p.creneau.code]
                       const couleur = m?.couleur ?? '#8E9AA6'
                       const largeur = 100 / p.voies
-                      const grand = p.hauteur > 74
+                      // Un créneau d'une heure n'a pas la place d'afficher le
+                      // professeur en plus du titre sur deux lignes.
+                      const grand = p.hauteur > 104
                       const moyen = p.hauteur > 46
                       return (
                         <button
@@ -214,10 +216,6 @@ export function Planning({
                               WebkitBoxOrient: 'vertical',
                               WebkitLineClamp: grand ? 3 : 2,
                               overflow: 'hidden',
-                              // Anton est très serré : sans cela, les accents
-                              // des capitales (É, È) sont rognés en haut.
-                              lineHeight: 1.06,
-                              paddingTop: '0.08em',
                             }}
                           >
                             {m?.nomCourt ?? p.creneau.matiere}
