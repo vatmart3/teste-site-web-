@@ -37,75 +37,91 @@ Autres commandes :
 | Touche | Effet |
 | --- | --- |
 | `F` | entrer ou sortir du mode Focus |
-| `Échap` | fermer la fiche de cours, sortir du mode Focus |
+| `Échap` | fermer l'écran de matière, sortir du mode Focus |
+
+Un clic sur un cours ouvre son écran : **Commencer** lance un chrono, **Terminer la
+séance** enregistre le temps passé dans cette matière.
 
 ---
 
-## Configuration Notion, pas à pas
+## Les rappels
 
-Le script `scripts/notion-sync.mjs` crée une base de données Notion
-**« BTS CG — Cours »** et une page par matière détectée dans ton planning, avec un
-squelette prêt à remplir : callout d'objectif, programme en toggles, base de fiches de
-révision, table des écritures clés (pour P1→P7), exercices à cocher, callout rouge des
-erreurs récurrentes, et base des notes obtenues.
+Trois niveaux, du plus discret au plus insistant :
 
-### 1. Créer l'intégration
+1. **Le prochain cours, toujours affiché** — sous le planning : « dans 23 min · P3 Fiscalité ·
+   B317 ». Rien à activer.
+2. **Le bandeau** — dès qu'un cours démarre dans moins de 30 minutes, un bandeau à la couleur
+   de la matière s'installe sous l'heure et bat doucement dans les dix dernières minutes.
+   Cliquer dessus ouvre l'écran de la matière.
+3. **La notification système** — bouton « Activer les rappels » en bas de l'écran. Le
+   navigateur demande l'autorisation, puis t'envoie une notification 10 minutes avant chaque
+   cours. Elle ne part que si un onglet du site est ouvert quelque part.
 
-1. Ouvre <https://www.notion.so/profile/integrations>.
-2. **Nouvelle intégration** → nomme-la `Registre BTS`, associe-la à ton espace de travail.
-3. Type : **Interne**. Capacités : *Lire*, *Insérer* et *Mettre à jour* du contenu.
-4. Copie le **jeton d'intégration interne** (il commence par `ntn_`).
+### Sur iPhone
 
-### 2. Préparer la page parente
+La notification du navigateur ne marche sur iOS que si le site est installé comme
+application :
 
-1. Dans Notion, crée (ou choisis) une page qui accueillera la base — par exemple `BTS CG`.
-2. Sur cette page : menu `⋯` en haut à droite → **Connexions** → ajoute `Registre BTS`.
-   **Sans cette étape, le script renvoie `object_not_found`.**
-3. Copie l'URL de la page. L'ID est le bloc de 32 caractères à la fin :
-   `https://www.notion.so/BTS-CG-1a2b3c4d5e6f7890abcdef1234567890`
-   → `1a2b3c4d5e6f7890abcdef1234567890`.
+1. Ouvre le site dans **Safari** (pas Chrome).
+2. Bouton **Partager** → **Sur l'écran d'accueil**. L'icône s'installe, le site s'ouvre en
+   plein écran, sans barre d'adresse.
+3. Ouvre-le depuis l'icône, puis touche **Activer les rappels** et accepte.
 
-### 3. Renseigner le `.env`
+Pour que ça se déclenche tout seul le matin, l'app **Raccourcis** fait le travail :
 
-```bash
-cp .env.example .env
-```
+> Raccourcis → **Automatisation** → **+** → **Heure de la journée** → 7 h 45, répéter
+> **tous les jours** (ou seulement en semaine) → **Exécuter immédiatement** →
+> action **Ouvrir l'app** et choisis *Registre*.
 
-```dotenv
-NOTION_TOKEN=ntn_………
-NOTION_PARENT_PAGE_ID=1a2b3c4d5e6f7890abcdef1234567890
-```
+Le site s'ouvre seul chaque matin, recharge ton planning et arme les rappels de la journée.
 
-`.env` est ignoré par git — le jeton ne partira jamais sur GitHub.
+---
 
-### 4. Synchroniser
+## Notion
 
-```bash
-npm run notion:sync:dry   # vérification à blanc
-npm run notion:sync       # pour de vrai
-```
+Le dépôt est déjà relié à ton Notion. Sous la page **BTS COMPTA** se trouve la base
+**« BTS CG — Cours »** et une page par matière, avec le programme en toggles, la table
+Situation / Débit / Crédit, les exercices à cocher et le callout rouge des erreurs
+récurrentes. `src/data/matieres.json` contient les identifiants et les URLs de ces pages.
 
-Le script écrit les IDs et URLs dans `src/data/matieres.json`. Recharge le site : le
-bouton **« Ouvrir la fiche Notion »** de chaque fiche de cours pointe désormais sur ta page.
+### Comment le site lit Notion
 
-**Le script est idempotent.** Relancé, il retrouve la base et les pages existantes,
-met à jour les propriétés (professeur, coefficient) et ne recrée jamais de doublon.
-Le contenu des pages n'est écrit qu'à leur création : ce que tu saisis à la main n'est
-jamais écrasé.
+Deux chemins, choisis automatiquement :
 
-### Variante : le connecteur MCP Notion
+1. **En direct.** Sur la page publiée comme Artifact claude.ai, avec le connecteur Notion
+   actif, le site appelle réellement `notion-fetch` à l'ouverture d'une matière : ce que tu
+   vois est ta page Notion à la seconde. L'écran l'indique — *« Contenu lu en direct dans
+   ton Notion »*.
+2. **Le miroir local.** Partout ailleurs (GitHub Pages, Vercel, hors ligne), le site affiche
+   la copie stockée dans `matieres.json`, avec la même mise en forme. L'écran l'indique —
+   *« Copie locale de ta page Notion »*.
 
-Si tu utilises Claude avec le connecteur Notion activé, tu peux court-circuiter le
-script et faire créer la base et les pages directement par l'assistant : il dispose des
-outils `notion-create-database`, `notion-create-pages` et `notion-update-page`, et n'a
-alors besoin d'aucun jeton dans `.env`.
+Le bouton **Ouvrir dans Notion** de chaque matière pointe toujours sur la vraie page.
 
-Dans ce cas, il reste une étape manuelle : reporter les URLs obtenues dans
-`src/data/matieres.json`, champs `notionPageId` et `notionUrl` de chaque matière. Le
-site ne lit que ce fichier — peu importe qui l'a rempli.
+### Recréer ou compléter les pages avec l'API
 
-Les deux chemins sont interchangeables. L'API brute est le chemin par défaut parce
-qu'elle est reproductible en une commande ; le MCP est plus rapide en ponctuel.
+`scripts/notion-sync.mjs` fait le même travail sans passer par Claude, avec un jeton :
+
+1. <https://www.notion.so/profile/integrations> → **Nouvelle intégration** interne, avec les
+   capacités *Lire*, *Insérer* et *Mettre à jour*. Copie le jeton (`ntn_…`).
+2. Dans Notion, sur la page **BTS COMPTA** : menu `⋯` → **Connexions** → ajoute
+   l'intégration. **Sans cette étape, le script renvoie `object_not_found`.**
+3. `cp .env.example .env`, puis renseigne `NOTION_TOKEN` et `NOTION_PARENT_PAGE_ID`
+   (le bloc de 32 caractères à la fin de l'URL de la page).
+4. `npm run notion:sync:dry` pour vérifier, `npm run notion:sync` pour de vrai.
+
+Le script est **idempotent** : relancé, il retrouve la base et les pages existantes, met à
+jour leurs propriétés et ne recrée jamais de doublon. Le contenu d'une page n'est écrit
+qu'à sa création : ce que tu saisis à la main n'est jamais écrasé.
+
+`.env` est ignoré par git — le jeton ne part jamais sur GitHub.
+
+### Variante : le connecteur MCP
+
+C'est le chemin qui a servi ici. Si tu utilises Claude avec le connecteur Notion activé,
+l'assistant crée et met à jour les pages directement, sans aucun jeton dans `.env` — il
+reste seulement à reporter les URLs obtenues dans `src/data/matieres.json`. Le site ne lit
+que ce fichier : peu importe qui l'a rempli.
 
 ---
 
@@ -254,10 +270,12 @@ src/
     temps.ts                conversions horaires, semaine ISO, quinzaines
     hooks.ts                horloges, mouvement réduit, enregistrement différé, copie
     telechargement.ts       export de fichiers, avec repli selon l'hébergeur
+    notion.ts               lecture directe de Notion + analyse du Markdown enrichi
+    rappels.ts              cours à signaler, notifications système
   store/useRegistre.ts      état persistant (Zustand + localStorage)
   components/
-    semaine/                accueil et grille horaire
-    fiche/                  panneau de fiche de cours
+    semaine/                le planning, en grand
+    fiche/                  écran de matière : chrono, Notion, notes, devoirs
     focus/                  mode plein écran et anneau Three.js
     outils/                 les sept outils BTS CG
     edition/                éditeur d'emploi du temps
@@ -282,12 +300,19 @@ src/
 - **Moyenne BTS** — épreuves et coefficients éditables, report des moyennes réelles,
   points manquants pour atteindre 10.
 
-### Sur les coefficients du BTS CG
+### Sur les épreuves du BTS CG
 
-Les coefficients pré-remplis (E1.1 : 4, E1.2 : 3, E2 : 3, E3 : 6, E4.1 : 9, E4.2 : 4,
-E5 : 5, E6 : 5, total 39) sont **indicatifs**. Le référentiel a été modifié en 2024 :
-confirme-les auprès du secrétariat du lycée ou de ton professeur principal avant de t'en
-servir pour arbitrer tes révisions. Ils sont tous modifiables dans le simulateur.
+La numérotation et les coefficients viennent de ta propre page Notion
+**« KIT DE SURVIE BTS CG »** : E5 étude de cas coef. 9 (écrit 4 h 30, mai 2028, sur P1 à P4
+et P7), E6 pratique comptable coef. 4 (CCF sur 14 points + oral de 20 min sur 6, PGI EBP),
+E7 contrôle de gestion et analyse financière coef. 5 (CCF + oral, sur Excel, P5, P6 et P7),
+E8 parcours de professionnalisation coef. 5 (rapport de stage + oral de 30 min).
+
+Les coefficients de E1 à E4 (culture générale 4, anglais 3, maths 3, CEJM 6) suivent la
+grille usuelle pour un total de 39 et **restent à confirmer avec le lycée**. Tout est
+modifiable dans le simulateur.
+
+La date d'examen par défaut est **mai 2028**, elle aussi d'après tes notes.
 
 ## Accessibilité et confort
 
@@ -302,7 +327,9 @@ servir pour arbitrer tes révisions. Ils sont tous modifiables dans le simulateu
 ## Pile technique
 
 Vite · React 18 · TypeScript · Tailwind CSS v4 · GSAP · @react-three/fiber + drei ·
-Zustand · date-fns. Three.js n'est chargé qu'à l'entrée en mode Focus.
+Zustand · date-fns. Three.js n'est chargé qu'à l'entrée en mode Focus. **Anton est
+embarquée dans la feuille de style** (sous-ensemble latin, 12 ko) : la police qui porte
+toute l'identité de l'écran ne dépend d'aucun CDN et fonctionne hors ligne.
 
 ---
 

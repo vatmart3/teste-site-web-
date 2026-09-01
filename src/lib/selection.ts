@@ -152,7 +152,7 @@ export function etatDesMatieres(
  * ancienne. On ignore l'accompagnement personnalisé (pas d'épreuve).
  */
 export function matiereLaMoinsRevisee(etats: EtatMatiere[]): EtatMatiere | null {
-  const candidats = etats.filter((e) => e.matiere.epreuve !== null)
+  const candidats = etats.filter((e) => e.matiere.epreuves.length > 0)
   if (!candidats.length) return null
   const jamais = candidats.filter((e) => e.derniereRevision === null)
   if (jamais.length) {

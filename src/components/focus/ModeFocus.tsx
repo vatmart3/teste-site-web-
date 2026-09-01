@@ -4,6 +4,7 @@ import { formatDuree } from '../../lib/temps'
 import { useMouvementReduit, useSeconde } from '../../lib/hooks'
 import type { EtatCours } from '../../lib/selection'
 import { Anneau } from './Anneau'
+import { MATIERES_REGISTRE } from '../../store/useRegistre'
 
 export function ModeFocus({
   cours,
@@ -33,12 +34,14 @@ export function ModeFocus({
     }
   }, [onSortir])
 
+  const couleur =
+    MATIERES_REGISTRE.matieres.find((m) => m.code === cours?.creneau.code)?.couleur ?? '#FFC93C'
   const heure = maintenant.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })
   const secondes = String(maintenant.getSeconds()).padStart(2, '0')
 
   return (
     <div className="focus-encre fixed inset-0 z-50 overflow-hidden" role="region" aria-label="Mode focus">
-      <Anneau avancement={cours?.avancement ?? 0} anime={!mouvementReduit} />
+      <Anneau avancement={cours?.avancement ?? 0} anime={!mouvementReduit} couleur={couleur} />
 
       <div className="relative h-full flex flex-col justify-between px-[6vw] py-[5vh]">
         <div className="flex items-baseline justify-between">
@@ -59,7 +62,7 @@ export function ModeFocus({
             <>
               <p
                 className="leading-[1.02]"
-                style={{ fontFamily: 'var(--font-titre)', fontSize: 'clamp(2rem, 6.2vw, 5rem)' }}
+                style={{ fontFamily: 'var(--font-titre)', fontSize: 'clamp(2rem, 6.2vw, 5rem)', color: couleur, textTransform: 'uppercase' }}
               >
                 {cours.creneau.matiere}
               </p>
@@ -71,7 +74,7 @@ export function ModeFocus({
                 {formatDuree(cours.restantMinutes)} restantes
               </p>
               <div className="barre-progression mt-3 w-full max-w-[42rem]">
-                <span style={{ width: `${Math.round(cours.avancement * 100)}%` }} />
+                <span style={{ width: `${Math.round(cours.avancement * 100)}%`, background: couleur }} />
               </div>
             </>
           ) : (

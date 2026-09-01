@@ -2,8 +2,16 @@ import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 import planningJson from '../data/planning.json'
 import matieresJson from '../data/matieres.json'
-import { EPREUVES_PAR_DEFAUT } from '../data/epreuves'
-import type { Creneau, Devoir, EpreuveSimulee, Note, Planning, RegistreMatieres } from '../types'
+import { DATE_EXAMEN_PAR_DEFAUT, EPREUVES_PAR_DEFAUT } from '../data/epreuves'
+import type {
+  Creneau,
+  Devoir,
+  EpreuveSimulee,
+  Note,
+  Planning,
+  RegistreMatieres,
+  Seance,
+} from '../types'
 
 const PLANNING = planningJson as unknown as Planning
 const MATIERES = matieresJson as unknown as RegistreMatieres
@@ -21,7 +29,13 @@ export interface EtatRegistre {
   chapitresFaits: Record<string, string[]>
   revisions: Record<string, string>
   epreuves: EpreuveSimulee[]
+  /** Séances de travail chronométrées, par matière. */
+  seances: Seance[]
   dateExamen: string
+  /** Minutes d'avance du rappel avant un cours. */
+  rappelMinutes: number
+  /** Notifications système demandées par l'utilisateur. */
+  rappelsSysteme: boolean
   /** Semestre et quinzaine en cours — pilotent le filtrage des créneaux. */
   semestre: 1 | 2
   quinzaine: 'Q1' | 'Q2'
@@ -50,6 +64,10 @@ export interface EtatRegistre {
   reinitialiserEpreuves: () => void
   definirDateExamen: (iso: string) => void
   definirPeriode: (semestre: 1 | 2, quinzaine: 'Q1' | 'Q2') => void
+
+  enregistrerSeance: (code: string, debut: string, duree: number) => void
+  definirRappelMinutes: (minutes: number) => void
+  definirRappelsSysteme: (actif: boolean) => void
 }
 
 const VERSION_PLANNING = 1
@@ -67,7 +85,10 @@ export const useRegistre = create<EtatRegistre>()(
       chapitresFaits: {},
       revisions: {},
       epreuves: epreuvesInitiales(),
-      dateExamen: '2027-05-11',
+      seances: [],
+      dateExamen: DATE_EXAMEN_PAR_DEFAUT,
+      rappelMinutes: 10,
+      rappelsSysteme: false,
       semestre: 1,
       quinzaine: 'Q1',
       versionPlanning: VERSION_PLANNING,
@@ -128,11 +149,34 @@ export const useRegistre = create<EtatRegistre>()(
       reinitialiserEpreuves: () => set({ epreuves: epreuvesInitiales() }),
       definirDateExamen: (iso) => set({ dateExamen: iso }),
       definirPeriode: (semestre, quinzaine) => set({ semestre, quinzaine }),
+
+      enregistrerSeance: (code, debut, duree) =>
+        set((s) =>
+          duree < 1 ? s : { seances: [...s.seances, { id: id(), code, debut, duree }] },
+        ),
+      definirRappelMinutes: (minutes) => set({ rappelMinutes: minutes }),
+      definirRappelsSysteme: (actif) => set({ rappelsSysteme: actif }),
     }),
     {
       name: 'registre-bts-cg',
-      version: 2,
-      migrate: (etat) => etat as EtatRegistre,
+      version: 3,
+      migrate: (etat, versionPrecedente) => {
+        const e = etat as Partial<EtatRegistre>
+        // v3 : ajout des séances et des rappels ; l'examen passe à mai 2028
+        // (session confirmée par la page Notion « KIT DE SURVIE BTS CG »).
+        if (versionPrecedente < 3) {
+          return {
+            ...e,
+            seances: e.seances ?? [],
+            rappelMinutes: e.rappelMinutes ?? 10,
+            rappelsSysteme: e.rappelsSysteme ?? false,
+            dateExamen:
+              !e.dateExamen || e.dateExamen.startsWith('2027') ? DATE_EXAMEN_PAR_DEFAUT : e.dateExamen,
+            epreuves: epreuvesInitiales(),
+          } as EtatRegistre
+        }
+        return etat as EtatRegistre
+      },
     },
   ),
 )

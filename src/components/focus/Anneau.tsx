@@ -7,7 +7,7 @@ import * as THREE from 'three'
  * Anneau du mode Focus : un arc qui se remplit selon l'avancement du cours,
  * doublé d'un anneau témoin. Tourne lentement, très bas en contraste.
  */
-function Arcs({ avancement, anime }: { avancement: number; anime: boolean }) {
+function Arcs({ avancement, anime, couleur }: { avancement: number; anime: boolean; couleur: string }) {
   const groupe = useRef<THREE.Group>(null)
   const arc = useRef<THREE.Mesh>(null)
 
@@ -23,21 +23,29 @@ function Arcs({ avancement, anime }: { avancement: number; anime: boolean }) {
     <group ref={groupe} rotation={[0.35, 0, 0]} scale={0.62}>
       <mesh>
         <torusGeometry args={[2.6, 0.012, 8, 220]} />
-        <meshBasicMaterial color="#CFDCC7" transparent opacity={0.1} />
+        <meshBasicMaterial color="#8D949E" transparent opacity={0.13} />
       </mesh>
       <mesh ref={arc} rotation={[0, 0, Math.PI / 2]}>
         <torusGeometry args={[2.6, 0.028, 10, 220, remplissage * Math.PI * 2]} />
-        <meshBasicMaterial color="#B8862B" transparent opacity={0.42} />
+        <meshBasicMaterial color={couleur} transparent opacity={0.42} />
       </mesh>
       <mesh>
         <torusGeometry args={[3.15, 0.005, 6, 160]} />
-        <meshBasicMaterial color="#CFDCC7" transparent opacity={0.05} />
+        <meshBasicMaterial color="#8D949E" transparent opacity={0.07} />
       </mesh>
     </group>
   )
 }
 
-export function Anneau({ avancement, anime }: { avancement: number; anime: boolean }) {
+export function Anneau({
+  avancement,
+  anime,
+  couleur,
+}: {
+  avancement: number
+  anime: boolean
+  couleur: string
+}) {
   return (
     <Canvas
       dpr={[1, 1.75]}
@@ -46,7 +54,7 @@ export function Anneau({ avancement, anime }: { avancement: number; anime: boole
       aria-hidden="true"
     >
       <PerspectiveCamera makeDefault position={[0, 0, 7.4]} fov={50} />
-      <Arcs avancement={avancement} anime={anime} />
+      <Arcs avancement={avancement} anime={anime} couleur={couleur} />
     </Canvas>
   )
 }

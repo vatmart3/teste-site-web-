@@ -1,0 +1,20 @@
+{
+  "name": "Registre — BTS CG",
+  "short_name": "Registre",
+  "description": "Emploi du temps, fiches Notion et outils du BTS Comptabilité et Gestion.",
+  "start_url": ".",
+  "scope": ".",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#0A0B0D",
+  "theme_color": "#0A0B0D",
+  "lang": "fr",
+  "icons": [
+    {
+      "src": "icone.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ]
+}

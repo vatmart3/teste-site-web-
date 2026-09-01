@@ -34,8 +34,6 @@ export interface Planning {
   creneaux: Creneau[]
 }
 
-export type Teinte = 'encre' | 'vert' | 'prune' | 'bleu' | 'rose' | 'or' | 'papier'
-
 export interface Matiere {
   code: string
   nom: string
@@ -43,19 +41,46 @@ export interface Matiere {
   nomCourt: string
   intituleOfficiel: string
   professeur: string | null
-  epreuve: string | null
+  /** Épreuves du BTS où la matière est évaluée (E1 → E8). */
+  epreuves: string[]
   coefficient: number
   objectif: string
-  teinte: Teinte
+  /** Couleur de la matière, en hexadécimal. Sert partout dans l'interface. */
+  couleur: string
+  icone: string
   notionPageId: string | null
   notionUrl: string | null
   chapitres: string[]
+  /** Table Situation / Débit / Crédit, miroir de la page Notion. */
+  ecritures: [situation: string, debit: string, credit: string][]
+  aFaire: string[]
+  erreurs: string
+}
+
+export interface LienNotion {
+  titre: string
+  url: string
 }
 
 export interface RegistreMatieres {
   genereLe: string | null
-  notion: { databaseId: string | null; databaseUrl: string | null }
+  notion: {
+    databaseId: string | null
+    databaseUrl: string | null
+    pageParente: LienNotion | null
+    kitDeSurvie: LienNotion | null
+  }
   matieres: Matiere[]
+}
+
+/** Une séance de travail chronométrée sur une matière. */
+export interface Seance {
+  id: string
+  code: string
+  /** ISO */
+  debut: string
+  /** minutes */
+  duree: number
 }
 
 export interface Note {

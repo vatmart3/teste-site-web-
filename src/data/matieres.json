@@ -1,8 +1,16 @@
 {
-  "genereLe": null,
+  "genereLe": "2026-09-01T20:56:00.000Z",
   "notion": {
-    "databaseId": null,
-    "databaseUrl": null
+    "databaseId": "32b18c72-cf91-4a6a-a069-23b00f809d21",
+    "databaseUrl": "https://app.notion.com/p/32b18c72cf914a6aa06923b00f809d21",
+    "pageParente": {
+      "titre": "BTS COMPTA",
+      "url": "https://app.notion.com/p/3b4b7e6d2e8680db8990f316a50923d0"
+    },
+    "kitDeSurvie": {
+      "titre": "KIT DE SURVIE BTS CG",
+      "url": "https://app.notion.com/p/3ceb7e6d2e868023a9e1fb5436310ccb"
+    }
   },
   "matieres": [
     {
@@ -11,12 +19,15 @@
       "nomCourt": "Culture générale",
       "intituleOfficiel": "Culture générale et expression",
       "professeur": "M'HADBI N.",
-      "epreuve": "E1.1",
+      "epreuves": [
+        "E1"
+      ],
       "coefficient": 4,
       "objectif": "Maîtriser la synthèse de documents et l'écriture personnelle argumentée sur les deux thèmes au programme.",
-      "teinte": "prune",
-      "notionPageId": null,
-      "notionUrl": null,
+      "couleur": "#D96FE8",
+      "icone": "✍️",
+      "notionPageId": "3ceb7e6d-2e86-812e-bdef-ea5faffcc8ea",
+      "notionUrl": "https://app.notion.com/p/3ceb7e6d2e86812ebdefea5faffcc8ea",
       "chapitres": [
         "Méthode de la synthèse de documents",
         "Méthode de l'écriture personnelle",
@@ -25,7 +36,14 @@
         "Analyse de l'image et du paratexte",
         "Vocabulaire et reformulation",
         "Entraînements en temps limité"
-      ]
+      ],
+      "ecritures": [],
+      "aFaire": [
+        "Une synthèse en temps limité",
+        "Une écriture personnelle en temps limité",
+        "Annale du sujet le plus récent"
+      ],
+      "erreurs": "Note ici, à chaud, chaque erreur relevée en devoir. Relis cette liste avant chaque évaluation."
     },
     {
       "code": "LV1",
@@ -33,12 +51,15 @@
       "nomCourt": "Anglais LVA",
       "intituleOfficiel": "Langue vivante étrangère 1 — Anglais",
       "professeur": "MOKHNACHI N.",
-      "epreuve": "E1.2",
+      "epreuves": [
+        "E2"
+      ],
       "coefficient": 3,
       "objectif": "Comprendre l'anglais professionnel de la comptabilité et s'exprimer à l'oral en situation d'entreprise.",
-      "teinte": "rose",
-      "notionPageId": null,
-      "notionUrl": null,
+      "couleur": "#FF5FA8",
+      "icone": "🇬🇧",
+      "notionPageId": "3ceb7e6d-2e86-8104-a471-e08b81c17c39",
+      "notionUrl": "https://app.notion.com/p/3ceb7e6d2e868104a471e08b81c17c39",
       "chapitres": [
         "Business vocabulary — accounting & finance",
         "Compréhension orale (documents audio)",
@@ -47,7 +68,13 @@
         "Interaction orale — situations professionnelles",
         "Grammaire : temps et modaux",
         "Rédaction d'e-mails professionnels"
-      ]
+      ],
+      "ecritures": [],
+      "aFaire": [
+        "Fiche de vocabulaire du chapitre en cours",
+        "Un oral enregistré et réécouté"
+      ],
+      "erreurs": "Note ici chaque faute récurrente : temps, prononciation, faux-amis."
     },
     {
       "code": "MATHS",
@@ -55,12 +82,15 @@
       "nomCourt": "Mathématiques",
       "intituleOfficiel": "Mathématiques appliquées",
       "professeur": "EL OMRI M.",
-      "epreuve": "E2",
+      "epreuves": [
+        "E3"
+      ],
       "coefficient": 3,
       "objectif": "Outiller les calculs financiers, statistiques et probabilistes de la gestion.",
-      "teinte": "encre",
-      "notionPageId": null,
-      "notionUrl": null,
+      "couleur": "#9B7BFF",
+      "icone": "📐",
+      "notionPageId": "3ceb7e6d-2e86-81d1-ac2b-efb72e4d0e27",
+      "notionUrl": "https://app.notion.com/p/3ceb7e6d2e8681d1ac2befb72e4d0e27",
       "chapitres": [
         "Suites arithmétiques et géométriques",
         "Mathématiques financières : intérêts simples et composés",
@@ -71,7 +101,13 @@
         "Probabilités et lois de probabilité",
         "Calcul matriciel",
         "Utilisation du tableur"
-      ]
+      ],
+      "ecritures": [],
+      "aFaire": [
+        "Exercices du chapitre en cours",
+        "Un sujet complet à la calculatrice"
+      ],
+      "erreurs": "Note ici les formules que tu confonds et les erreurs de calcul récurrentes."
     },
     {
       "code": "CEJM",
@@ -79,12 +115,15 @@
       "nomCourt": "CEJM",
       "intituleOfficiel": "Culture économique, juridique et managériale",
       "professeur": "BERLAND P.",
-      "epreuve": "E3",
+      "epreuves": [
+        "E4"
+      ],
       "coefficient": 6,
       "objectif": "Analyser une situation d'entreprise en mobilisant conjointement l'économie, le droit et le management.",
-      "teinte": "bleu",
-      "notionPageId": null,
-      "notionUrl": null,
+      "couleur": "#6A9BFF",
+      "icone": "⚖️",
+      "notionPageId": "3ceb7e6d-2e86-8188-ac97-ea385969fe62",
+      "notionUrl": "https://app.notion.com/p/3ceb7e6d2e868188ac97ea385969fe62",
       "chapitres": [
         "L'intégration de l'entreprise dans son environnement",
         "La régulation de l'activité économique",
@@ -94,7 +133,13 @@
         "Les choix stratégiques de l'entreprise",
         "Méthodologie : analyse d'une situation juridique",
         "Méthodologie : argumentation économique"
-      ]
+      ],
+      "ecritures": [],
+      "aFaire": [
+        "Un cas juridique rédigé en entier",
+        "Une analyse économique argumentée"
+      ],
+      "erreurs": "Note ici les notions que tu mélanges et les manques de méthode relevés par le prof."
     },
     {
       "code": "P1",
@@ -102,12 +147,16 @@
       "nomCourt": "P1 Compta courante",
       "intituleOfficiel": "P1 — Contrôle et traitement comptable des opérations commerciales",
       "professeur": "BAYEN S.",
-      "epreuve": "E4.1",
+      "epreuves": [
+        "E5",
+        "E6"
+      ],
       "coefficient": 9,
-      "objectif": "Enregistrer et contrôler les opérations d'achat, de vente et de trésorerie du cycle d'exploitation.",
-      "teinte": "encre",
-      "notionPageId": null,
-      "notionUrl": null,
+      "objectif": "Base de la comptabilité : enregistrer et contrôler les opérations d'achat, de vente et de trésorerie.",
+      "couleur": "#FF4A3D",
+      "icone": "🧾",
+      "notionPageId": "3ceb7e6d-2e86-8177-b08b-c44a1cab68e0",
+      "notionUrl": "https://app.notion.com/p/3ceb7e6d2e868177b08bc44a1cab68e0",
       "chapitres": [
         "Le système d'information comptable et la pièce justificative",
         "La facturation : réductions commerciales et financières",
@@ -120,7 +169,49 @@
         "Le rapprochement bancaire",
         "Les opérations en devises",
         "Le contrôle et la justification des comptes de tiers"
-      ]
+      ],
+      "ecritures": [
+        [
+          "Achat de marchandises (facture)",
+          "607 · 44566",
+          "401"
+        ],
+        [
+          "Vente de marchandises (facture)",
+          "411",
+          "707 · 44571"
+        ],
+        [
+          "Règlement client par virement",
+          "512",
+          "411"
+        ],
+        [
+          "Acceptation d'un effet par le client",
+          "413",
+          "411"
+        ],
+        [
+          "Remise à l'escompte",
+          "512 · 6616 · 627 · 44566",
+          "5114"
+        ],
+        [
+          "Escompte de règlement accordé",
+          "665",
+          "411"
+        ],
+        [
+          "Consignation d'emballages au client",
+          "411",
+          "4196"
+        ]
+      ],
+      "aFaire": [
+        "Exercices du chapitre en cours",
+        "Un jeu complet de factures à enregistrer"
+      ],
+      "erreurs": "Note ici chaque erreur d'écriture relevée en devoir : sens débit/crédit, compte de TVA, oubli du TTC."
     },
     {
       "code": "P2",
@@ -128,12 +219,16 @@
       "nomCourt": "P2 Compta d'inventaire",
       "intituleOfficiel": "P2 — Contrôle et traitement comptable des opérations d'inventaire",
       "professeur": "ALIA M.",
-      "epreuve": "E4.1",
+      "epreuves": [
+        "E5",
+        "E6"
+      ],
       "coefficient": 9,
-      "objectif": "Produire les travaux d'inventaire et les documents de synthèse annuels.",
-      "teinte": "prune",
-      "notionPageId": null,
-      "notionUrl": null,
+      "objectif": "Comptabilité de l'inventaire de fin d'année, plus approfondie : travaux d'inventaire et documents de synthèse.",
+      "couleur": "#FF8A2B",
+      "icone": "📚",
+      "notionPageId": "3ceb7e6d-2e86-8180-81a9-fea787bd991f",
+      "notionUrl": "https://app.notion.com/p/3ceb7e6d2e86818081a9fea787bd991f",
       "chapitres": [
         "L'organisation des travaux d'inventaire",
         "Les immobilisations : entrée et évaluation",
@@ -147,7 +242,54 @@
         "Les charges à payer et produits à recevoir",
         "Le bilan, le compte de résultat et l'annexe",
         "L'affectation du résultat"
-      ]
+      ],
+      "ecritures": [
+        [
+          "Dotation aux amortissements",
+          "6811",
+          "28…"
+        ],
+        [
+          "Dépréciation de créance client",
+          "6817",
+          "491"
+        ],
+        [
+          "Passage en client douteux",
+          "416",
+          "411"
+        ],
+        [
+          "Créance devenue irrécouvrable",
+          "654 · 44571",
+          "416"
+        ],
+        [
+          "Provision pour litige",
+          "6815",
+          "1511"
+        ],
+        [
+          "Charge constatée d'avance",
+          "486",
+          "6…"
+        ],
+        [
+          "Produit constaté d'avance",
+          "7…",
+          "487"
+        ],
+        [
+          "Sortie de l'actif lors d'une cession",
+          "675 · 28…",
+          "2…"
+        ]
+      ],
+      "aFaire": [
+        "Un dossier d'inventaire complet",
+        "Un plan d'amortissement dégressif de bout en bout"
+      ],
+      "erreurs": "Note ici les pièges d'inventaire : prorata temporis, dépréciation calculée sur le HT, sens des reprises."
     },
     {
       "code": "P3",
@@ -155,12 +297,16 @@
       "nomCourt": "P3 Fiscalité",
       "intituleOfficiel": "P3 — Gestion des obligations fiscales",
       "professeur": "CLEROUX I.",
-      "epreuve": "E4.2",
-      "coefficient": 4,
-      "objectif": "Établir les déclarations fiscales courantes et sécuriser leur traitement comptable.",
-      "teinte": "vert",
-      "notionPageId": null,
-      "notionUrl": null,
+      "epreuves": [
+        "E5",
+        "E6"
+      ],
+      "coefficient": 9,
+      "objectif": "Fiscalité, impôts et taxes : établir les déclarations fiscales et sécuriser leur traitement comptable.",
+      "couleur": "#FFB627",
+      "icone": "🏛️",
+      "notionPageId": "3ceb7e6d-2e86-81ba-bd18-fb95b7e943ba",
+      "notionUrl": "https://app.notion.com/p/3ceb7e6d2e8681babd18fb95b7e943ba",
       "chapitres": [
         "Le champ d'application de la TVA",
         "La TVA collectée et le fait générateur",
@@ -172,7 +318,49 @@
         "Les réintégrations et déductions fiscales",
         "Les autres impôts et taxes (CET, taxe sur les salaires)",
         "Le calendrier et les obligations déclaratives"
-      ]
+      ],
+      "ecritures": [
+        [
+          "TVA déductible sur achats",
+          "44566",
+          ""
+        ],
+        [
+          "TVA déductible sur immobilisations",
+          "44562",
+          ""
+        ],
+        [
+          "TVA collectée sur ventes",
+          "",
+          "44571"
+        ],
+        [
+          "Déclaration : TVA à décaisser",
+          "44571",
+          "44566 · 44562 · 44551"
+        ],
+        [
+          "Crédit de TVA à reporter",
+          "44567",
+          ""
+        ],
+        [
+          "Paiement de la TVA",
+          "44551",
+          "512"
+        ],
+        [
+          "Impôt sur les sociétés",
+          "695",
+          "444"
+        ]
+      ],
+      "aFaire": [
+        "Une CA3 complète",
+        "Un calcul d'IS avec réintégrations"
+      ],
+      "erreurs": "Note ici les exclusions du droit à déduction que tu oublies et les dates d'exigibilité."
     },
     {
       "code": "P4",
@@ -180,12 +368,16 @@
       "nomCourt": "P4 Social",
       "intituleOfficiel": "P4 — Gestion des relations sociales",
       "professeur": "MARCO M.",
-      "epreuve": "E4.2",
-      "coefficient": 4,
-      "objectif": "Établir la paie, les déclarations sociales et sécuriser la relation de travail.",
-      "teinte": "or",
-      "notionPageId": null,
-      "notionUrl": null,
+      "epreuves": [
+        "E5",
+        "E6"
+      ],
+      "coefficient": 9,
+      "objectif": "Droit social : relation salarié, droit du travail, paie et déclarations sociales.",
+      "couleur": "#E4EE7E",
+      "icone": "👥",
+      "notionPageId": "3ceb7e6d-2e86-8100-ac60-f69a6a227fac",
+      "notionUrl": "https://app.notion.com/p/3ceb7e6d2e868100ac60f69a6a227fac",
       "chapitres": [
         "Le contrat de travail : formation et exécution",
         "La durée du travail et les heures supplémentaires",
@@ -197,7 +389,49 @@
         "La DSN et les déclarations sociales",
         "Les absences, congés payés et arrêts de travail",
         "La rupture du contrat de travail"
-      ]
+      ],
+      "ecritures": [
+        [
+          "Salaires bruts",
+          "641",
+          ""
+        ],
+        [
+          "Retenues salariales",
+          "",
+          "431 · 437"
+        ],
+        [
+          "Prélèvement à la source",
+          "",
+          "4421"
+        ],
+        [
+          "Net à payer",
+          "",
+          "421"
+        ],
+        [
+          "Charges patronales",
+          "645",
+          "431 · 437"
+        ],
+        [
+          "Paiement des salaires",
+          "421",
+          "512"
+        ],
+        [
+          "Provision pour congés payés",
+          "6412",
+          "4282"
+        ]
+      ],
+      "aFaire": [
+        "Un bulletin de paie complet, du brut au net",
+        "L'écriture de paie du mois et les charges patronales"
+      ],
+      "erreurs": "Note ici les confusions brut / net / net imposable et les assiettes de cotisations."
     },
     {
       "code": "P5",
@@ -205,12 +439,15 @@
       "nomCourt": "P5 Techniques de gestion",
       "intituleOfficiel": "P5 — Analyse et prévision de l'activité",
       "professeur": "CLEROUX I.",
-      "epreuve": "E5",
+      "epreuves": [
+        "E7"
+      ],
       "coefficient": 5,
-      "objectif": "Analyser les coûts, prévoir l'activité et éclairer les décisions de gestion.",
-      "teinte": "vert",
-      "notionPageId": null,
-      "notionUrl": null,
+      "objectif": "Contrôle de gestion, contrôle de budget, comptabilité interne : analyser les coûts et prévoir l'activité.",
+      "couleur": "#33D98A",
+      "icone": "📊",
+      "notionPageId": "3ceb7e6d-2e86-812c-af6f-e7185dadb0f5",
+      "notionUrl": "https://app.notion.com/p/3ceb7e6d2e86812caf6fe7185dadb0f5",
       "chapitres": [
         "Les charges incorporables et le coût complet",
         "La méthode des centres d'analyse",
@@ -222,7 +459,35 @@
         "Les budgets : ventes, production, approvisionnements",
         "Les écarts sur coûts et sur chiffre d'affaires",
         "Les tableaux de bord et indicateurs"
-      ]
+      ],
+      "ecritures": [
+        [
+          "Variation de stock de marchandises",
+          "6037",
+          "37"
+        ],
+        [
+          "Variation de stock de produits finis",
+          "355",
+          "7135"
+        ],
+        [
+          "Production immobilisée",
+          "2…",
+          "72"
+        ],
+        [
+          "Transfert de charges",
+          "",
+          "791"
+        ]
+      ],
+      "aFaire": [
+        "Un tableau de répartition des charges indirectes",
+        "Un seuil de rentabilité complet, avec point mort daté",
+        "Le même exercice refait sur Excel"
+      ],
+      "erreurs": "Note ici les confusions taux de marge / taux de marque et les erreurs de répartition."
     },
     {
       "code": "P6",
@@ -230,12 +495,15 @@
       "nomCourt": "P6 Analyse financière",
       "intituleOfficiel": "P6 — Analyse de la situation financière",
       "professeur": null,
-      "epreuve": "E5",
+      "epreuves": [
+        "E7"
+      ],
       "coefficient": 5,
-      "objectif": "Diagnostiquer la performance, l'équilibre financier et la trésorerie de l'entreprise.",
-      "teinte": "encre",
-      "notionPageId": null,
-      "notionUrl": null,
+      "objectif": "Analyse financière : diagnostiquer la performance, l'équilibre financier et la trésorerie.",
+      "couleur": "#2ED9C3",
+      "icone": "📈",
+      "notionPageId": "3ceb7e6d-2e86-814e-ad9c-e1fc101b68cd",
+      "notionUrl": "https://app.notion.com/p/3ceb7e6d2e86814ead9ce1fc101b68cd",
       "chapitres": [
         "Les soldes intermédiaires de gestion",
         "La capacité d'autofinancement",
@@ -245,7 +513,39 @@
         "Le tableau de financement",
         "Les flux de trésorerie",
         "Le diagnostic financier rédigé"
-      ]
+      ],
+      "ecritures": [
+        [
+          "Affectation du résultat — bénéfice",
+          "120",
+          "1061 · 1068 · 457"
+        ],
+        [
+          "Affectation du résultat — perte",
+          "119",
+          "129"
+        ],
+        [
+          "Distribution de dividendes",
+          "457",
+          "512"
+        ],
+        [
+          "Souscription d'un emprunt",
+          "512",
+          "164"
+        ],
+        [
+          "Échéance d'emprunt",
+          "164 · 6611",
+          "512"
+        ]
+      ],
+      "aFaire": [
+        "Un tableau des SIG complet",
+        "Un bilan fonctionnel avec FRNG, BFR et trésorerie"
+      ],
+      "erreurs": "Note ici les retraitements du bilan fonctionnel que tu oublies."
     },
     {
       "code": "P7",
@@ -253,12 +553,18 @@
       "nomCourt": "P7 Système d'information",
       "intituleOfficiel": "P7 — Fiabilisation de l'information et système d'information comptable",
       "professeur": "ALIA M.",
-      "epreuve": "E4.1",
+      "epreuves": [
+        "E5",
+        "E6",
+        "E7",
+        "E8"
+      ],
       "coefficient": 9,
-      "objectif": "Fiabiliser, structurer et exploiter l'information comptable dans le SI de l'entreprise.",
-      "teinte": "bleu",
-      "notionPageId": null,
-      "notionUrl": null,
+      "objectif": "Système d'information de gestion — l'informatique de la comptabilité.",
+      "couleur": "#35C4F0",
+      "icone": "💾",
+      "notionPageId": "3ceb7e6d-2e86-813a-8145-e4fbf371215d",
+      "notionUrl": "https://app.notion.com/p/3ceb7e6d2e86813a8145e4fbf371215d",
       "chapitres": [
         "Le système d'information de gestion",
         "Le modèle relationnel et le schéma entité-association",
@@ -269,7 +575,34 @@
         "La dématérialisation et la facture électronique",
         "La sécurité, la sauvegarde et le RGPD",
         "Le PGI et le paramétrage comptable"
-      ]
+      ],
+      "ecritures": [
+        [
+          "Achat d'un logiciel",
+          "205 · 44562",
+          "404"
+        ],
+        [
+          "Écriture d'attente à régulariser",
+          "471",
+          "…"
+        ],
+        [
+          "Régularisation d'un compte d'attente",
+          "…",
+          "471"
+        ],
+        [
+          "Virement interne entre comptes",
+          "580",
+          "512 · 530"
+        ]
+      ],
+      "aFaire": [
+        "Une série de requêtes SQL sur une base comptable",
+        "Une saisie complète dans EBP"
+      ],
+      "erreurs": "Note ici les erreurs SQL récurrentes et les étapes de paramétrage que tu oublies dans le PGI."
     },
     {
       "code": "ATELIERS",
@@ -277,12 +610,15 @@
       "nomCourt": "Atelier professionnel",
       "intituleOfficiel": "Ateliers professionnels — Parcours de professionnalisation",
       "professeur": "ALIA M.",
-      "epreuve": "E6",
+      "epreuves": [
+        "E8"
+      ],
       "coefficient": 5,
-      "objectif": "Construire le portefeuille de situations professionnelles et préparer l'épreuve E6.",
-      "teinte": "or",
-      "notionPageId": null,
-      "notionUrl": null,
+      "objectif": "Parcours de professionnalisation : rapport de stage, veille informationnelle et passeport professionnel.",
+      "couleur": "#8FC220",
+      "icone": "🎓",
+      "notionPageId": "3ceb7e6d-2e86-819c-a2d6-efad04b56b39",
+      "notionUrl": "https://app.notion.com/p/3ceb7e6d2e86819ca2d6efad04b56b39",
       "chapitres": [
         "Le passeport professionnel",
         "Les situations professionnelles vécues",
@@ -291,7 +627,15 @@
         "Le rapport de stage",
         "La veille informationnelle",
         "La préparation de l'oral E6"
-      ]
+      ],
+      "ecritures": [],
+      "aFaire": [
+        "Trouver le stage et faire signer la convention",
+        "Tenir le passeport professionnel à jour après chaque situation",
+        "Récupérer les attestations de stage",
+        "Schématiser un processus comptable observé en stage"
+      ],
+      "erreurs": "Note ici ce que tu oublies de consigner sur le moment — c'est ce qui manquera au moment de rédiger."
     },
     {
       "code": "AP",
@@ -299,18 +643,24 @@
       "nomCourt": "Remise à niveau",
       "intituleOfficiel": "Accompagnement personnalisé / remise à niveau",
       "professeur": "ALIA M.",
-      "epreuve": null,
+      "epreuves": [],
       "coefficient": 0,
       "objectif": "Combler les lacunes ciblées et consolider les automatismes de calcul et d'écriture.",
-      "teinte": "papier",
-      "notionPageId": null,
-      "notionUrl": null,
+      "couleur": "#8E9AA6",
+      "icone": "🔁",
+      "notionPageId": "3ceb7e6d-2e86-810e-a512-d15affdec088",
+      "notionUrl": "https://app.notion.com/p/3ceb7e6d2e86810ea512d15affdec088",
       "chapitres": [
         "Automatismes de calcul",
         "Révision des écritures de base",
         "Méthodologie de travail",
         "Reprise des points ratés en devoir"
-      ]
+      ],
+      "ecritures": [],
+      "aFaire": [
+        "Le dernier devoir raté, refait en entier"
+      ],
+      "erreurs": "C'est la page à relire avant chaque séance de remise à niveau."
     }
   ]
 }

@@ -25,7 +25,7 @@ const SORTIE = resolve(RACINE, 'dist-fichier')
 const POLICES =
   '<link rel="preconnect" href="https://fonts.googleapis.com">\n' +
   '<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>\n' +
-  '<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700&family=Karla:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">'
+  '<link href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">'
 
 /** Un `</script>` littéral dans le bundle refermerait la balise. */
 const echapper = (js) => js.replace(/<\/script/gi, '<\\/script')
