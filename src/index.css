@@ -1,0 +1,477 @@
+@import 'tailwindcss';
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   REGISTRE — système visuel « grand livre comptable »
+   Papier listing à bandes, encre, filets, colonnes débit / crédit.
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+@theme {
+  --color-encre: #10231c;
+  --color-encre-clair: #2c4238;
+  --color-papier: #e9ede2;
+  --color-papier-vif: #f2f5ec;
+  --color-bande: #cfdcc7;
+  --color-filet: #b6c7ae;
+  --color-filet-fort: #93a98c;
+  --color-credit: #0f5c4a;
+  --color-debit: #a81f2d;
+  --color-or: #b8862b;
+
+  --font-titre: 'Fraunces', 'Iowan Old Style', Georgia, serif;
+  --font-interface: 'Karla', 'Helvetica Neue', Arial, sans-serif;
+  --font-chiffre: 'IBM Plex Mono', 'SFMono-Regular', Menlo, monospace;
+
+  --text-folio: 0.6875rem;
+  --text-folio--line-height: 1.1;
+  --text-menu: 0.8125rem;
+  --text-menu--line-height: 1.2;
+  --text-corps: 0.9375rem;
+  --text-corps--line-height: 1.55;
+  --text-intitule: 1.1875rem;
+  --text-intitule--line-height: 1.25;
+  --text-titre: 1.75rem;
+  --text-titre--line-height: 1.1;
+  --text-enseigne: 2.75rem;
+  --text-enseigne--line-height: 0.95;
+}
+
+@layer base {
+  *,
+  *::before,
+  *::after {
+    box-sizing: border-box;
+    border-radius: 0;
+  }
+
+  html {
+    -webkit-text-size-adjust: 100%;
+  }
+
+  body {
+    margin: 0;
+    background-color: var(--color-papier);
+    color: var(--color-encre);
+    font-family: var(--font-interface);
+    font-size: var(--text-corps);
+    line-height: 1.55;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+
+  h1,
+  h2,
+  h3 {
+    font-family: var(--font-titre);
+    font-weight: 600;
+    font-variation-settings: 'opsz' 40;
+    margin: 0;
+    letter-spacing: -0.012em;
+  }
+
+  button,
+  input,
+  select,
+  textarea {
+    font: inherit;
+    color: inherit;
+  }
+
+  /* Anneau de focus : lisible sur papier comme sur encre. */
+  :focus-visible {
+    outline: 2px solid var(--color-or);
+    outline-offset: 2px;
+  }
+
+  ::selection {
+    background: var(--color-or);
+    color: var(--color-papier-vif);
+  }
+
+  ::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+  ::-webkit-scrollbar-track {
+    background: var(--color-papier);
+  }
+  ::-webkit-scrollbar-thumb {
+    background: var(--color-filet);
+    border: 2px solid var(--color-papier);
+  }
+}
+
+@layer components {
+  /* ── Chiffres : toujours tabulaires, jamais décoratifs ─────────────────── */
+  .chiffre {
+    font-family: var(--font-chiffre);
+    font-variant-numeric: tabular-nums;
+    font-feature-settings: 'tnum' 1;
+    letter-spacing: -0.01em;
+  }
+
+  /* ── Folio : petite référence de colonne, en capitales serrées ─────────── */
+  .folio {
+    font-family: var(--font-chiffre);
+    font-size: var(--text-folio);
+    color: color-mix(in srgb, var(--color-encre) 52%, transparent);
+    text-transform: none;
+  }
+
+  /* ── Filets ────────────────────────────────────────────────────────────── */
+  .filet {
+    border-color: var(--color-filet);
+  }
+  .filet-t {
+    border-top: 1px solid var(--color-filet);
+  }
+  .filet-b {
+    border-bottom: 1px solid var(--color-filet);
+  }
+  .filet-l {
+    border-left: 1px solid var(--color-filet);
+  }
+  .filet-r {
+    border-right: 1px solid var(--color-filet);
+  }
+  .filet-double-b {
+    border-bottom: 3px double var(--color-filet-fort);
+  }
+
+  /* ── Papier listing : bandes vertes alternées, vraies ──────────────────── */
+  .listing tbody tr:nth-child(odd) {
+    background-color: color-mix(in srgb, var(--color-bande) 62%, transparent);
+  }
+  .listing tbody tr:nth-child(even) {
+    background-color: transparent;
+  }
+  .listing th {
+    font-family: var(--font-interface);
+    font-size: var(--text-folio);
+    font-weight: 700;
+    text-align: left;
+    padding: 0.4rem 0.6rem;
+    border-bottom: 1px solid var(--color-filet-fort);
+    color: var(--color-encre-clair);
+    white-space: nowrap;
+  }
+  .listing td {
+    padding: 0.35rem 0.6rem;
+    border-bottom: 1px solid color-mix(in srgb, var(--color-filet) 45%, transparent);
+    vertical-align: baseline;
+  }
+  .listing .num {
+    text-align: right;
+    font-family: var(--font-chiffre);
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+  }
+
+  /* ── Marge perforée du listing (rail gauche) ───────────────────────────── */
+  .perforation::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 16px;
+    border-right: 1px solid color-mix(in srgb, var(--color-filet) 55%, transparent);
+    background-image: radial-gradient(
+      circle at 8px center,
+      var(--color-papier) 0 3px,
+      color-mix(in srgb, var(--color-filet-fort) 60%, transparent) 3px 3.9px,
+      transparent 4px
+    );
+    background-size: 16px 28px;
+    background-position: 0 12px;
+    background-repeat: repeat-y;
+    pointer-events: none;
+  }
+
+  /* ── Champs de saisie : ligne d'écriture, pas boîte arrondie ───────────── */
+  .champ {
+    width: 100%;
+    background: transparent;
+    border: 0;
+    border-bottom: 1px solid var(--color-filet-fort);
+    padding: 0.28rem 0.15rem;
+    transition: border-color 140ms ease, background-color 140ms ease;
+  }
+  .champ:hover {
+    background-color: color-mix(in srgb, var(--color-bande) 30%, transparent);
+  }
+  .champ:focus {
+    outline: none;
+    border-bottom-color: var(--color-encre);
+    background-color: color-mix(in srgb, var(--color-bande) 45%, transparent);
+  }
+  .champ:focus-visible {
+    outline: 2px solid var(--color-or);
+    outline-offset: 1px;
+  }
+  .champ::placeholder {
+    color: color-mix(in srgb, var(--color-encre) 38%, transparent);
+  }
+
+  .champ-chiffre {
+    font-family: var(--font-chiffre);
+    font-variant-numeric: tabular-nums;
+    text-align: right;
+  }
+
+  .etiquette {
+    display: block;
+    font-size: var(--text-folio);
+    font-weight: 600;
+    color: var(--color-encre-clair);
+    margin-bottom: 0.15rem;
+  }
+
+  /* ── Boutons : tampons encrés, angles nets ─────────────────────────────── */
+  .bouton {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    padding: 0.42rem 0.85rem;
+    font-size: var(--text-menu);
+    font-weight: 600;
+    border: 1px solid var(--color-encre);
+    background: transparent;
+    color: var(--color-encre);
+    cursor: pointer;
+    transition: background-color 130ms ease, color 130ms ease, transform 130ms ease;
+  }
+  .bouton:hover {
+    background: var(--color-encre);
+    color: var(--color-papier-vif);
+  }
+  .bouton:active {
+    transform: translateY(1px);
+  }
+  .bouton-plein {
+    background: var(--color-encre);
+    color: var(--color-papier-vif);
+  }
+  .bouton-plein:hover {
+    background: var(--color-credit);
+    border-color: var(--color-credit);
+  }
+  .bouton-discret {
+    border-color: var(--color-filet-fort);
+    padding: 0.25rem 0.5rem;
+    font-weight: 500;
+  }
+  .bouton-danger:hover {
+    background: var(--color-debit);
+    border-color: var(--color-debit);
+    color: var(--color-papier-vif);
+  }
+  .bouton:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+  }
+
+  /* ── Onglets : en-têtes de colonnes du registre ────────────────────────── */
+  .onglet {
+    position: relative;
+    padding: 0.55rem 0.9rem 0.5rem;
+    font-size: var(--text-menu);
+    font-weight: 600;
+    color: color-mix(in srgb, var(--color-encre) 60%, transparent);
+    background: transparent;
+    border: 0;
+    border-right: 1px solid var(--color-filet);
+    cursor: pointer;
+    white-space: nowrap;
+    transition: color 130ms ease, background-color 130ms ease;
+  }
+  .onglet:hover {
+    color: var(--color-encre);
+    background: color-mix(in srgb, var(--color-bande) 40%, transparent);
+  }
+  .onglet[aria-selected='true'] {
+    color: var(--color-encre);
+    background: var(--color-papier-vif);
+    box-shadow: inset 0 -3px 0 0 var(--color-encre);
+  }
+
+  /* ── Blocs de cours : volume réel, pas d'ombre molle ───────────────────── */
+  .bloc-cours {
+    position: absolute;
+    display: flex;
+    flex-direction: column;
+    left: 2px;
+    right: 2px;
+    border: 1px solid var(--color-filet-fort);
+    border-left-width: 3px;
+    padding: 0.3rem 0.45rem;
+    text-align: left;
+    overflow: hidden;
+    cursor: pointer;
+    transform-style: preserve-3d;
+    transition:
+      transform 180ms cubic-bezier(0.2, 0.7, 0.3, 1),
+      box-shadow 180ms ease,
+      border-color 140ms ease;
+  }
+  .bloc-cours:hover,
+  .bloc-cours:focus-visible {
+    transform: translateZ(22px);
+    box-shadow: -1px 2px 0 0 color-mix(in srgb, var(--color-encre) 24%, transparent);
+    z-index: 5;
+  }
+  .bloc-cours[data-actuel='true'] {
+    border-color: var(--color-encre);
+    border-left-color: var(--color-debit);
+    border-left-width: 5px;
+    box-shadow: -1px 2px 0 0 color-mix(in srgb, var(--color-encre) 30%, transparent);
+    z-index: 4;
+  }
+
+  /* Teintes reprises de l'emploi du temps papier. */
+  /* Lavis d'encre sur papier : tout est dérivé des quatre encres du registre. */
+  .teinte-encre {
+    background-color: color-mix(in srgb, var(--color-encre) 9%, var(--color-papier-vif));
+  }
+  .teinte-vert {
+    background-color: color-mix(in srgb, var(--color-credit) 18%, var(--color-papier-vif));
+  }
+  .teinte-prune {
+    background-color: color-mix(in srgb, var(--color-debit) 15%, var(--color-papier-vif));
+  }
+  .teinte-bleu {
+    background-color: color-mix(in srgb, var(--color-bande) 78%, var(--color-papier-vif));
+  }
+  .teinte-rose {
+    background-color: color-mix(in srgb, var(--color-debit) 7%, var(--color-papier-vif));
+  }
+  .teinte-or {
+    background-color: color-mix(in srgb, var(--color-or) 22%, var(--color-papier-vif));
+  }
+  .teinte-papier {
+    background-color: var(--color-papier-vif);
+  }
+
+  /* ── Jours écoulés : l'encre s'estompe ─────────────────────────────────── */
+  .jour-passe {
+    opacity: 0.44;
+    filter: saturate(0.55);
+  }
+
+  /* ── Ligne « maintenant » ──────────────────────────────────────────────── */
+  .ligne-maintenant {
+    position: absolute;
+    left: 0;
+    right: 0;
+    height: 0;
+    border-top: 1.5px solid var(--color-debit);
+    pointer-events: none;
+    z-index: 20;
+  }
+  .ligne-maintenant::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: -3.5px;
+    width: 7px;
+    height: 7px;
+    background: var(--color-debit);
+  }
+
+  /* ── Panneau fiche : ouverture en profondeur ───────────────────────────── */
+  .scene-panneau {
+    perspective: 1600px;
+    perspective-origin: 100% 42%;
+  }
+  .panneau {
+    transform-origin: right center;
+    will-change: transform, opacity;
+  }
+
+  /* ── Callout d'alerte : retards ────────────────────────────────────────── */
+  .alerte-retard {
+    border-left: 4px solid var(--color-debit);
+    background: color-mix(in srgb, var(--color-debit) 9%, var(--color-papier-vif));
+  }
+
+  .sens-debit {
+    color: var(--color-debit);
+  }
+  .sens-credit {
+    color: var(--color-credit);
+  }
+
+  /* ── Mode focus : encre plein écran ────────────────────────────────────── */
+  .focus-encre {
+    background: var(--color-encre);
+    color: var(--color-papier);
+  }
+  .focus-encre .chiffre {
+    color: var(--color-papier-vif);
+  }
+
+  .barre-progression {
+    height: 3px;
+    background: color-mix(in srgb, var(--color-papier) 22%, transparent);
+  }
+  .barre-progression > span {
+    display: block;
+    height: 100%;
+    background: var(--color-or);
+  }
+
+  /* ── Balance débit / crédit ────────────────────────────────────────────── */
+  .balance-equilibree {
+    color: var(--color-credit);
+    border-color: var(--color-credit);
+    background: color-mix(in srgb, var(--color-credit) 10%, transparent);
+  }
+  .balance-neutre {
+    color: var(--color-encre-clair);
+    border-color: var(--color-filet-fort);
+  }
+  .balance-desequilibree {
+    color: var(--color-debit);
+    border-color: var(--color-debit);
+    background: color-mix(in srgb, var(--color-debit) 8%, transparent);
+  }
+
+  .lien-souligne {
+    text-decoration: underline;
+    text-underline-offset: 3px;
+    text-decoration-thickness: 1px;
+    text-decoration-color: var(--color-filet-fort);
+  }
+  .lien-souligne:hover {
+    text-decoration-color: currentColor;
+  }
+}
+
+@layer utilities {
+  .invisible-lecteur {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+  }
+}
+
+/* ── Motion : tout se coupe si l'utilisateur le demande ──────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+  .bloc-cours:hover,
+  .bloc-cours:focus-visible {
+    transform: none;
+  }
+}
