@@ -3,6 +3,7 @@ import { useRegistre, META_PLANNING, MATIERES_REGISTRE } from '../../store/useRe
 import type { Creneau, Jour } from '../../types'
 import { JOURS, enMinutes } from '../../lib/temps'
 import { useCopie } from '../../lib/hooks'
+import { messageTelechargement, telecharger } from '../../lib/telechargement'
 import { Section } from '../ui/primitives'
 
 const CODES = MATIERES_REGISTRE.matieres.map((m) => m.code)
@@ -33,6 +34,7 @@ export function EditeurPlanning() {
   const [brouillon, setBrouillon] = useState<Omit<Creneau, 'id'>>(NOUVEAU)
   const [filtre, setFiltre] = useState<Jour | 'tous'>('tous')
   const [copie, copier] = useCopie()
+  const [etatExport, setEtatExport] = useState('')
 
   const listeTriee = useMemo(
     () =>
@@ -45,7 +47,7 @@ export function EditeurPlanning() {
     [creneaux, filtre],
   )
 
-  const exporterJson = () => {
+  const exporterJson = async () => {
     const contenu = JSON.stringify(
       {
         meta: META_PLANNING,
@@ -57,12 +59,8 @@ export function EditeurPlanning() {
       null,
       2,
     )
-    const url = URL.createObjectURL(new Blob([contenu], { type: 'application/json' }))
-    const a = document.createElement('a')
-    a.href = url
-    a.download = 'planning.json'
-    a.click()
-    URL.revokeObjectURL(url)
+    const r = await telecharger('planning.json', contenu, 'application/json')
+    setEtatExport(messageTelechargement(r, 'planning.json'))
   }
 
   const invalide = enMinutes(brouillon.fin) <= enMinutes(brouillon.debut)
@@ -223,7 +221,7 @@ export function EditeurPlanning() {
               </button>
             ))}
           </div>
-          <button type="button" onClick={exporterJson} className="bouton bouton-discret">
+          <button type="button" onClick={() => void exporterJson()} className="bouton bouton-discret">
             Télécharger planning.json
           </button>
           <button
@@ -244,6 +242,9 @@ export function EditeurPlanning() {
           >
             Réinitialiser
           </button>
+          <p className="folio" aria-live="polite">
+            {etatExport}
+          </p>
         </div>
 
         <div className="overflow-x-auto">

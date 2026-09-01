@@ -26,6 +26,8 @@ Autres commandes :
 | --- | --- |
 | `npm run dev` | serveur de développement |
 | `npm run build` | compilation de production dans `dist/` |
+| `npm run build:pages` | compilation pour GitHub Pages (chemin de base `BASE_PAGES`) |
+| `npm run build:fichier` | assemble tout le site en un seul fichier HTML autonome |
 | `npm run preview` | prévisualisation du build |
 | `npm run notion:sync` | crée / met à jour les pages Notion |
 | `npm run notion:sync:dry` | montre ce qui serait fait, sans rien écrire |
@@ -163,9 +165,39 @@ liste `chapitres`. Relance ensuite `npm run notion:sync` pour créer sa page.
 
 ---
 
-## Déploiement sur Vercel
+## Ouvrir le site sur le web
 
-### Depuis l'interface
+Trois façons, de la plus rapide à la plus durable.
+
+### 1. GitHub Pages — automatique à chaque push
+
+Le dépôt contient déjà le workflow `.github/workflows/deploy-pages.yml`. Une seule
+chose à faire, une fois pour toutes :
+
+> **Settings → Pages → Build and deployment → Source : « GitHub Actions »**
+
+Le prochain push publie le site sur `https://<compte>.github.io/<dépôt>/`. Le workflow
+règle tout seul le chemin de base à partir du nom du dépôt, et se relance à la main
+depuis l'onglet **Actions → Déployer sur GitHub Pages → Run workflow**.
+
+### 2. Un seul fichier HTML
+
+```bash
+npm run build:fichier
+```
+
+Produit `dist-fichier/registre.html` : environ 1,2 Mo, tout en ligne (CSS et
+JavaScript compris), aucune dépendance sauf les polices Google. Ouvrable d'un
+double-clic, transférable par clé USB ou pièce jointe, déposable sur n'importe quel
+hébergeur statique.
+
+Le script écrit aussi `registre-fragment.html`, la même page sans les balises
+`<!doctype>` / `<html>` / `<head>` / `<body>`, pour les hébergeurs qui fournissent
+eux-mêmes l'enveloppe du document.
+
+### 3. Vercel
+
+#### Depuis l'interface
 
 1. <https://vercel.com/new> → importe ce dépôt GitHub.
 2. Vercel détecte Vite automatiquement (`vercel.json` fixe déjà `npm run build` et
@@ -173,7 +205,7 @@ liste `chapitres`. Relance ensuite `npm run notion:sync` pour créer sa page.
    local, jamais dans le navigateur.
 3. **Deploy.**
 
-### Depuis le terminal
+#### Depuis le terminal
 
 ```bash
 npm i -g vercel
@@ -186,15 +218,28 @@ Chaque `git push` sur la branche par défaut redéploie. Après un
 Notion soient aussi présents en ligne.
 
 ⚠️ Tes notes et devoirs vivent dans le `localStorage` du navigateur : ils sont **par
-appareil**. Le site déployé ne les synchronise pas entre ton téléphone et ton ordinateur.
+appareil et par adresse**. Le site déployé ne les synchronise pas entre ton téléphone et
+ton ordinateur, et une même donnée saisie sur GitHub Pages n'apparaîtra pas sur Vercel.
+Choisis une adresse et tiens-t'y.
+
+### Enregistrer un fichier depuis le site
+
+Les deux exports (le CSV du plan d'amortissement et `planning.json`) fonctionnent
+partout. Sur un hébergeur classique, c'est un téléchargement normal ; sur une page
+publiée comme Artifact claude.ai, où les liens de téléchargement sont bloqués, le site
+passe automatiquement par la capacité `downloads` du visualiseur, qui te demande
+confirmation. Le repli est transparent (`src/lib/telechargement.ts`).
 
 ---
 
 ## Architecture
 
 ```
+.github/workflows/
+  deploy-pages.yml          déploiement automatique sur GitHub Pages
 scripts/
   notion-sync.mjs           création idempotente de la base et des pages Notion
+  build-fichier-unique.mjs  assemblage du site en un fichier HTML autonome
 src/
   data/
     planning.json           ← tes créneaux (modifiable à la main)
@@ -208,6 +253,7 @@ src/
     selection.ts            cours en cours, prochain cours, retards, consigne du moment
     temps.ts                conversions horaires, semaine ISO, quinzaines
     hooks.ts                horloges, mouvement réduit, enregistrement différé, copie
+    telechargement.ts       export de fichiers, avec repli selon l'hébergeur
   store/useRegistre.ts      état persistant (Zustand + localStorage)
   components/
     semaine/                accueil et grille horaire

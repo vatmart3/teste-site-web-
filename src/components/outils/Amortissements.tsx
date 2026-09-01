@@ -7,6 +7,7 @@ import {
   type ModeAmortissement,
 } from '../../lib/compta'
 import { formatDateCourte, isoAujourdhui } from '../../lib/temps'
+import { messageTelechargement, telecharger } from '../../lib/telechargement'
 import { Section } from '../ui/primitives'
 
 export function Amortissements() {
@@ -17,6 +18,7 @@ export function Amortissements() {
   const [mode, setMode] = useState<ModeAmortissement>('lineaire')
   const [cloture, setCloture] = useState(`${new Date().getFullYear()}-12-31`)
   const [residuelle, setResiduelle] = useState('0')
+  const [etatExport, setEtatExport] = useState('')
 
   const parametres = {
     valeurOrigine: Number(valeurOrigine.replace(',', '.')) || 0,
@@ -41,18 +43,16 @@ export function Amortissements() {
   const coef = coefficientDegressif(parametres.dureeAnnees)
   const tauxLineaire = parametres.dureeAnnees ? 100 / parametres.dureeAnnees : 0
 
-  const exporterCsv = () => {
+  const exporterCsv = async () => {
     const entetes = ['Exercice', 'Debut', 'Fin', 'Base', 'Taux', 'Jours', 'Annuite', 'Cumul', 'VNC']
     const lignes = plan.map((l) =>
       [l.exercice, l.debut, l.fin, l.base, l.taux, l.jours, l.annuite, l.cumul, l.vnc].join(';'),
     )
+    // `sep=;` fait ouvrir le fichier en colonnes par Excel en configuration française.
     const csv = ['sep=;', entetes.join(';'), ...lignes].join('\n')
-    const url = URL.createObjectURL(new Blob([`﻿${csv}`], { type: 'text/csv;charset=utf-8' }))
-    const a = document.createElement('a')
-    a.href = url
-    a.download = `plan-amortissement-${mode}-${isoAujourdhui()}.csv`
-    a.click()
-    URL.revokeObjectURL(url)
+    const nom = `plan-amortissement-${mode}-${isoAujourdhui()}.csv`
+    const r = await telecharger(nom, `\ufeff${csv}`, 'text/csv;charset=utf-8')
+    setEtatExport(messageTelechargement(r, nom))
   }
 
   return (
@@ -152,9 +152,12 @@ export function Amortissements() {
             </table>
           </div>
           <div className="flex flex-wrap items-center gap-4 mt-4">
-            <button type="button" onClick={exporterCsv} className="bouton">
+            <button type="button" onClick={() => void exporterCsv()} className="bouton">
               Exporter en CSV
             </button>
+            <p className="folio" aria-live="polite">
+              {etatExport}
+            </p>
             <p className="text-folio text-encre-clair">
               Écriture d'inventaire : <span className="chiffre">6811</span> au débit,{' '}
               <span className="chiffre">28…</span> au crédit, pour{' '}
