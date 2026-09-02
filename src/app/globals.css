@@ -1,0 +1,247 @@
+@import "tailwindcss";
+
+/* ─────────────────────────────────────────────────────────────
+   FICHÉ — le papier comme matériau.
+   Blanc de photocopie, encre laser, gris de scan, et trois couleurs
+   de surligneur qui ne servent qu'à surligner.
+   ───────────────────────────────────────────────────────────── */
+
+@theme {
+  --color-papier: #ffffff;
+  --color-encre: #0b0b0c;
+  --color-photocopie: #c9c9c6;
+  --color-stabilo-jaune: #ffe94a;
+  --color-stabilo-rose: #ff7bb0;
+  --color-bic-bleu: #1b39ff;
+
+  --color-encre-clair: #55554f;
+  --color-papier-scan: #f4f4f1;
+
+  --font-display: var(--font-bricolage), "Helvetica Neue", Helvetica, Arial, sans-serif;
+  --font-lecture: var(--font-newsreader), Georgia, "Times New Roman", serif;
+
+  --text-affiche: clamp(2rem, 8.4vw, 6.75rem);
+  --text-titre: clamp(1.6rem, 4.4vw, 2.75rem);
+
+  --spacing-marge: 1.25rem;
+  --breakpoint-xs: 24rem;
+}
+
+@layer base {
+  :root {
+    color-scheme: light;
+    --grain: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)' opacity='0.42'/%3E%3C/svg%3E");
+  }
+
+  html {
+    -webkit-text-size-adjust: 100%;
+  }
+
+  body {
+    background-color: var(--color-papier);
+    color: var(--color-encre);
+    font-family: var(--font-display);
+    font-variation-settings: "wdth" 92;
+    font-synthesis-weight: none;
+    -webkit-font-smoothing: antialiased;
+    overflow-x: hidden;
+  }
+
+  /* le grain du papier, à peine perceptible, jamais sous du texte fin */
+  body::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    background-image: var(--grain);
+    opacity: 0.035;
+    pointer-events: none;
+    z-index: 60;
+  }
+
+  ::selection {
+    background: var(--color-stabilo-jaune);
+    color: var(--color-encre);
+  }
+
+  :focus-visible {
+    outline: 3px solid var(--color-bic-bleu);
+    outline-offset: 2px;
+    border-radius: 1px;
+  }
+
+  button,
+  input,
+  select {
+    font: inherit;
+    color: inherit;
+  }
+
+  input[type="date"] {
+    font-family: var(--font-display);
+  }
+}
+
+@layer components {
+  /* ── Titre d'affiche : la grotesque, resserrée, sur une ligne ── */
+  .affiche {
+    font-family: var(--font-display);
+    font-size: var(--text-affiche);
+    font-weight: 800;
+    font-variation-settings: "wdth" 78, "opsz" 48;
+    line-height: 0.86;
+    letter-spacing: -0.035em;
+    white-space: nowrap;
+  }
+
+  .titre {
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-variation-settings: "wdth" 86;
+    letter-spacing: -0.02em;
+  }
+
+  /* ── Corps de lecture : la serif, colonne sous 75 caractères ── */
+  .lecture {
+    font-family: var(--font-lecture);
+    font-size: 1.0625rem;
+    line-height: 1.62;
+    font-variation-settings: "opsz" 16;
+  }
+
+  .colonne {
+    max-width: 62ch;
+  }
+
+  /* ── Traits d'imprimante ── */
+  .filet {
+    border-top: 1px solid var(--color-encre);
+  }
+
+  .filet-fin {
+    border-top: 1px solid var(--color-photocopie);
+  }
+
+  .cadre {
+    border: 1px solid var(--color-encre);
+  }
+
+  /* ── Boutons : encre sur papier, pas de dégradé, pas de flèche ── */
+  .bouton {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.625rem 1.1rem;
+    background: var(--color-encre);
+    color: var(--color-papier);
+    border: 1px solid var(--color-encre);
+    font-weight: 650;
+    font-variation-settings: "wdth" 88;
+    letter-spacing: -0.01em;
+    cursor: pointer;
+    transition: background 90ms linear, color 90ms linear;
+  }
+
+  .bouton:hover:not(:disabled) {
+    background: var(--color-papier);
+    color: var(--color-encre);
+  }
+
+  .bouton:disabled {
+    opacity: 0.34;
+    cursor: not-allowed;
+  }
+
+  .bouton-blanc {
+    background: var(--color-papier);
+    color: var(--color-encre);
+  }
+
+  .bouton-blanc:hover:not(:disabled) {
+    background: var(--color-encre);
+    color: var(--color-papier);
+  }
+
+  .bouton-nu {
+    background: none;
+    border: none;
+    padding: 0.25rem 0;
+    color: var(--color-encre);
+    cursor: pointer;
+    text-decoration: underline;
+    text-decoration-thickness: 1px;
+    text-underline-offset: 3px;
+  }
+
+  .bouton-nu:hover {
+    text-decoration-color: var(--color-bic-bleu);
+    color: var(--color-bic-bleu);
+  }
+
+  /* ── Fiche bristol : le seul objet arrondi du produit, parce que le
+     carton l'est vraiment ── */
+  .bristol {
+    background: var(--color-papier);
+    border: 1px solid var(--color-encre);
+    border-radius: 3px;
+    box-shadow: 3px 4px 0 var(--color-photocopie);
+  }
+
+  .perfo {
+    width: 9px;
+    height: 9px;
+    border-radius: 50%;
+    background: var(--color-papier-scan);
+    border: 1px solid var(--color-photocopie);
+  }
+}
+
+@layer utilities {
+  .sous-ligne {
+    text-decoration: underline;
+    text-decoration-thickness: 2px;
+    text-underline-offset: 4px;
+  }
+
+  .aucune-anim {
+    animation: none !important;
+    transition: none !important;
+  }
+}
+
+/* Le retournement de fiche : une vraie rotation dans l'espace. */
+.deck-scene {
+  perspective: 1600px;
+}
+
+.deck-carte {
+  transform-style: preserve-3d;
+  transition: transform 460ms cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.deck-carte[data-face="verso"] {
+  transform: rotateY(180deg);
+}
+
+.deck-face {
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
+
+.deck-face-verso {
+  transform: rotateY(180deg);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .deck-carte {
+    transition: none;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+}
