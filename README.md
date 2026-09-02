@@ -198,16 +198,25 @@ liste `chapitres`. Relance ensuite `npm run notion:sync` pour créer sa page.
 
 Trois façons, de la plus rapide à la plus durable.
 
-### 1. GitHub Pages — automatique à chaque push
+### 1. GitHub Pages — automatique à chaque push sur `main`
 
-Le dépôt contient déjà le workflow `.github/workflows/deploy-pages.yml`. Une seule
-chose à faire, une fois pour toutes :
+Le dépôt contient le workflow `.github/workflows/deploy-pages.yml`, qui règle tout seul le
+chemin de base à partir du nom du dépôt. Deux réglages sont nécessaires :
 
-> **Settings → Pages → Build and deployment → Source : « GitHub Actions »**
+1. **Settings → Pages → Build and deployment → Source : « GitHub Actions »** — fait.
+2. L'environnement `github-pages` **n'autorise le déploiement que depuis la branche par
+   défaut**. Tant que le travail vit sur une branche, le déploiement est refusé avec
+   *« Invalid deployment branch […] Deployments are only allowed from main »*.
 
-Le prochain push publie le site sur `https://<compte>.github.io/<dépôt>/`. Le workflow
-règle tout seul le chemin de base à partir du nom du dépôt, et se relance à la main
-depuis l'onglet **Actions → Déployer sur GitHub Pages → Run workflow**.
+Deux façons de lever le point 2 :
+
+- **Fusionner la branche dans `main`** (recommandé) : le déploiement part tout seul.
+- Ou **Settings → Environments → github-pages → Deployment branches** et y ajouter la
+  branche de travail.
+
+Sur une branche autre que la branche par défaut, le workflow construit le site sans le
+déployer : la compilation est vérifiée, le run reste vert. On peut aussi le relancer à la
+main depuis **Actions → Déployer sur GitHub Pages → Run workflow**.
 
 ### 2. Un seul fichier HTML
 

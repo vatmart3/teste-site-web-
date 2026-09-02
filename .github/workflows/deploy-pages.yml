@@ -1,9 +1,17 @@
-# Déploie REGISTRE sur GitHub Pages à chaque push.
+# Déploie REGISTRE sur GitHub Pages.
 #
-# Une seule chose à faire côté dépôt, une fois pour toutes :
-#   Settings → Pages → Build and deployment → Source : « GitHub Actions »
+# Deux réglages côté dépôt, une fois pour toutes :
+#   1. Settings → Pages → Build and deployment → Source : « GitHub Actions »
+#   2. L'environnement `github-pages` n'autorise le déploiement que depuis la
+#      branche par défaut. Deux options :
+#      — fusionner la branche de travail dans `main` (recommandé), ou
+#      — Settings → Environments → github-pages → Deployment branches, et y
+#        ajouter la branche de travail.
 #
-# Le site sera ensuite servi sur https://<compte>.github.io/<dépôt>/
+# Sur les autres branches, ce workflow construit le site sans le déployer :
+# ça vérifie que la compilation passe, sans faire échouer le run.
+#
+# Le site est servi sur https://<compte>.github.io/<dépôt>/
 name: Déployer sur GitHub Pages
 
 on:
@@ -52,6 +60,9 @@ jobs:
 
   deploy:
     needs: build
+    # L'environnement github-pages refuse les déploiements venant d'ailleurs
+    # que de la branche par défaut : inutile de faire échouer le run.
+    if: github.ref_name == github.event.repository.default_branch
     runs-on: ubuntu-latest
     environment:
       name: github-pages
