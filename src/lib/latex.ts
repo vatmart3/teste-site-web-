@@ -6,7 +6,7 @@
  */
 
 const SYMBOLS: [RegExp, string][] = [
-  [/\\left|\\right|\\!|\\,|\;|\\quad|\\qquad|\\displaystyle|\\text/g, ""],
+  [/\\left|\\right|\\!|\\,|\\;|\\quad|\\qquad|\\displaystyle|\\text/g, ""],
   [/\\times/g, "×"],
   [/\\div/g, "÷"],
   [/\\cdot/g, "·"],

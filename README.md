@@ -83,6 +83,10 @@ Le modèle n'invente jamais de contenu de cours. Le prompt système en fait sa p
 
 Comptes, historique, liens de partage, rappels de révision, envoi vers Notion et paiement Stripe sont la phase 2. Le bouton « Garder mes fiches » le dit franchement au lieu d'ouvrir un formulaire qui ne mène nulle part, et il propose les exports, qui, eux, existent.
 
+## Essayer sans rien installer
+
+`demo/fiche-artefact.html` est une version un-page de FICHÉ, publiée comme artefact claude.ai : même direction artistique, même pipeline, mais la conversion passe par le compte Claude de celui qui ouvre la page au lieu d'une clé serveur. Elle n'accepte que des photos (pas de PDF ni de HEIC), n'a ni quota ni cache, et écrit ses PDF à la main — polices Type1 standard, encodage WinAnsi, largeurs mesurées au canvas — parce qu'un artefact ne peut pas embarquer pdf-lib de façon fiable. La planche A4 y garde l'inversion de colonnes du recto-verso.
+
 ## Design
 
 Le plan de design, sa relecture et la critique finale — ce qui a été retiré et pourquoi — sont dans [`DESIGN.md`](./DESIGN.md).

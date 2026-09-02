@@ -18,6 +18,7 @@ const REPLACEMENTS: Record<string, string> = {
   "×": "x", "÷": "/", "·": ".", "≡": "==", "∅": "vide", "⊂": " inclus dans ",
   "∩": " inter ", "∪": " union ", "°": " deg", "€": "EUR",
   "‘": "'", "’": "'", "“": '"', "”": '"',
+  "∓": "-/+", "∝": " proportionnel a ", "∇": "nabla", "⃗": "(vecteur)",
   "–": "-", "—": "-", "…": "...", " ": " ", " ": " ",
 };
 
@@ -27,12 +28,29 @@ function encodable(char: string): boolean {
   const code = char.codePointAt(0) ?? 0;
   if (code >= 0x20 && code <= 0x7e) return true;
   if (code >= 0xa0 && code <= 0xff) return true;
+  if (code >= 0x80 && code <= 0x9f) return true;
   return WIN_ANSI_EXTRA.has(char);
 }
 
+const SUP_UNI = "⁰¹²³⁴⁵⁶⁷⁸⁹⁺⁻ⁿⁱ";
+const SUP_ASCII = "0123456789+-ni";
+const SUB_UNI = "₀₁₂₃₄₅₆₇₈₉₊₋ₐₑᵢₙₒₓ";
+const SUB_ASCII = "0123456789+-aeinox";
+
+function flatten(run: string, uni: string, ascii: string, mark: string): string {
+  return mark + [...run].map((char) => ascii[uni.indexOf(char)] ?? "").join("");
+}
+
 export function sanitize(input: string): string {
+  // Les exposants et indices sont aplatis par suites entières : « m.s^-2 »
+  // et non « m.s^-^2 ». Et un caractère déjà encodé en WinAnsi (128-159)
+  // repasse sans dommage, pour que sanitize reste idempotent.
+  const prepared = input
+    .replace(new RegExp(`[${SUP_UNI}]+`, "g"), (run) => flatten(run, SUP_UNI, SUP_ASCII, "^"))
+    .replace(new RegExp(`[${SUB_UNI}]+`, "g"), (run) => flatten(run, SUB_UNI, SUB_ASCII, "_"));
+
   let out = "";
-  for (const char of input) {
+  for (const char of prepared) {
     const mapped = REPLACEMENTS[char];
     if (mapped !== undefined) {
       out += mapped;

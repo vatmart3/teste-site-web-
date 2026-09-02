@@ -1,0 +1,1498 @@
+<title>FICHÉ</title>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wdth,wght@12..96,75..100,400..800&family=Newsreader:ital,opsz,wght@0,6..72,400..600;1,6..72,400&display=swap">
+<style>
+/* FICHÉ — le papier comme matériau.
+   Blanc de photocopie, encre laser, surligneurs tracés derrière le texte.
+   Parti pris assumé : une seule ambiance, celle d'une feuille sous une lampe. */
+:root {
+  color-scheme: light;
+  --papier: #ffffff;
+  --encre: #0b0b0c;
+  --encre-clair: #55554f;
+  --photocopie: #c9c9c6;
+  --papier-scan: #f4f4f1;
+  --jaune: #ffe94a;
+  --rose: #ff7bb0;
+  --bleu: #1b39ff;
+  --display: "Bricolage Grotesque", "Helvetica Neue", Helvetica, Arial, sans-serif;
+  --lecture: Newsreader, Georgia, "Times New Roman", serif;
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  background: var(--papier);
+  color: var(--encre);
+  font-family: var(--display);
+  font-variation-settings: "wdth" 92;
+  font-size: 16px;
+  -webkit-font-smoothing: antialiased;
+  -webkit-text-size-adjust: 100%;
+  overflow-x: hidden;
+}
+::selection { background: var(--jaune); color: var(--encre); }
+:focus-visible { outline: 3px solid var(--bleu); outline-offset: 2px; }
+button, input { font: inherit; color: inherit; }
+
+.grain {
+  position: fixed; inset: 0; z-index: 60; pointer-events: none; opacity: .035;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)' opacity='0.42'/%3E%3C/svg%3E");
+}
+
+.enveloppe { max-width: 66rem; margin: 0 auto; padding: 0 16px; }
+@media (min-width: 640px) { .enveloppe { padding: 0 24px; } }
+
+/* ── hero ── */
+.hero { position: relative; isolation: isolate; padding: 22px 0 44px; min-height: 62svh; }
+@media (min-width: 640px) { .hero { min-height: 74svh; padding-top: 34px; } }
+#feuille { position: absolute; inset: 0; z-index: -1; width: 100%; height: 100%; display: block; }
+#feuille-repli { position: absolute; inset: 0; z-index: -1; display: none; }
+
+.affiche {
+  font-size: min(8.6vw, 6.5rem);
+  font-weight: 800;
+  font-variation-settings: "wdth" 78, "opsz" 48;
+  line-height: .86; letter-spacing: -.035em; white-space: nowrap; margin: 26px 0 0;
+}
+@media (min-width: 640px) { .affiche { margin-top: 38px; } }
+.titre { font-family: var(--display); font-weight: 700; font-variation-settings: "wdth" 86; letter-spacing: -.02em; margin: 0; }
+.lecture { font-family: var(--lecture); font-size: 1.0625rem; line-height: 1.62; }
+.colonne { max-width: 62ch; }
+.discret { font-size: .875rem; color: var(--encre-clair); }
+.mini { font-size: .8rem; color: var(--encre-clair); line-height: 1.4; }
+
+/* le surligneur : tracé, jamais un fond de bouton */
+.surligne { position: relative; display: inline-block; }
+.surligne > svg { position: absolute; left: -.18em; right: -.18em; top: -.08em; bottom: -.08em; width: calc(100% + .36em); height: calc(100% + .16em); pointer-events: none; }
+.surligne > span { position: relative; }
+
+/* boutons : encre sur papier, pas de flèche, pas de dégradé */
+.bouton {
+  display: inline-flex; align-items: center; justify-content: center; gap: .5rem;
+  padding: .625rem 1.1rem; background: var(--encre); color: var(--papier);
+  border: 1px solid var(--encre); font-weight: 650; font-variation-settings: "wdth" 88;
+  letter-spacing: -.01em; cursor: pointer; transition: background 90ms linear, color 90ms linear;
+}
+.bouton:hover:not(:disabled) { background: var(--papier); color: var(--encre); }
+.bouton:disabled { opacity: .34; cursor: not-allowed; }
+.blanc { background: var(--papier); color: var(--encre); }
+.blanc:hover:not(:disabled) { background: var(--encre); color: var(--papier); }
+.nu { background: none; border: 0; padding: .25rem 0; cursor: pointer; text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 3px; }
+.nu:hover { color: var(--bleu); }
+
+.depot { background: var(--papier); border: 1px solid var(--encre); padding: 20px 16px; }
+@media (min-width: 640px) { .depot { padding: 30px 28px; } }
+.depot[data-survol="1"] { border: 3px solid var(--bleu); padding: 18px 14px; }
+.rangee { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.pile { display: flex; flex-direction: column; gap: 16px; }
+
+/* vignettes de pages */
+.vignettes { display: flex; gap: 12px; overflow-x: auto; padding-bottom: 8px; margin: 0; list-style: none; }
+.vignettes li { width: 7.5rem; flex: 0 0 auto; }
+.vignette { position: relative; border: 1px solid var(--encre); background: var(--papier); }
+.vignette img { display: block; width: 100%; height: 9.5rem; object-fit: cover; }
+.numero { position: absolute; left: 0; top: 0; background: var(--encre); color: var(--papier); font-size: .75rem; font-weight: 600; padding: 2px 6px; }
+.mini-bouton { width: 28px; height: 28px; border: 1px solid var(--encre); background: var(--papier); cursor: pointer; line-height: 1; }
+.mini-bouton:disabled { opacity: .3; cursor: not-allowed; }
+
+/* la barre de scan de la photocopieuse, pas un spinner */
+.progression { position: relative; overflow: hidden; border: 1px solid var(--encre); background: var(--papier); padding: 14px 16px; }
+.scan { position: absolute; inset: 0; pointer-events: none;
+  background: linear-gradient(to bottom, transparent 0%, rgba(255,233,74,.55) 46%, rgba(11,11,12,.16) 50%, transparent 54%);
+  background-size: 100% 240%; animation: balayage 1.5s linear infinite; }
+@keyframes balayage { from { background-position: 0 -140%; } to { background-position: 0 140%; } }
+.etapes { position: relative; display: flex; flex-direction: column; gap: 6px; margin: 0; padding: 0; list-style: none; }
+@media (min-width: 640px) { .etapes { flex-direction: row; flex-wrap: wrap; gap: 6px 20px; } }
+.etapes li { display: flex; align-items: center; gap: 8px; font-size: .875rem; color: var(--encre-clair); }
+.puce { width: 10px; height: 10px; border: 1px solid var(--photocopie); flex: 0 0 auto; }
+.etapes li[data-etat="fait"] { color: var(--encre); } .etapes li[data-etat="fait"] .puce { background: var(--encre); border-color: var(--encre); }
+.etapes li[data-etat="cours"] { color: var(--encre); font-weight: 650; } .etapes li[data-etat="cours"] .puce { background: var(--jaune); border-color: var(--encre); }
+
+/* intercalaires de classeur */
+.classeur { display: flex; align-items: flex-end; position: sticky; top: 0; z-index: 40; background: var(--papier); padding-top: 8px; }
+.perfos { display: none; flex-direction: column; gap: 12px; margin: 0 8px 8px 0; }
+@media (min-width: 640px) { .perfos { display: flex; } }
+.perfo { width: 10px; height: 10px; border-radius: 50%; background: var(--papier-scan); border: 1px solid var(--photocopie); }
+.onglets { display: flex; flex: 1; align-items: flex-end; gap: 4px; border-bottom: 1px solid var(--encre); }
+.onglet { flex: 1 1 0; min-width: 0; text-align: left; padding: 8px 10px; border: 1px solid var(--photocopie); border-bottom: 0; background: var(--papier-scan); cursor: pointer; }
+@media (min-width: 640px) { .onglet { flex: 0 0 auto; padding: 8px 16px; } }
+.onglet[aria-selected="true"] { background: var(--papier); border-color: var(--encre); transform: translateY(1px); }
+.onglet:disabled { opacity: .4; cursor: not-allowed; }
+.onglet .nom { display: block; font-weight: 700; font-variation-settings: "wdth" 86; letter-spacing: -.02em; font-size: .95rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.onglet .quoi { display: none; font-size: .75rem; color: var(--encre-clair); }
+@media (min-width: 640px) { .onglet .quoi { display: block; } .onglet .nom { font-size: 1rem; } }
+
+.avis { border-left: 3px solid var(--rose); background: var(--papier-scan); padding: 8px 12px; }
+.alerte { border-left: 4px solid var(--bleu); background: var(--papier); padding: 8px 12px; }
+
+/* résumé : mise en page de document */
+.section-resume { margin-top: 40px; }
+@media (min-width: 1024px) { .section-resume { display: grid; grid-template-columns: minmax(0, 62ch) 15rem; gap: 40px; } }
+.marge { display: none; }
+@media (min-width: 1024px) { .marge { display: block; } .marge-flux { display: none; } }
+.terme-flux { border-left: 2px solid var(--jaune); padding-left: 12px; margin-top: 12px; }
+
+/* carte mentale */
+.cadre-carte { position: relative; height: 66vh; min-height: 24rem; overflow: hidden; border: 1px solid var(--encre); background: var(--papier); cursor: grab; touch-action: pan-y; }
+.cadre-carte:active { cursor: grabbing; }
+.cadre-carte svg { position: absolute; left: 50%; top: 50%; }
+
+/* fiche bristol : le seul objet arrondi, parce que le carton l'est */
+.scene { perspective: 1600px; }
+.carte { position: relative; margin: 0 auto; width: 100%; max-width: 34rem; height: 24rem; transform-style: preserve-3d; transition: transform 460ms cubic-bezier(.2,.8,.2,1); }
+@media (min-width: 640px) { .carte { height: 26rem; } }
+.carte[data-face="verso"] { transform: rotateY(180deg); }
+.face { position: absolute; inset: 0; backface-visibility: hidden; -webkit-backface-visibility: hidden;
+  background: var(--papier); border: 1px solid var(--encre); border-radius: 3px; box-shadow: 3px 4px 0 var(--photocopie);
+  display: flex; flex-direction: column; justify-content: space-between; padding: 22px; text-align: left; }
+@media (min-width: 640px) { .face { padding: 30px; } }
+.verso { transform: rotateY(180deg); }
+.jauge { height: 8px; border: 1px solid var(--encre); background: var(--papier); }
+.jauge > i { display: block; height: 100%; background: var(--jaune); transition: width 200ms linear; }
+.reponses { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
+.reponses .bouton { padding: .55rem .25rem; font-size: .82rem; }
+@media (min-width: 640px) { .reponses { gap: 8px; } .reponses .bouton { padding: .625rem 1rem; font-size: 1rem; } }
+
+/* la séparation en trois objets : le seul moment orchestré */
+.trois { position: absolute; inset: 0; z-index: 1; pointer-events: none; display: none; }
+.trois.joue { display: block; }
+.trois > svg { position: absolute; left: 50%; top: 44%; width: 92px; height: 92px; margin: -46px 0 0 -46px; opacity: 0; }
+.trois.joue > svg:nth-child(1) { animation: partir-g 1500ms cubic-bezier(.2,.8,.2,1) forwards; }
+.trois.joue > svg:nth-child(2) { animation: partir-c 1500ms cubic-bezier(.2,.8,.2,1) forwards; }
+.trois.joue > svg:nth-child(3) { animation: partir-d 1500ms cubic-bezier(.2,.8,.2,1) forwards; }
+@keyframes partir-g { 0% { opacity:0; transform: scale(.3); } 22% { opacity:1; transform: scale(1); } 100% { opacity:0; transform: translate(-32vw, 46vh) scale(.5) rotate(-9deg); } }
+@keyframes partir-c { 0% { opacity:0; transform: scale(.3); } 22% { opacity:1; transform: scale(1); } 100% { opacity:0; transform: translate(0, 46vh) scale(.5); } }
+@keyframes partir-d { 0% { opacity:0; transform: scale(.3); } 22% { opacity:1; transform: scale(1); } 100% { opacity:0; transform: translate(32vw, 46vh) scale(.5) rotate(9deg); } }
+
+footer { border-top: 1px solid var(--encre); margin-top: 40px; }
+.pied { display: flex; flex-wrap: wrap; gap: 6px 24px; padding-top: 22px; padding-bottom: 22px; }
+.masque { display: none; }
+#astuce-collage { display: none; }
+@media (min-width: 640px) { .depot.pret #astuce-collage { display: inline; } }
+.sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+
+@media (prefers-reduced-motion: reduce) {
+  .scan { animation: none; background: none; border-left: 3px solid var(--jaune); }
+  .carte { transition: none; }
+  .trois > svg { animation: none !important; opacity: 0 !important; }
+}
+</style>
+
+<div class="grain"></div>
+
+<main>
+  <section class="hero">
+    <canvas id="feuille" aria-hidden="true"></canvas>
+    <div id="feuille-repli" aria-hidden="true"></div>
+    <div class="trois" id="trois" aria-hidden="true"></div>
+
+    <div class="enveloppe">
+      <p class="titre" style="font-size:1.125rem"><span class="surligne" data-graine="marque"><span>FICHÉ</span></span></p>
+      <h1 class="affiche">Convertisseur de cours</h1>
+
+      <div style="margin-top:24px" class="depot" id="depot">
+        <div class="pile">
+          <p class="titre" id="depot-titre" style="font-size:1.25rem">Dépose ton cours ici.</p>
+          <div class="rangee">
+            <button type="button" class="bouton" id="btn-photo">Photographier</button>
+            <button type="button" class="bouton blanc" id="btn-galerie">Choisir des photos</button>
+            <span class="discret" id="astuce-collage">ou glisse-les, ou colle-les avec Cmd+V</span>
+          </div>
+          <p class="mini">JPG, PNG, HEIC, WEBP · jusqu'à 12 pages ·
+            <span style="color:var(--encre)">tes photos ne sont jamais stockées : elles sont lues en mémoire, puis jetées.</span>
+          </p>
+        </div>
+        <input id="fichier-galerie" type="file" accept="image/*" multiple class="sr">
+        <input id="fichier-photo" type="file" accept="image/*" capture="environment" multiple class="sr">
+      </div>
+
+      <div id="zone-alerte" style="margin-top:12px"></div>
+      <div id="zone-pages" style="margin-top:24px"></div>
+      <div id="zone-progression" style="margin-top:24px"></div>
+    </div>
+  </section>
+
+  <div id="zone-resultat"></div>
+
+  <footer>
+    <div class="enveloppe pied discret">
+      <p style="margin:0">Tes photos sont lues en mémoire puis jetées. Seul le résultat reste, et seulement dans cet onglet.</p>
+      <p style="margin:0">Version d'essai un-page. Le produit complet — PDF, HEIC, multi-pages, quotas — est dans le dépôt.</p>
+    </div>
+  </footer>
+</main>
+
+<script>
+"use strict";
+/* ═══════════════════════════════════════════════════════════════════════
+   FICHÉ — version un-page.
+   Même pipeline que l'application : préparation dans le navigateur, un seul
+   appel modèle multi-images, JSON lu au fil de l'eau pour que le résumé
+   s'affiche pendant que les fiches s'écrivent encore.
+   ═══════════════════════════════════════════════════════════════════════ */
+
+const MAX_PAGES = 12, MAX_EDGE = 1568, QUALITE = .85;
+const S = {
+  pages: [], conv: null, partiel: null, tab: "resume",
+  etape: "attente", occupe: false, alerte: null, secondes: 0, chrono: null,
+  deck: null, echelle: 1, pan: { x: 0, y: 0 }, replies: new Set(), zoomAjuste: 1,
+};
+let sample = null, downloads = null, peutImages = false;
+
+const $ = (id) => document.getElementById(id);
+const reduit = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+const echap = (s) => String(s == null ? "" : s).replace(/[&<>"']/g, (c) =>
+  ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+
+/* ── le surligneur : géométrie dérivée d'une graine, donc stable ── */
+function alea(graine) {
+  let h = 2166136261;
+  for (let i = 0; i < graine.length; i++) { h ^= graine.charCodeAt(i); h = Math.imul(h, 16777619); }
+  let e = (h >>> 0) || 1;
+  return () => { e ^= e << 13; e ^= e >>> 17; e ^= e << 5; e >>>= 0; return e / 4294967296; };
+}
+function surligneur(graine, couleur) {
+  const r = alea(graine), haut = 12 + r() * 10, bas = 88 + r() * 9;
+  const d = `M ${(-2 + r() * 3).toFixed(2)} ${haut.toFixed(2)}`
+    + ` C 24 ${(haut - 7 + r() * 6).toFixed(2)}, 62 ${(haut + 5 - r() * 8).toFixed(2)}, ${(101 + r() * 2).toFixed(2)} ${(haut + 1).toFixed(2)}`
+    + ` L ${(101 + r() * 2).toFixed(2)} ${bas.toFixed(2)}`
+    + ` C 66 ${(bas + 6 - r() * 5).toFixed(2)}, 27 ${(bas - 4 + r() * 7).toFixed(2)}, ${(-2 + r() * 3).toFixed(2)} ${(bas - 1).toFixed(2)} Z`;
+  const angle = (-1.1 + r() * 1.6).toFixed(2);
+  return `<svg viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true" style="transform:rotate(${angle}deg)"><path d="${d}" fill="var(--${couleur === "rose" ? "rose" : "jaune"})"/></svg>`;
+}
+function surligne(texte, graine, couleur) {
+  return `<span class="surligne">${surligneur(graine, couleur || "jaune")}<span>${echap(texte)}</span></span>`;
+}
+document.querySelectorAll(".surligne[data-graine]").forEach((el) => {
+  el.insertAdjacentHTML("afterbegin", surligneur(el.dataset.graine, "jaune"));
+});
+
+/* ═══ 1. La feuille : WebGL, ondulation légère, lumière rasante ═══ */
+const VS = `attribute vec2 aUv; uniform vec2 uMonde; uniform float uTemps; uniform float uPli;
+varying vec2 vUv; varying vec3 vNormale;
+float ondulation(vec2 p, float t){
+  return 0.046*sin(p.x*2.10+t*0.55) + 0.032*sin(p.y*1.55-t*0.42) + 0.015*sin((p.x+p.y)*3.20+t*0.90);
+}
+void main(){
+  vUv = aUv;
+  vec2 m = (aUv - 0.5) * uMonde;
+  float e = 0.02;
+  float h = ondulation(m, uTemps), hx = ondulation(m + vec2(e,0.0), uTemps), hy = ondulation(m + vec2(0.0,e), uTemps);
+  vec3 tx = normalize(vec3(e, 0.0, hx - h));
+  vec3 ty = normalize(vec3(0.0, e, hy - h));
+  vNormale = normalize(cross(tx, ty));
+  vec2 clip = (aUv - 0.5) * 2.0;
+  clip.x *= 1.0 - uPli * 0.72;        // les deux moitiés se referment
+  clip *= 1.0 - uPli * 0.30;
+  gl_Position = vec4(clip, 0.0, 1.0);
+}`;
+const FS = `precision mediump float; varying vec2 vUv; varying vec3 vNormale;
+uniform float uScan; uniform float uPli;
+float grain(vec2 p){ return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }
+void main(){
+  // la lumière passe presque à plat : on amplifie l'écart au repos, sinon
+  // le papier lit comme un aplat gris
+  vec3 lumiere = normalize(vec3(-0.90, 0.30, 0.31));
+  float relief = clamp((dot(normalize(vNormale), lumiere) - 0.31) * 3.4, -1.0, 1.0);
+  float v = 0.986 + relief * 0.072;
+  v -= smoothstep(0.5, 0.0, vUv.x) * 0.026;
+  v -= grain(floor(vUv * 900.0)) * 0.022;
+  v -= smoothstep(0.972, 1.0, abs(sin(vUv.y * 128.0))) * 0.040;   // réglures de polycopié
+  v = clamp(v, 0.888, 1.0);
+  vec3 c = vec3(v);
+  if (uScan >= 0.0) {
+    float d = vUv.y - uScan;
+    c = mix(c, vec3(1.0, 0.914, 0.29), smoothstep(0.055, 0.0, abs(d)) * 0.72);
+    c = mix(c, vec3(0.05), smoothstep(0.010, 0.0, abs(d + 0.030)) * 0.55);
+  }
+  gl_FragColor = vec4(c, 1.0 - uPli * 0.95);
+}`;
+
+function feuilleStatique() {
+  $("feuille").style.display = "none";
+  const el = $("feuille-repli");
+  el.style.display = "block";
+  el.innerHTML = `<svg viewBox="0 0 400 520" preserveAspectRatio="xMidYMid slice" style="width:100%;height:100%">
+    <defs><linearGradient id="rasant" x1="1" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#ffffff"/><stop offset="64%" stop-color="#f7f7f4"/><stop offset="100%" stop-color="#e9e9e4"/>
+    </linearGradient></defs>
+    <rect width="400" height="520" fill="#ffffff"/><rect width="400" height="520" fill="url(#rasant)"/>
+    ${Array.from({ length: 25 }, (_, i) => `<line x1="0" x2="400" y1="${24 + i * 20}" y2="${24 + i * 20}" stroke="#0b0b0c" stroke-opacity="0.05"/>`).join("")}
+  </svg>`;
+}
+
+let gl = null, uni = {}, nbSommets = 0, scanPos = -1, pli = 0, pliCible = 0, scanActif = false;
+function initFeuille() {
+  const canvas = $("feuille");
+  try { gl = canvas.getContext("webgl", { alpha: true, antialias: true, powerPreference: "low-power" }); } catch (_) { gl = null; }
+  if (!gl || reduit) { feuilleStatique(); return; }
+
+  const prog = gl.createProgram();
+  for (const [type, src] of [[gl.VERTEX_SHADER, VS], [gl.FRAGMENT_SHADER, FS]]) {
+    const sh = gl.createShader(type);
+    gl.shaderSource(sh, src); gl.compileShader(sh);
+    if (!gl.getShaderParameter(sh, gl.COMPILE_STATUS)) { gl = null; feuilleStatique(); return; }
+    gl.attachShader(prog, sh);
+  }
+  gl.linkProgram(prog);
+  if (!gl.getProgramParameter(prog, gl.LINK_STATUS)) { gl = null; feuilleStatique(); return; }
+  gl.useProgram(prog);
+
+  const NX = 58, NY = 70, uvs = [];
+  for (let y = 0; y < NY; y++) for (let x = 0; x < NX; x++) {
+    const a = [x / NX, y / NY], b = [(x + 1) / NX, y / NY], c = [x / NX, (y + 1) / NY], d = [(x + 1) / NX, (y + 1) / NY];
+    uvs.push(...a, ...b, ...c, ...b, ...d, ...c);
+  }
+  nbSommets = uvs.length / 2;
+  const buf = gl.createBuffer();
+  gl.bindBuffer(gl.ARRAY_BUFFER, buf);
+  gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(uvs), gl.STATIC_DRAW);
+  const loc = gl.getAttribLocation(prog, "aUv");
+  gl.enableVertexAttribArray(loc);
+  gl.vertexAttribPointer(loc, 2, gl.FLOAT, false, 0, 0);
+
+  for (const nom of ["uMonde", "uTemps", "uPli", "uScan"]) uni[nom] = gl.getUniformLocation(prog, nom);
+  gl.enable(gl.BLEND);
+  gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
+
+  const redim = () => {
+    const r = canvas.getBoundingClientRect();
+    const dpr = Math.min(window.devicePixelRatio || 1, 1.75);
+    canvas.width = Math.max(1, Math.round(r.width * dpr));
+    canvas.height = Math.max(1, Math.round(r.height * dpr));
+    gl.viewport(0, 0, canvas.width, canvas.height);
+    const ech = 3.4 / Math.max(1, Math.min(r.width, r.height));
+    gl.uniform2f(uni.uMonde, r.width * ech, r.height * ech);
+  };
+  redim();
+  new ResizeObserver(redim).observe(canvas);
+
+  const t0 = performance.now();
+  (function boucle(t) {
+    if (!gl) return;
+    const dt = Math.min(.05, (t - (boucle.dernier || t)) / 1000); boucle.dernier = t;
+    gl.uniform1f(uni.uTemps, (t - t0) / 1000);
+    scanPos = scanActif ? (scanPos < 0 ? 1.12 : (scanPos - dt * .78 < -.12 ? 1.12 : scanPos - dt * .78)) : -1;
+    gl.uniform1f(uni.uScan, scanPos);
+    pli += (pliCible - pli) * Math.min(1, dt * 2.4);
+    gl.uniform1f(uni.uPli, pli);
+    gl.clearColor(0, 0, 0, 0); gl.clear(gl.COLOR_BUFFER_BIT);
+    gl.drawArrays(gl.TRIANGLES, 0, nbSommets);
+    requestAnimationFrame(boucle);
+  })(performance.now());
+}
+
+function separation() {
+  if (reduit) return;
+  const t = $("trois");
+  t.innerHTML = `
+    <svg viewBox="0 0 60 60"><g><rect x="8" y="18" width="40" height="26" rx="2" fill="#fff" stroke="#0b0b0c" stroke-width="1.4"/><rect x="12" y="14" width="40" height="26" rx="2" fill="#fff" stroke="#0b0b0c" stroke-width="1.4"/><rect x="16" y="18" width="22" height="4" fill="#ffe94a"/></g></svg>
+    <svg viewBox="0 0 60 60"><g stroke="#0b0b0c" stroke-width="1.4"><line x1="30" y1="30" x2="16" y2="16"/><line x1="30" y1="30" x2="45" y2="17"/><line x1="30" y1="30" x2="19" y2="45"/><line x1="30" y1="30" x2="44" y2="43"/></g><circle cx="30" cy="30" r="6" fill="#0b0b0c"/><circle cx="16" cy="16" r="4" fill="#ff7bb0" stroke="#0b0b0c"/><circle cx="45" cy="17" r="4" fill="#ff7bb0" stroke="#0b0b0c"/><circle cx="19" cy="45" r="4" fill="#ff7bb0" stroke="#0b0b0c"/><circle cx="44" cy="43" r="4" fill="#ff7bb0" stroke="#0b0b0c"/></svg>
+    <svg viewBox="0 0 60 60"><path d="M12 10 L30 14 L30 50 L12 46 Z" fill="#fff" stroke="#0b0b0c" stroke-width="1.4"/><path d="M48 10 L30 14 L30 50 L48 46 Z" fill="#f2f2ee" stroke="#0b0b0c" stroke-width="1.4"/><g stroke="#0b0b0c"><line x1="16" y1="22" x2="27" y2="24"/><line x1="16" y1="30" x2="27" y2="32"/><line x1="16" y1="38" x2="24" y2="39"/></g></svg>`;
+  t.classList.add("joue");
+  setTimeout(() => { t.classList.remove("joue"); t.innerHTML = ""; }, 1700);
+}
+
+/* ═══ 2. Préparation des pages, dans le navigateur ═══ */
+async function prepare(fichiers) {
+  const restant = MAX_PAGES - S.pages.length;
+  if (restant <= 0) {
+    alerter(`${MAX_PAGES} pages, c'est le maximum pour une conversion.`, "Retire une page avant d'en ajouter une autre.");
+    return;
+  }
+  S.occupe = true; alerter(null); rendreDepot(); rendrePages();
+  const lot = Array.from(fichiers).filter((f) => /^image\//.test(f.type) || /\.(jpe?g|png|webp|heic|heif)$/i.test(f.name)).slice(0, restant);
+  if (lot.length === 0) {
+    S.occupe = false;
+    alerter("Ce format-là, je ne sais pas le lire.", "Dépose une photo : JPG, PNG, HEIC ou WEBP. Les PDF sont gérés dans la version complète.");
+    rendreDepot(); rendrePages(); return;
+  }
+  let erreurs = 0;
+  for (const f of lot) {
+    try { S.pages.push(await preparerUne(f)); }
+    catch (_) { erreurs++; }
+    rendrePages();
+  }
+  S.occupe = false;
+  if (erreurs > 0) {
+    alerter(`${erreurs} photo${erreurs > 1 ? "s" : ""} illisible${erreurs > 1 ? "s" : ""}.`,
+      "Si elle vient d'un iPhone en HEIC, ouvre-la puis renvoie-la en JPG — ou passe par le bouton Photographier.");
+  }
+  rendreDepot(); rendrePages();
+}
+
+async function preparerUne(fichier) {
+  const image = await decoder(fichier);
+  const l = image.naturalWidth || image.width, h = image.naturalHeight || image.height;
+  const k = Math.min(1, MAX_EDGE / Math.max(l, h));
+  const c = document.createElement("canvas");
+  c.width = Math.max(1, Math.round(l * k)); c.height = Math.max(1, Math.round(h * k));
+  const ctx = c.getContext("2d");
+  ctx.fillStyle = "#fff"; ctx.fillRect(0, 0, c.width, c.height);
+  ctx.imageSmoothingQuality = "high";
+  ctx.drawImage(image, 0, 0, c.width, c.height);
+  if (image.close) image.close();
+  const blob = await new Promise((ok, ko) => c.toBlob((b) => (b ? ok(b) : ko(new Error("blob"))), "image/jpeg", QUALITE));
+  return { id: Math.random().toString(36).slice(2), nom: fichier.name, blob, apercu: c.toDataURL("image/jpeg", .5) };
+}
+
+async function decoder(fichier) {
+  if (typeof createImageBitmap === "function") {
+    try { return await createImageBitmap(fichier); } catch (_) { /* on retombe sur <img> */ }
+  }
+  const url = URL.createObjectURL(fichier);
+  try {
+    return await new Promise((ok, ko) => {
+      const im = new Image();
+      im.onload = () => ok(im);
+      im.onerror = () => ko(new Error("decode"));
+      im.src = url;
+    });
+  } finally { setTimeout(() => URL.revokeObjectURL(url), 8000); }
+}
+
+/* ═══ 3. La conversion ═══ */
+const REGLES = `Tu transformes des pages de cours photographiées en supports de révision.
+
+RÈGLE ABSOLUE — ne jamais inventer. Tout ce que tu écris vient des images fournies. Si une notion n'y est pas, elle n'existe pas. Tu ne complètes pas le cours avec tes connaissances, tu ne devines pas la fin d'une phrase coupée, tu n'ajoutes aucun exemple absent. Si une page est illisible, tu la signales dans pageIssues et tu travailles avec le reste. Un résumé court et exact vaut infiniment mieux qu'un résumé complet et inventé.
+
+LANGUE — tu écris dans la langue du cours, jamais de traduction.
+
+Réponds uniquement par un objet JSON de cette forme exacte :
+
+{"language":"fr",
+ "pageIssues":[{"page":2,"problem":"photo floue sur le tiers bas","advice":"reprends-la à plat, avec la lumière derrière toi."}],
+ "summary":{"subject":"Physique — Mécanique","level":"Terminale","title":"Titre du cours",
+   "sections":[{"heading":"Titre de partie","paragraphs":["Phrases entières, pas des puces."],
+     "keyTerms":[{"term":"Terme","definition":"La définition telle que le cours la donne."}],
+     "formulas":[{"latex":"E = mc^2","meaning":"Ce que la formule calcule et quand l'utiliser."}]}],
+   "keyPoints":["Ce qu'il faut absolument savoir."],
+   "commonMistakes":["Les pièges que le cours signale."]},
+ "mindmap":{"root":{"id":"n0","label":"Titre du cours","detail":"","children":[
+   {"id":"n1","label":"Cinq mots maximum","detail":"","children":[]}]}},
+ "flashcards":{"cards":[{"id":"c1","front":"Question de rappel","back":"Réponse courte","hint":"","difficulty":2,"tag":"Nom de la partie"}]}}
+
+Contraintes :
+- pageIssues est vide si tout est lisible. Ne signale pas une page juste parce qu'elle est manuscrite. advice tutoie et dit quoi faire.
+- summary garde les définitions, les formules, les conditions d'application et les exceptions. formulas.latex sans délimiteurs.
+- mindmap : profondeur 4 niveaux maximum, labels de 5 mots maximum, entre 12 et 40 nœuds, identifiants uniques.
+- flashcards : entre 12 et 40 cartes. Une seule idée par carte. Le recto fait travailler le rappel — varie « Pourquoi… », « Que se passe-t-il si… », « Dans quel cas… », « Complète : … », « Donne les trois conditions de… », « Calcule… », « Quelle différence entre X et Y ». Au maximum deux cartes « Qu'est-ce que X ? » sur tout le paquet. Le verso fait une à trois phrases, pas un paragraphe. difficulty vaut 1, 2 ou 3. tag est le nom de la section.`;
+
+async function convertir() {
+  if (!sample || S.pages.length === 0) return;
+  S.occupe = true; S.conv = null; S.partiel = null; S.deck = null;
+  S.etape = "lecture"; S.secondes = 0; alerter(null);
+  clearInterval(S.chrono);
+  const t0 = performance.now();
+  S.chrono = setInterval(() => { S.secondes = Math.round((performance.now() - t0) / 1000); majChrono(); }, 500);
+  scanActif = true; pliCible = 0;
+  rendreDepot(); rendrePages(); rendreProgression(); rendreResultat();
+
+  const consigne = S.pages.length === 1
+    ? "Voici 1 page de cours."
+    : `Voici ${S.pages.length} pages de cours, dans l'ordre.`;
+
+  try {
+    const donnees = await sample.json(`${REGLES}\n\n${consigne} Lis-les et produis le résumé, la carte mentale et les fiches.`, {
+      images: S.pages.map((p) => p.blob),
+      modelTier: "default",
+      onText: ({ text }) => {
+        const p = jsonPartiel(text);
+        if (!p) return;
+        S.partiel = p;
+        const e = p.flashcards ? "fiches" : p.mindmap ? "carte" : p.summary ? "resume" : "lecture";
+        if (e !== S.etape) { S.etape = e; rendreProgression(); }
+        rendreResultat();
+      },
+    });
+    const conv = normaliser(donnees);
+    if (!conv) throw { code: "invalid_json" };
+    S.conv = conv; S.partiel = null; S.etape = "fini";
+    S.deck = nouveauDeck(conv.flashcards.cards);
+    S.tab = "resume"; S.echelle = 1; S.pan = { x: 0, y: 0 }; S.replies = new Set();
+    scanActif = false; pliCible = 1; separation();
+    setTimeout(() => { pliCible = 0; }, 2400);
+  } catch (e) {
+    scanActif = false; pliCible = 0;
+    const m = messageErreur(e && e.code);
+    alerter(m[0], m[1]);
+    S.etape = "attente";
+  } finally {
+    clearInterval(S.chrono); S.chrono = null;
+    S.occupe = false;
+    rendreDepot(); rendrePages(); rendreProgression(); rendreResultat();
+    if (S.conv) setTimeout(() => $("zone-resultat").scrollIntoView({ behavior: reduit ? "auto" : "smooth", block: "start" }), 240);
+  }
+}
+
+function messageErreur(code) {
+  switch (code) {
+    case "not_granted": return ["Tu as refusé l'accès à Claude.", "Recharge la page et accepte : la conversion passe par ton propre compte Claude, et rien ne quitte cet onglet."];
+    case "rate_limited": return ["Trop de conversions d'un coup.", "Attends une minute, puis relance."];
+    case "invalid_json": return ["Le résultat est revenu incomplet.", "Relance avec moins de pages, ou des photos plus nettes."];
+    case "cancelled": return ["Conversion interrompue.", "Relance quand tu veux."];
+    case "images_unavailable": return ["Cette vue ne peut pas envoyer d'images.", "Ouvre le lien depuis claude.ai plutôt que dans un onglet séparé."];
+    case "image_rejected": return ["Une photo a été refusée.", "Retire la plus lourde, ou reprends-la depuis l'appareil photo."];
+    default: return ["La conversion a échoué.", "Relance. Si ça recommence, réduis le nombre de pages."];
+  }
+}
+
+/* Parseur JSON tolérant : referme ce qui est ouvert pour rendre lisible un
+   JSON encore en cours d'écriture. C'est ce qui permet d'afficher le résumé
+   pendant que le modèle écrit toujours les fiches. */
+function jsonPartiel(texte) {
+  let t = String(texte || "").trim();
+  if (!t) return null;
+  const fence = t.match(/```(?:json)?\s*([\s\S]*)$/);
+  if (fence) t = fence[1].replace(/```\s*$/, "").trim();
+  const debut = t.indexOf("{");
+  if (debut < 0) return null;
+  t = t.slice(debut);
+  try { return JSON.parse(t); } catch (_) { /* il manque la fin */ }
+
+  const pile = []; let dansChaine = false, echappe = false, dernier = -1;
+  for (let i = 0; i < t.length; i++) {
+    const c = t[i];
+    if (dansChaine) {
+      if (echappe) echappe = false;
+      else if (c === "\\") echappe = true;
+      else if (c === '"') { dansChaine = false; dernier = i; }
+      continue;
+    }
+    if (c === '"') dansChaine = true;
+    else if (c === "{") pile.push("}");
+    else if (c === "[") pile.push("]");
+    else if (c === "}" || c === "]") { pile.pop(); dernier = i; }
+    else if (c !== "," && c !== ":" && !/\s/.test(c)) dernier = i;
+  }
+  let corps;
+  if (dansChaine) {
+    corps = t.slice(0, dernier + 1);
+    if (echappe) corps = corps.slice(0, -1);
+    corps += '"';
+  } else corps = t.slice(0, dernier + 1);
+  corps = corps.replace(/,\s*$/, "");
+  corps = corps.replace(/"[^"]*"\s*:\s*$/, "").replace(/,\s*$/, "");
+  if (!corps) return null;
+  for (let i = pile.length - 1; i >= 0; i--) corps += pile[i];
+  try { return JSON.parse(corps); } catch (_) { return null; }
+}
+
+const txt = (v, d) => (typeof v === "string" && v.trim() ? v.trim() : (d || ""));
+const tab = (v) => (Array.isArray(v) ? v : []);
+
+function normaliser(d) {
+  if (!d || typeof d !== "object") return null;
+  const s = d.summary;
+  if (!s || typeof s !== "object" || !Array.isArray(s.sections) || s.sections.length === 0) return null;
+  const cartes = tab(d.flashcards && d.flashcards.cards)
+    .map((c, i) => ({
+      id: txt(c && c.id, "c" + (i + 1)),
+      front: txt(c && c.front), back: txt(c && c.back), hint: txt(c && c.hint),
+      difficulty: Math.min(3, Math.max(1, Math.round(Number(c && c.difficulty) || 2))),
+      tag: txt(c && c.tag),
+    }))
+    .filter((c) => c.front && c.back);
+  if (cartes.length < 3) return null;
+  let n = 0;
+  const noeud = (x, p) => {
+    if (!x || typeof x !== "object" || p > 3) return null;
+    const label = txt(x.label);
+    if (!label) return null;
+    n++;
+    return {
+      id: txt(x.id, "n" + n), label, detail: txt(x.detail),
+      children: p < 3 ? tab(x.children).map((k) => noeud(k, p + 1)).filter(Boolean) : [],
+    };
+  };
+  const racine = noeud(d.mindmap && d.mindmap.root, 0) || { id: "n0", label: txt(s.title, "Cours"), detail: "", children: [] };
+  return {
+    language: txt(d.language, "fr"),
+    pageIssues: tab(d.pageIssues).map((p) => ({
+      page: Math.max(1, Math.round(Number(p && p.page) || 1)),
+      problem: txt(p && p.problem), advice: txt(p && p.advice),
+    })).filter((p) => p.problem),
+    summary: {
+      subject: txt(s.subject, "Cours"), level: txt(s.level), title: txt(s.title, "Cours"),
+      sections: tab(s.sections).map((x) => ({
+        heading: txt(x && x.heading),
+        paragraphs: tab(x && x.paragraphs).map((p) => txt(p)).filter(Boolean),
+        keyTerms: tab(x && x.keyTerms).map((t) => ({ term: txt(t && t.term), definition: txt(t && t.definition) })).filter((t) => t.term),
+        formulas: tab(x && x.formulas).map((f) => ({ latex: txt(f && f.latex), meaning: txt(f && f.meaning) })).filter((f) => f.latex),
+      })).filter((x) => x.heading),
+      keyPoints: tab(s.keyPoints).map((p) => txt(p)).filter(Boolean),
+      commonMistakes: tab(s.commonMistakes).map((p) => txt(p)).filter(Boolean),
+    },
+    mindmap: { root: racine },
+    flashcards: { cards: cartes },
+  };
+}
+
+/* ═══ 4. LaTeX → Unicode : montrer du code à quelqu'un qui révise, c'est raté ═══ */
+const GREC = { alpha:"α",beta:"β",gamma:"γ",delta:"δ",epsilon:"ε",varepsilon:"ε",zeta:"ζ",eta:"η",theta:"θ",iota:"ι",kappa:"κ",lambda:"λ",mu:"μ",nu:"ν",xi:"ξ",pi:"π",rho:"ρ",sigma:"σ",tau:"τ",upsilon:"υ",phi:"φ",varphi:"φ",chi:"χ",psi:"ψ",omega:"ω",Gamma:"Γ",Delta:"Δ",Theta:"Θ",Lambda:"Λ",Xi:"Ξ",Pi:"Π",Sigma:"Σ",Upsilon:"Υ",Phi:"Φ",Psi:"Ψ",Omega:"Ω" };
+const SYM = [[/\\left|\\right|\\!|\\,|\\;|\\quad|\\qquad|\\displaystyle|\\text/g,""],[/\\times/g,"×"],[/\\div/g,"÷"],[/\\cdot/g,"·"],[/\\pm/g,"±"],[/\\leq|\\le\b/g,"≤"],[/\\geq|\\ge\b/g,"≥"],[/\\neq|\\ne\b/g,"≠"],[/\\approx/g,"≈"],[/\\equiv/g,"≡"],[/\\propto/g,"∝"],[/\\infty/g,"∞"],[/\\rightarrow|\\to\b/g,"→"],[/\\leftarrow/g,"←"],[/\\Rightarrow/g,"⇒"],[/\\Leftrightarrow|\\iff/g,"⇔"],[/\\partial/g,"∂"],[/\\nabla/g,"∇"],[/\\sum/g,"Σ"],[/\\prod/g,"Π"],[/\\int/g,"∫"],[/\\in\b/g,"∈"],[/\\notin/g,"∉"],[/\\subset/g,"⊂"],[/\\cup/g,"∪"],[/\\cap/g,"∩"],[/\\forall/g,"∀"],[/\\exists/g,"∃"],[/\\emptyset|\\varnothing/g,"∅"],[/\\ldots|\\dots|\\cdots/g,"…"],[/\\circ\b/g,"°"],[/\\%/g,"%"]];
+const EXP = { "0":"⁰","1":"¹","2":"²","3":"³","4":"⁴","5":"⁵","6":"⁶","7":"⁷","8":"⁸","9":"⁹","+":"⁺","-":"⁻","n":"ⁿ","i":"ⁱ" };
+const IND = { "0":"₀","1":"₁","2":"₂","3":"₃","4":"₄","5":"₅","6":"₆","7":"₇","8":"₈","9":"₉","+":"₊","-":"₋","a":"ₐ","e":"ₑ","n":"ₙ","o":"ₒ","x":"ₓ" };
+function indice(c, table, secours) {
+  const m = [...c].map((x) => table[x]);
+  return m.every((x) => x !== undefined) ? m.join("") : `${secours}(${c})`;
+}
+function maths(src) {
+  let o = String(src || "").trim().replace(/^\$+|\$+$/g, "").replace(/^\\\[|\\\]$/g, "");
+  o = o.replace(/\\frac\s*\{([^{}]*)\}\s*\{([^{}]*)\}/g, (_, a, b) => `(${a})/(${b})`);
+  o = o.replace(/\\sqrt\s*\{([^{}]*)\}/g, (_, a) => `√(${a})`);
+  o = o.replace(/\\(?:vec|overrightarrow)\s*\{([^{}]*)\}/g, (_, a) => `${a}⃗`);
+  o = o.replace(/\\([A-Za-z]+)/g, (m, nom) => (GREC[nom] !== undefined ? GREC[nom] : m));
+  for (const [re, r] of SYM) o = o.replace(re, r);
+  o = o.replace(/\^\s*\{([^{}]*)\}|\^(\w)/g, (_, a, b) => indice(a !== undefined ? a : b, EXP, "^"));
+  o = o.replace(/_\s*\{([^{}]*)\}|_(\w)/g, (_, a, b) => indice(a !== undefined ? a : b, IND, "_"));
+  return o.replace(/[{}]/g, "").replace(/\s{2,}/g, " ").trim();
+}
+
+/* ═══ 5. Carte mentale : une disposition, trois rendus ═══ */
+const ANNEAUX = [0, 190, 350, 480], CORPS = [19, 15, 13, 12], INTERLIGNE = 1.25;
+function couper(texte, max) {
+  const mots = String(texte).split(/\s+/).filter(Boolean);
+  if (!mots.length) return [""];
+  const l = []; let c = "";
+  for (const m of mots) {
+    const cand = c ? c + " " + m : m;
+    if (cand.length > max && c) { l.push(c); c = m; } else c = cand;
+  }
+  if (c) l.push(c);
+  return l.slice(0, 3);
+}
+function disposer(racine, replies) {
+  const noeuds = [], liens = [], pos = new Map();
+  let feuille = 0;
+  const enfants = (n, p) => (replies.has(n.id) || p >= 3 ? [] : (n.children || []));
+  const compter = (n, p) => { const k = enfants(n, p); return k.length ? k.reduce((s, e) => s + compter(e, p + 1), 0) : 1; };
+  const total = Math.max(1, compter(racine, 0));
+  (function marcher(n, p, parent) {
+    const k = enfants(n, p);
+    let angle;
+    if (!k.length) { angle = ((feuille + .5) / total) * Math.PI * 2; feuille++; }
+    else { const a = k.map((e) => marcher(e, p + 1, n.id)); angle = (a[0] + a[a.length - 1]) / 2; }
+    const r = ANNEAUX[Math.min(p, 3)], t = angle - Math.PI / 2;
+    const x = r * Math.cos(t), y = r * Math.sin(t);
+    pos.set(n.id, { x, y });
+    const taille = CORPS[Math.min(p, 3)], lignes = couper(n.label, 20);
+    const large = Math.max(...lignes.map((l) => l.length)) * taille * .53;
+    noeuds.push({
+      id: n.id, label: n.label, detail: n.detail || "", profondeur: Math.min(p, 3), x, y, lignes,
+      l: Math.round(large + 24), h: Math.round(lignes.length * taille * INTERLIGNE + 16),
+      caches: replies.has(n.id) ? (n.children || []).length : 0,
+      aEnfants: (n.children || []).length > 0, parent,
+    });
+    return angle;
+  })(racine, 0, null);
+
+  for (const n of noeuds) {
+    if (!n.parent) continue;
+    const a = pos.get(n.parent), b = pos.get(n.id);
+    if (a && b) liens.push({ x1: a.x, y1: a.y, x2: b.x, y2: b.y, profondeur: n.profondeur });
+  }
+  let minX = 0, minY = 0, maxX = 0, maxY = 0;
+  for (const n of noeuds) {
+    minX = Math.min(minX, n.x - n.l / 2); maxX = Math.max(maxX, n.x + n.l / 2);
+    minY = Math.min(minY, n.y - n.h / 2); maxY = Math.max(maxY, n.y + n.h / 2);
+  }
+  const M = 40, dx = -minX + M, dy = -minY + M;
+  for (const n of noeuds) { n.x += dx; n.y += dy; }
+  for (const l of liens) { l.x1 += dx; l.y1 += dy; l.x2 += dx; l.y2 += dy; }
+  return { noeuds, liens, largeur: Math.round(maxX - minX + M * 2), hauteur: Math.round(maxY - minY + M * 2) };
+}
+</script>
+
+<script>
+"use strict";
+/* ═══ 6. Rendu ═══ */
+function alerter(message, conseil) {
+  S.alerte = message ? { message, conseil } : null;
+  $("zone-alerte").innerHTML = S.alerte
+    ? `<div class="alerte" role="alert"><p class="titre" style="font-size:1rem;margin:0">${echap(S.alerte.message)}</p>${S.alerte.conseil ? `<p class="lecture" style="margin:2px 0 0;font-size:.98rem">${echap(S.alerte.conseil)}</p>` : ""}</div>`
+    : "";
+}
+
+function rendreDepot() {
+  const n = S.pages.length;
+  $("depot-titre").textContent = S.occupe ? "Je travaille…" : (n ? "Ajoute d'autres pages." : "Dépose ton cours ici.");
+  $("btn-photo").disabled = S.occupe || !peutImages;
+  $("btn-galerie").disabled = S.occupe || !peutImages;
+}
+
+function rendrePages() {
+  const z = $("zone-pages");
+  if (S.pages.length === 0) { z.innerHTML = ""; return; }
+  const n = S.pages.length;
+  z.innerHTML = `
+    <div style="display:flex;align-items:baseline;justify-content:space-between;gap:12px">
+      <h2 class="titre" style="font-size:1rem">${n} page${n > 1 ? "s" : ""} prête${n > 1 ? "s" : ""}</h2>
+      <p class="discret" style="margin:0">Remets-les dans l'ordre du cours.</p>
+    </div>
+    <ul class="vignettes" style="margin-top:12px">
+      ${S.pages.map((p, i) => `
+        <li>
+          <div class="vignette"><img src="${p.apercu}" alt="Page ${i + 1}"><span class="numero">${i + 1}</span></div>
+          <div style="display:flex;align-items:center;justify-content:space-between;gap:4px;margin-top:4px">
+            <div style="display:flex;gap:4px">
+              <button type="button" class="mini-bouton" data-agir="reculer" data-i="${i}" aria-label="Reculer la page ${i + 1}" ${i === 0 || S.occupe ? "disabled" : ""}>&lsaquo;</button>
+              <button type="button" class="mini-bouton" data-agir="avancer" data-i="${i}" aria-label="Avancer la page ${i + 1}" ${i === n - 1 || S.occupe ? "disabled" : ""}>&rsaquo;</button>
+            </div>
+            <button type="button" class="nu" style="font-size:.75rem" data-agir="retirer" data-i="${i}" ${S.occupe ? "disabled" : ""}>Retirer</button>
+          </div>
+        </li>`).join("")}
+    </ul>
+    <div style="display:flex;flex-wrap:wrap;align-items:center;gap:16px;margin-top:18px">
+      <button type="button" class="bouton" data-agir="convertir" ${S.occupe ? "disabled" : ""}>
+        ${S.occupe ? "Conversion en cours…" : (S.conv ? "Reconvertir" : `Convertir ${n} page${n > 1 ? "s" : ""}`)}
+      </button>
+      <button type="button" class="nu discret" data-agir="vider" ${S.occupe ? "disabled" : ""}>Tout effacer</button>
+    </div>`;
+}
+
+const ETAPES = [["lecture", "Je lis le cours"], ["resume", "J'écris le résumé"], ["carte", "Je construis la carte"], ["fiches", "Je fabrique les fiches"]];
+function rendreProgression() {
+  const z = $("zone-progression");
+  if (!S.occupe || S.etape === "attente") { z.innerHTML = ""; return; }
+  const idx = Math.max(0, ETAPES.findIndex(([k]) => k === S.etape));
+  z.innerHTML = `<section class="progression" aria-live="polite">
+    <div class="scan" aria-hidden="true"></div>
+    <ol class="etapes">
+      ${ETAPES.map(([, nom], i) => `<li data-etat="${i < idx ? "fait" : i === idx ? "cours" : "attente"}"><span class="puce"></span><span>${nom}</span></li>`).join("")}
+    </ol>
+    <p class="discret" style="position:relative;margin:10px 0 0;font-variant-numeric:tabular-nums"><span id="chrono">${S.secondes}</span> s</p>
+  </section>`;
+}
+function majChrono() { const c = $("chrono"); if (c) c.textContent = String(S.secondes); }
+
+const ONGLETS = [["resume", "Résumé", "le cours réécrit"], ["carte", "Carte", "l'arborescence"], ["fiches", "Fiches", "la révision"]];
+
+function rendreResultat() {
+  const z = $("zone-resultat");
+  const resume = (S.conv && S.conv.summary) || (S.partiel && S.partiel.summary) || null;
+  if (!resume) { z.innerHTML = ""; return; }
+  const pret = { resume: true, carte: !!S.conv, fiches: !!(S.conv && S.conv.flashcards.cards.length) };
+  if (!pret[S.tab]) S.tab = "resume";
+
+  z.innerHTML = `<section class="enveloppe">
+    <div class="classeur">
+      <span class="perfos" aria-hidden="true"><span class="perfo"></span><span class="perfo"></span></span>
+      <div class="onglets" role="tablist" aria-label="Les trois supports">
+        ${ONGLETS.map(([k, nom, quoi]) => `
+          <button type="button" role="tab" class="onglet" data-tab="${k}" id="onglet-${k}" aria-controls="panneau"
+            aria-selected="${S.tab === k}" tabindex="${S.tab === k ? 0 : -1}" ${pret[k] ? "" : "disabled"}>
+            <span class="nom">${S.tab === k ? surligne(nom, k, k === "fiches" ? "rose" : "jaune") : echap(nom)}</span>
+            <span class="quoi">${quoi}</span>
+          </button>`).join("")}
+      </div>
+    </div>
+    ${S.conv ? blocExports() : ""}
+    ${S.conv && S.conv.pageIssues.length ? blocDefauts() : ""}
+    <div id="panneau" role="tabpanel" aria-labelledby="onglet-${S.tab}" style="margin-top:24px"></div>
+  </section>`;
+
+  const p = $("panneau");
+  if (S.tab === "resume") p.innerHTML = vueResume(resume, !S.conv);
+  else if (S.tab === "carte") rendreCarte(p);
+  else rendreDeck(p);
+}
+
+function blocExports() {
+  const jeux = {
+    resume: [["resume-pdf", "PDF"], ["resume-md", "Copier en Markdown"]],
+    carte: [["carte-png", "PNG haute résolution"], ["carte-pdf", "PDF paysage"]],
+    fiches: [["fiches-pdf", "Planche A4 à imprimer"], ["fiches-csv", "CSV pour Anki"]],
+  };
+  const notes = { fiches: "La planche s'imprime en recto-verso, reliure bord long : les versos tombent exactement derrière leur recto." };
+  return `<div style="margin-top:20px">
+    <div class="rangee">
+      ${jeux[S.tab].map(([id, nom]) => `<button type="button" class="bouton blanc" style="font-size:.875rem" data-export="${id}">${nom}</button>`).join("")}
+    </div>
+    ${notes[S.tab] ? `<p class="mini" style="margin:8px 0 0">${notes[S.tab]}</p>` : ""}
+    <p class="discret" id="note-export" style="margin:8px 0 0;min-height:1.2em"></p>
+  </div>`;
+}
+
+function blocDefauts() {
+  return `<div class="avis" style="margin-top:16px">
+    <p class="titre" style="font-size:.95rem;margin:0">Ce que je n'ai pas pu lire — rien n'a été inventé pour combler.</p>
+    ${S.conv.pageIssues.map((i) => `<p class="mini" style="margin:2px 0 0"><strong style="color:var(--encre)">Page ${i.page}</strong> — ${echap(i.problem)}. ${echap(i.advice)}</p>`).join("")}
+  </div>`;
+}
+
+function vueResume(s, enCours) {
+  const meta = [s.subject, s.level].filter(Boolean).join(" · ");
+  const sections = (s.sections || []).filter(Boolean);
+  return `<article style="padding-bottom:80px">
+    <header style="border-bottom:1px solid var(--encre);padding-bottom:20px">
+      ${meta ? `<p class="discret" style="margin:0">${echap(meta)}</p>` : ""}
+      <h2 class="titre" style="font-size:clamp(1.6rem,4.4vw,2.75rem);line-height:1.06;margin:8px 0 0">${echap(s.title || "Lecture en cours…")}</h2>
+    </header>
+    ${sections.map((sec, i) => `
+      <section class="section-resume">
+        <div class="colonne">
+          <h3 class="titre" style="font-size:1.15rem;line-height:1.25;margin:0">${echap(sec.heading || "")}</h3>
+          ${(sec.paragraphs || []).map((p) => `<p class="lecture" style="margin:12px 0 0">${echap(p)}</p>`).join("")}
+          ${(sec.formulas || []).map((f, j) => `
+            <div style="margin-top:20px">
+              <p class="titre" style="font-size:1.15rem;margin:0">${surligne(maths(f.latex), "f" + i + j)}</p>
+              ${f.meaning ? `<p class="lecture" style="margin:8px 0 0;font-size:.95rem;font-style:italic;color:var(--encre-clair)">${echap(f.meaning)}</p>` : ""}
+            </div>`).join("")}
+          <div class="marge-flux">
+            ${(sec.keyTerms || []).map((t) => `<div class="terme-flux"><p class="titre" style="font-size:.95rem;margin:0">${echap(t.term)}</p><p class="lecture" style="margin:0;font-size:.98rem">${echap(t.definition)}</p></div>`).join("")}
+          </div>
+        </div>
+        <aside class="marge">
+          ${(sec.keyTerms || []).map((t) => `<div style="margin-bottom:20px"><p class="titre" style="font-size:.9rem;line-height:1.3;margin:0">${echap(t.term)}</p><p class="lecture" style="margin:4px 0 0;font-size:.9rem;color:var(--encre-clair)">${echap(t.definition)}</p></div>`).join("")}
+        </aside>
+      </section>`).join("")}
+    ${(s.keyPoints || []).length ? `
+      <section style="margin-top:48px;border-top:1px solid var(--encre);padding-top:24px">
+        <h3 class="titre" style="font-size:1.15rem;margin:0">${surligne("À retenir", "retenir")}</h3>
+        <ul style="list-style:none;padding:0;margin:16px 0 0" class="colonne">
+          ${s.keyPoints.map((p) => `<li class="lecture" style="display:flex;gap:12px;margin-top:8px"><span aria-hidden="true" style="flex:0 0 16px;height:1px;background:var(--encre);margin-top:.8em"></span><span>${echap(p)}</span></li>`).join("")}
+        </ul>
+      </section>` : ""}
+    ${(s.commonMistakes || []).length ? `
+      <section style="margin-top:40px">
+        <h3 class="titre" style="font-size:1.15rem;margin:0">${surligne("Pièges classiques", "pieges", "rose")}</h3>
+        <ul style="list-style:none;padding:0;margin:16px 0 0" class="colonne">
+          ${s.commonMistakes.map((p) => `<li class="lecture" style="display:flex;gap:12px;margin-top:8px"><span aria-hidden="true" style="flex:0 0 16px;height:1px;background:var(--encre);margin-top:.8em"></span><span>${echap(p)}</span></li>`).join("")}
+        </ul>
+      </section>` : ""}
+    ${enCours ? `<p class="discret" role="status" style="margin-top:32px"><span style="display:inline-block;width:.55em;height:1em;background:var(--encre);transform:translateY(.12em)"></span> j'écris la suite…</p>` : ""}
+  </article>`;
+}
+
+/* ── carte mentale ── */
+function rendreCarte(hote) {
+  const d = disposer(S.conv.mindmap.root, S.replies);
+  hote.innerHTML = `<div style="padding-bottom:80px">
+    <div style="display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:12px;border-bottom:1px solid var(--encre);padding-bottom:12px">
+      <p class="discret" style="margin:0">Touche un nœud pour le replier. Glisse pour déplacer.</p>
+      <div style="display:flex;align-items:center;gap:4px">
+        <button type="button" class="mini-bouton" data-zoom="-1" aria-label="Dézoomer">&minus;</button>
+        <span class="discret" id="pct" style="width:3rem;text-align:center;font-variant-numeric:tabular-nums">100%</span>
+        <button type="button" class="mini-bouton" data-zoom="1" aria-label="Zoomer">+</button>
+        <button type="button" class="nu discret" style="margin-left:12px" data-zoom="0">Tout déplier</button>
+      </div>
+    </div>
+    <div class="cadre-carte" id="cadre" style="margin-top:16px">
+      <svg id="svg-carte" width="${d.largeur}" height="${d.hauteur}" viewBox="0 0 ${d.largeur} ${d.hauteur}" role="tree" aria-label="Carte mentale du cours">
+        ${d.liens.map((l) => `<line x1="${l.x1}" y1="${l.y1}" x2="${l.x2}" y2="${l.y2}" stroke="${l.profondeur <= 1 ? "#0b0b0c" : "#c9c9c6"}" stroke-width="${Math.max(.8, 2.4 - l.profondeur * .5)}"/>`).join("")}
+        ${d.noeuds.map((n) => {
+          const t = CORPS[n.profondeur], il = t * INTERLIGNE;
+          const y0 = n.y - ((n.lignes.length - 1) * il) / 2 + t * .34;
+          return `<g>
+            <rect x="${n.x - n.l / 2}" y="${n.y - n.h / 2}" width="${n.l}" height="${n.h}" fill="#ffffff" stroke="${n.profondeur === 0 ? "#0b0b0c" : "#c9c9c6"}" stroke-width="${n.profondeur === 0 ? 1.6 : .8}"/>
+            ${n.profondeur === 1 ? `<rect x="${n.x - n.l / 2 + 2}" y="${n.y + n.h / 2 - 6}" width="${n.l - 4}" height="4" fill="#ffe94a"/>` : ""}
+            <text x="${n.x}" y="${y0}" text-anchor="middle" font-size="${t}" font-weight="${n.profondeur <= 1 ? 650 : 450}" fill="#0b0b0c" style="font-family:var(--display)">
+              ${n.lignes.map((l, i) => `<tspan x="${n.x}" dy="${i === 0 ? 0 : il}">${echap(l)}</tspan>`).join("")}
+            </text>
+            ${n.caches ? `<text x="${n.x + n.l / 2 + 9}" y="${n.y + 4}" font-size="11" fill="#55554f" style="font-family:var(--display)">+${n.caches}</text>` : ""}
+            ${n.aEnfants ? `<rect data-noeud="${echap(n.id)}" role="button" tabindex="0" aria-label="${echap(n.label)}, ${n.caches ? "déplier" : "replier"}" x="${n.x - n.l / 2}" y="${n.y - n.h / 2}" width="${n.l}" height="${n.h}" fill="transparent" style="cursor:pointer"><title>${echap(n.detail || n.label)}</title></rect>` : (n.detail ? `<rect x="${n.x - n.l / 2}" y="${n.y - n.h / 2}" width="${n.l}" height="${n.h}" fill="transparent"><title>${echap(n.detail)}</title></rect>` : "")}
+          </g>`;
+        }).join("")}
+      </svg>
+    </div>
+  </div>`;
+
+  const cadre = $("cadre");
+  // à l'ouverture, la carte entière tient dans le cadre
+  requestAnimationFrame(() => {
+    const r = cadre.getBoundingClientRect();
+    S.zoomAjuste = Math.max(.25, Math.min(1, (r.width - 24) / d.largeur, (r.height - 24) / d.hauteur));
+    if (!S.echelleFigee) { S.echelle = S.zoomAjuste; S.pan = { x: 0, y: 0 }; }
+    majTransform();
+  });
+
+  let glisse = null;
+  cadre.addEventListener("pointerdown", (e) => {
+    if (e.target.closest("[data-noeud]")) return;
+    glisse = { x: e.clientX, y: e.clientY, px: S.pan.x, py: S.pan.y };
+    cadre.setPointerCapture(e.pointerId);
+  });
+  cadre.addEventListener("pointermove", (e) => {
+    if (!glisse) return;
+    S.pan = { x: glisse.px + (e.clientX - glisse.x), y: glisse.py + (e.clientY - glisse.y) };
+    majTransform();
+  });
+  const fin = () => { glisse = null; };
+  cadre.addEventListener("pointerup", fin);
+  cadre.addEventListener("pointercancel", fin);
+}
+function majTransform() {
+  const svg = $("svg-carte");
+  if (!svg) return;
+  svg.style.transform = `translate(-50%, -50%) translate(${S.pan.x}px, ${S.pan.y}px) scale(${S.echelle})`;
+  const p = $("pct");
+  if (p) p.textContent = Math.round(S.echelle * 100) + "%";
+}
+
+/* ── paquet de fiches ── */
+function nouveauDeck(cartes) { return { file: cartes.map((c) => c.id), verdicts: {}, retourne: false, repondu: 0 }; }
+const DIFF = ["", "à savoir", "à comprendre", "piège"];
+
+function rendreDeck(hote) {
+  const cartes = S.conv.flashcards.cards;
+  const d = S.deck;
+  const index = new Map(cartes.map((c) => [c.id, c]));
+  const total = cartes.length;
+  const sues = Object.values(d.verdicts).filter((v) => v === "su").length;
+
+  if (d.file.length === 0) {
+    hote.innerHTML = `<div style="padding:40px 0 80px">
+      <h2 class="titre" style="font-size:clamp(1.6rem,4.4vw,2.75rem);margin:0">${surligne("Paquet terminé.", "fin")}</h2>
+      <p class="lecture colonne" style="margin-top:16px">${sues} carte${sues > 1 ? "s" : ""} sur ${total} marquée${sues > 1 ? "s" : ""} comme sue${sues > 1 ? "s" : ""}. La mémoire lâche vite : repasse ce paquet demain, puis dans trois jours, puis dans une semaine. C'est le rythme qui marche, pas la durée d'une session.</p>
+      <button type="button" class="bouton" style="margin-top:24px" data-deck="refaire">Refaire le paquet</button>
+    </div>`;
+    return;
+  }
+
+  const c = index.get(d.file[0]);
+  // la barre n'apparaît qu'après la première réponse : personne n'a encore
+  // échoué à quoi que ce soit en ouvrant un paquet
+  const avance = Math.max(sues, d.repondu > 0 ? 1 : 0);
+  hote.innerHTML = `<div style="padding-bottom:80px">
+    <div style="display:flex;flex-wrap:wrap;align-items:baseline;justify-content:space-between;gap:4px 16px;border-bottom:1px solid var(--encre);padding-bottom:12px">
+      <p class="titre" style="font-size:1rem;margin:0">${d.repondu > 0 ? `${avance} fiche${avance > 1 ? "s" : ""} sur ${total} maîtrisée${avance > 1 ? "s" : ""}` : `${total} fiches. Retourne la première.`}</p>
+      <p class="discret" style="margin:0">${d.file.length} restante${d.file.length > 1 ? "s" : ""} dans la pile</p>
+    </div>
+    ${d.repondu > 0 ? `<div class="jauge" style="margin-top:12px" aria-hidden="true"><i style="width:${Math.round((avance / total) * 100)}%"></i></div>` : ""}
+    <div class="scene" style="margin-top:24px">
+      <div class="carte" id="carte" data-face="${d.retourne ? "verso" : "recto"}">
+        <button type="button" class="face" data-deck="retourner" aria-label="Recto. Entrée ou espace pour retourner.">
+          <span class="discret" style="display:flex;justify-content:space-between">
+            <span>${echap(c.tag)}</span><span>${DIFF[c.difficulty] || ""}</span>
+          </span>
+          <span class="titre" style="font-size:1.45rem;line-height:1.2">${echap(maths(c.front))}</span>
+          <span class="discret">${c.hint ? "Indice : " + echap(maths(c.hint)) : "Touche la carte pour retourner"}</span>
+        </button>
+        <div class="face verso">
+          <button type="button" data-deck="retourner" style="flex:1;background:none;border:0;padding:0;text-align:left;cursor:pointer" aria-label="Verso. Entrée ou espace pour revenir au recto.">
+            <span class="lecture" style="display:block;font-size:1.15rem">${echap(maths(c.back))}</span>
+          </button>
+          <div class="reponses" style="margin-top:16px">
+            <button type="button" class="bouton" data-deck="su">Su</button>
+            <button type="button" class="bouton blanc" data-deck="revoir">À revoir</button>
+            <button type="button" class="bouton blanc" data-deck="pas">Pas du tout</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <p class="discret" style="text-align:center;margin-top:16px">Espace pour retourner · balaye vers la gauche · 1, 2, 3 pour répondre</p>
+  </div>`;
+
+  let depart = null;
+  const el = $("carte");
+  el.addEventListener("pointerdown", (e) => { depart = { x: e.clientX, y: e.clientY }; });
+  el.addEventListener("pointerup", (e) => {
+    if (!depart) return;
+    const dx = e.clientX - depart.x, dy = e.clientY - depart.y;
+    depart = null;
+    if (Math.abs(dx) > 48 && Math.abs(dx) > Math.abs(dy)) retourner(dx < 0);
+  });
+}
+function retourner(v) {
+  if (!S.deck) return;
+  S.deck.retourne = v === undefined ? !S.deck.retourne : v;
+  const el = $("carte");
+  if (el) el.dataset.face = S.deck.retourne ? "verso" : "recto";
+}
+function repondre(verdict) {
+  const d = S.deck;
+  if (!d || !d.file.length) return;
+  const id = d.file[0];
+  d.verdicts[id] = verdict;
+  d.repondu++;
+  d.retourne = false;
+  const reste = d.file.slice(1);
+  if (verdict === "su") d.file = reste;
+  else {
+    const ecart = Math.min(verdict === "pas" ? 2 : 4, reste.length);
+    d.file = [...reste.slice(0, ecart), id, ...reste.slice(ecart)];
+  }
+  rendreDeck($("panneau"));
+}
+</script>
+
+<script>
+"use strict";
+/* ═══ 7. PDF écrit à la main ═══
+   Pas de bibliothèque : polices standard Type1, encodage WinAnsi, largeurs
+   mesurées au canvas avec Arial et Times New Roman, qui sont métriquement
+   compatibles avec Helvetica et Times. */
+const FONTES = {
+  F1: ["Helvetica", '400 {S}px Helvetica, Arial, "Liberation Sans", sans-serif'],
+  F2: ["Helvetica-Bold", '700 {S}px Helvetica, Arial, "Liberation Sans", sans-serif'],
+  F3: ["Helvetica-Oblique", 'italic 400 {S}px Helvetica, Arial, "Liberation Sans", sans-serif'],
+  F4: ["Times-Roman", '400 {S}px "Times New Roman", Times, "Liberation Serif", serif'],
+  F5: ["Times-Italic", 'italic 400 {S}px "Times New Roman", Times, "Liberation Serif", serif'],
+};
+const mesureur = document.createElement("canvas").getContext("2d");
+function largeur(texte, fonte, taille) {
+  mesureur.font = FONTES[fonte][1].replace("{S}", String(taille));
+  return mesureur.measureText(texte).width;
+}
+
+const SPECIAUX = { "€": 128, "‚": 130, "ƒ": 131, "„": 132, "…": 133, "†": 134, "‡": 135, "ˆ": 136, "‰": 137, "Š": 138, "‹": 139, "Œ": 140, "Ž": 142, "‘": 145, "’": 146, "“": 147, "”": 148, "•": 149, "–": 150, "—": 151, "˜": 152, "™": 153, "š": 154, "›": 155, "œ": 156, "ž": 158, "Ÿ": 159 };
+const TRANSLIT = { "α":"alpha","β":"beta","γ":"gamma","δ":"delta","ε":"epsilon","ζ":"zeta","η":"eta","θ":"theta","ι":"iota","κ":"kappa","λ":"lambda","μ":"mu","ν":"nu","ξ":"xi","π":"pi","ρ":"rho","σ":"sigma","τ":"tau","υ":"upsilon","φ":"phi","χ":"chi","ψ":"psi","ω":"omega","Γ":"Gamma","Δ":"Delta","Θ":"Theta","Λ":"Lambda","Ξ":"Xi","Π":"Pi","Σ":"Sigma","Υ":"Upsilon","Φ":"Phi","Ψ":"Psi","Ω":"Omega","≤":"<=","≥":">=","≠":"!=","≈":"~=","≡":"==","∝":" proportionnel a ","∞":"infini","→":"->","←":"<-","⇒":"=>","⇔":"<=>","∂":"d","∇":"nabla","∫":"integrale","∈":" appartient a ","∉":" n'appartient pas a ","⊂":" inclus dans ","∪":" union ","∩":" inter ","∀":"pour tout ","∃":"il existe ","∅":"vide","√":"racine","·":".","×":"x","÷":"/","±":"+/-","⃗":"(vecteur)","¹":"^1","²":"^2","³":"^3","⁰":"^0","⁴":"^4","⁵":"^5","⁶":"^6","⁷":"^7","⁸":"^8","⁹":"^9","⁺":"^+","⁻":"^-","ⁿ":"^n","ⁱ":"^i","₀":"_0","₁":"_1","₂":"_2","₃":"_3","₄":"_4","₅":"_5","₆":"_6","₇":"_7","₈":"_8","₉":"_9","₊":"_+","₋":"_-","ₐ":"_a","ₑ":"_e","ᵢ":"_i","ₙ":"_n","ₒ":"_o","ₓ":"_x","\u00a0":" ","\u202f":" ","\u2009":" " };
+const SUP_UNI = "⁰¹²³⁴⁵⁶⁷⁸⁹⁺⁻ⁿⁱ", SUP_ASCII = "0123456789+-ni";
+const SUB_UNI = "₀₁₂₃₄₅₆₇₈₉₊₋ₐₑᵢₙₒₓ", SUB_ASCII = "0123456789+-aein ox".replace(/ /g, "");
+function aplatir(run, uni, ascii, marque) {
+  return marque + [...run].map((c) => ascii[uni.indexOf(c)]).join("");
+}
+function pourPdf(src) {
+  // les exposants et indices sont aplatis par suites entières : "m.s^-2",
+  // pas "m.s^-^2"
+  let s = String(src || "")
+    .replace(new RegExp("[" + SUP_UNI + "]+", "g"), (m) => aplatir(m, SUP_UNI, SUP_ASCII, "^"))
+    .replace(new RegExp("[" + SUB_UNI + "]+", "g"), (m) => aplatir(m, SUB_UNI, SUB_ASCII, "_"));
+  let out = "";
+  for (const ch of s) {
+    const t = TRANSLIT[ch];
+    if (t !== undefined) { out += t; continue; }
+    const cp = ch.codePointAt(0);
+    if ((cp >= 32 && cp <= 126) || (cp >= 160 && cp <= 255)) { out += ch; continue; }
+    if (cp >= 128 && cp <= 159) { out += ch; continue; }   // déjà encodé WinAnsi
+    if (SPECIAUX[ch] !== undefined) { out += String.fromCharCode(SPECIAUX[ch]); continue; }
+    out += "?";
+  }
+  return out.replace(/\?{2,}/g, "?");
+}
+function octetsPdf(s) {
+  let out = "";
+  for (const ch of s) {
+    const sp = SPECIAUX[ch];
+    out += sp !== undefined ? String.fromCharCode(sp) : ch;
+  }
+  return out.replace(/[\\()]/g, (c) => "\\" + c);
+}
+
+function plier(texte, fonte, taille, max) {
+  const propre = pourPdf(texte).replace(/\s+/g, " ").trim();
+  if (!propre) return [];
+  const lignes = []; let cur = "";
+  for (const mot of propre.split(" ")) {
+    const cand = cur ? cur + " " + mot : mot;
+    if (largeur(cand, fonte, taille) <= max) { cur = cand; continue; }
+    if (cur) lignes.push(cur);
+    if (largeur(mot, fonte, taille) > max) {
+      let bout = "";
+      for (const ch of mot) {
+        if (largeur(bout + ch, fonte, taille) > max) { lignes.push(bout); bout = ch; } else bout += ch;
+      }
+      cur = bout;
+    } else cur = mot;
+  }
+  if (cur) lignes.push(cur);
+  return lignes;
+}
+function ajuster(texte, fonte, max, hauteur, depart, mini) {
+  let t = depart;
+  for (;;) {
+    const l = plier(texte, fonte, t, max);
+    if (l.length * t * 1.32 <= hauteur || t <= mini) return { taille: t, lignes: l };
+    t -= .5;
+  }
+}
+
+const ENCRE = [.04, .04, .05], GRIS = [.6, .6, .58], JAUNE = [1, .914, .29], ROSE = [1, .49, .68], BLEU = [.106, .224, 1];
+const n3 = (v) => (Math.round(v * 1000) / 1000).toString();
+function documentPdf() {
+  const pages = []; let cur = null;
+  const api = {
+    page(l, h) { cur = { l, h, ops: [] }; pages.push(cur); return api; },
+    rempli(x, y, l, h, c) { cur.ops.push(`${c.map(n3).join(" ")} rg`, `${n3(x)} ${n3(y)} ${n3(l)} ${n3(h)} re f`); return api; },
+    contour(x, y, l, h, c, e) { cur.ops.push(`${c.map(n3).join(" ")} RG`, `${n3(e)} w`, `${n3(x)} ${n3(y)} ${n3(l)} ${n3(h)} re S`); return api; },
+    trait(x1, y1, x2, y2, c, e) { cur.ops.push(`${c.map(n3).join(" ")} RG`, `${n3(e)} w`, `${n3(x1)} ${n3(y1)} m ${n3(x2)} ${n3(y2)} l S`); return api; },
+    texte(x, y, s, fonte, taille, c) {
+      const t = octetsPdf(pourPdf(s));
+      if (!t) return api;
+      cur.ops.push(`${(c || ENCRE).map(n3).join(" ")} rg`, "BT", `/${fonte} ${n3(taille)} Tf`, `${n3(x)} ${n3(y)} Td`, `(${t}) Tj`, "ET");
+      return api;
+    },
+    centre(x, y, s, fonte, taille, c) { return api.texte(x - largeur(pourPdf(s), fonte, taille) / 2, y, s, fonte, taille, c); },
+    droite(x, y, s, fonte, taille, c) { return api.texte(x - largeur(pourPdf(s), fonte, taille), y, s, fonte, taille, c); },
+    blob() {
+      const clefs = Object.keys(FONTES);
+      let out = "%PDF-1.4\n";
+      const off = [];
+      const objet = (n, corps) => { off[n] = out.length; out += `${n} 0 obj\n${corps}\nendobj\n`; };
+      const numPage = (i) => 3 + clefs.length + i * 2 + 1;
+      objet(1, "<< /Type /Catalog /Pages 2 0 R >>");
+      objet(2, `<< /Type /Pages /Kids [${pages.map((_, i) => `${numPage(i)} 0 R`).join(" ")}] /Count ${pages.length} >>`);
+      clefs.forEach((k, i) => objet(3 + i, `<< /Type /Font /Subtype /Type1 /BaseFont /${FONTES[k][0]} /Encoding /WinAnsiEncoding >>`));
+      const res = `<< /Font << ${clefs.map((k, i) => `/${k} ${3 + i} 0 R`).join(" ")} >> >>`;
+      pages.forEach((p, i) => {
+        const flux = p.ops.join("\n") + "\n";
+        objet(numPage(i) - 1, `<< /Length ${flux.length} >>\nstream\n${flux}endstream`);
+        objet(numPage(i), `<< /Type /Page /Parent 2 0 R /MediaBox [0 0 ${n3(p.l)} ${n3(p.h)}] /Resources ${res} /Contents ${numPage(i) - 1} 0 R >>`);
+      });
+      const taille = 3 + clefs.length + pages.length * 2;
+      const debutXref = out.length;
+      out += `xref\n0 ${taille}\n0000000000 65535 f \n`;
+      for (let i = 1; i < taille; i++) out += String(off[i] || 0).padStart(10, "0") + " 00000 n \n";
+      out += `trailer\n<< /Size ${taille} /Root 1 0 R >>\nstartxref\n${debutXref}\n%%EOF\n`;
+      const octets = new Uint8Array(out.length);
+      for (let i = 0; i < out.length; i++) octets[i] = out.charCodeAt(i) & 0xff;
+      return new Blob([octets], { type: "application/pdf" });
+    },
+  };
+  return api;
+}
+
+/* ── la planche A4, huit fiches par page ──
+   En recto-verso reliure bord long, la feuille se retourne autour de son axe
+   vertical : le dos d'une fiche imprimée en colonne 0 se retrouve derrière la
+   colonne 1. Les versos sont donc en colonnes inversées. Vérifiable : plie une
+   page en deux dans le sens de la hauteur, les deux faces coïncident. */
+const A4 = { l: 595.28, h: 841.89 }, MARGE = { x: 28, haut: 46, bas: 28 }, COLS = 2, RANGS = 4;
+function grille() {
+  const lc = (A4.l - MARGE.x * 2) / COLS, hc = (A4.h - MARGE.haut - MARGE.bas) / RANGS, cases = [];
+  for (let r = 0; r < RANGS; r++) for (let c = 0; c < COLS; c++) {
+    cases.push({ x: MARGE.x + c * lc, y: A4.h - MARGE.haut - (r + 1) * hc, l: lc, h: hc });
+  }
+  return cases;
+}
+const caseVerso = (i) => Math.floor(i / COLS) * COLS + (COLS - 1 - (i % COLS));
+
+function pdfFiches(cartes, titre, matiere) {
+  const doc = documentPdf(), cases = grille(), PAR = COLS * RANGS;
+  for (let d = 0; d < cartes.length; d += PAR) {
+    const lot = cartes.slice(d, d + PAR);
+    doc.page(A4.l, A4.h);
+    doc.texte(MARGE.x, A4.h - 30, `${titre} — recto`, "F2", 9);
+    doc.droite(A4.l - MARGE.x, A4.h - 30, `${matiere} · fiches ${d + 1} à ${d + lot.length}`, "F1", 9, GRIS);
+    if (d === 0) doc.texte(MARGE.x, A4.h - 41, "Impression recto-verso, reliure bord long. Coupe sur les reperes.", "F1", 7.5, GRIS);
+    reperes(doc, cases);
+    lot.forEach((c, i) => recto(doc, cases[i], c, d + i + 1));
+
+    doc.page(A4.l, A4.h);
+    doc.texte(MARGE.x, A4.h - 30, `${titre} — verso`, "F2", 9);
+    reperes(doc, cases);
+    lot.forEach((c, i) => verso(doc, cases[caseVerso(i)], c, d + i + 1));
+  }
+  return doc.blob();
+}
+function reperes(doc, cases) {
+  const vus = new Set();
+  for (const c of cases) for (const x of [c.x, c.x + c.l]) for (const y of [c.y, c.y + c.h]) {
+    const k = `${Math.round(x)}:${Math.round(y)}`;
+    if (vus.has(k)) continue;
+    vus.add(k);
+    doc.trait(x - 6, y, x + 6, y, GRIS, .4).trait(x, y - 6, x, y + 6, GRIS, .4);
+  }
+}
+function recto(doc, c, carte, num) {
+  const p = 20, dedans = c.l - p * 2;
+  doc.texte(c.x + p, c.y + c.h - p - 7, String(num), "F1", 8, GRIS);
+  const tag = pourPdf(carte.tag).slice(0, 34);
+  if (tag) {
+    const l = largeur(tag, "F1", 8);
+    doc.rempli(c.x + c.l - p - l - 3, c.y + c.h - p - 9, l + 6, 11, JAUNE);
+    doc.texte(c.x + c.l - p - l, c.y + c.h - p - 7, tag, "F1", 8);
+  }
+  const { taille, lignes } = ajuster(maths(carte.front), "F2", dedans, c.h - p * 2 - 34, 15, 8);
+  let y = Math.min(c.y + c.h / 2 + (lignes.length * taille * 1.32) / 2 - taille, c.y + c.h - p - 26);
+  for (const l of lignes) { doc.texte(c.x + p, y, l, "F2", taille); y -= taille * 1.32; }
+  doc.texte(c.x + p, c.y + p, "•".repeat(carte.difficulty), "F2", 11);
+}
+function verso(doc, c, carte, num) {
+  const p = 20, dedans = c.l - p * 2;
+  doc.droite(c.x + c.l - p, c.y + c.h - p - 7, String(num), "F1", 8, GRIS);
+  const indice = carte.hint ? plier(maths(carte.hint), "F3", 9, dedans) : [];
+  const hi = indice.length * 9 * 1.3;
+  const { taille, lignes } = ajuster(maths(carte.back), "F1", dedans, c.h - p * 2 - 26 - hi, 13, 7.5);
+  let y = c.y + c.h - p - 26;
+  for (const l of lignes) { doc.texte(c.x + p, y, l, "F1", taille); y -= taille * 1.32; }
+  if (indice.length) {
+    let hy = c.y + p + hi - 9;
+    doc.trait(c.x + p, hy + 12, c.x + p + 26, hy + 12, GRIS, .6);
+    for (const l of indice) { doc.texte(c.x + p, hy, l, "F3", 9, GRIS); hy -= 9 * 1.3; }
+  }
+}
+
+/* ── résumé en PDF ── */
+function pdfResume(s) {
+  const doc = documentPdf(), M = { g: 64, d: 150, haut: 64, bas: 60 };
+  const COL = A4.l - M.g - M.d;
+  let y = A4.h - M.haut, pages = 1;
+  doc.page(A4.l, A4.h);
+  const place = (besoin) => { if (y - besoin < M.bas) { doc.page(A4.l, A4.h); pages++; y = A4.h - M.haut; } };
+  const bloc = (texte, fonte, taille, il, coul) => {
+    for (const l of plier(texte, fonte, taille, COL)) { place(taille * il + 8); doc.texte(M.g, y, l, fonte, taille, coul); y -= taille * il; }
+  };
+  const meta = [s.subject, s.level].filter(Boolean).join(" · ");
+  if (meta) { doc.texte(M.g, y, meta, "F1", 9, GRIS); y -= 26; }
+  bloc(s.title, "F2", 24, 1.16, ENCRE);
+  y -= 10; doc.trait(M.g, y, A4.l - M.d + 60, y, ENCRE, 1); y -= 24;
+
+  for (const sec of s.sections) {
+    place(90); bloc(sec.heading, "F2", 14, 1.25, ENCRE); y -= 8;
+    for (const p of sec.paragraphs) { bloc(p, "F4", 11.5, 1.52, ENCRE); y -= 9; }
+    for (const t of sec.keyTerms) {
+      place(46);
+      const etiquette = plier(t.term, "F2", 8.5, M.d - 34), def = plier(t.definition, "F4", 10.5, COL - 16);
+      let ly = y;
+      for (const l of etiquette) { doc.texte(A4.l - M.d + 22, ly, l, "F2", 8.5); ly -= 11; }
+      doc.trait(M.g, y + 9, M.g, y + 9 - def.length * 10.5 * 1.45, JAUNE, 2);
+      for (const l of def) { doc.texte(M.g + 12, y, l, "F4", 10.5); y -= 10.5 * 1.45; }
+      y -= 8;
+    }
+    for (const f of sec.formulas) {
+      place(54);
+      const t = pourPdf(maths(f.latex)), l = largeur(t, "F2", 13);
+      doc.rempli(M.g - 6, y - 5, Math.min(l + 14, COL + 12), 20, JAUNE);
+      doc.texte(M.g, y, t, "F2", 13); y -= 22;
+      if (f.meaning) bloc(f.meaning, "F5", 10, 1.4, GRIS);
+      y -= 10;
+    }
+    y -= 12;
+  }
+  const liste = (titre, items, couleur) => {
+    if (!items.length) return;
+    place(80); y -= 6;
+    const l = largeur(pourPdf(titre), "F2", 12);
+    doc.rempli(M.g - 5, y - 4, l + 10, 18, couleur);
+    doc.texte(M.g, y, titre, "F2", 12); y -= 24;
+    for (const it of items) {
+      place(30);
+      doc.texte(M.g, y, "—", "F4", 11, GRIS);
+      for (const ln of plier(it, "F4", 11, COL - 16)) { doc.texte(M.g + 16, y, ln, "F4", 11); y -= 11 * 1.45; }
+      y -= 5;
+    }
+    y -= 10;
+  };
+  liste("A retenir", s.keyPoints, BLEU);
+  liste("Pieges classiques", s.commonMistakes, ROSE);
+  return doc.blob();
+}
+
+/* ── carte mentale en PDF paysage ── */
+function pdfCarte(racine, titre) {
+  const d = disposer(racine, new Set());
+  const L = 841.89, H = 595.28, M = 34, haut = 54;
+  const doc = documentPdf().page(L, H);
+  const k = Math.min((L - M * 2) / d.largeur, (H - haut - M) / d.hauteur);
+  const ox = M + (L - M * 2 - d.largeur * k) / 2, oy = M + (H - haut - M - d.hauteur * k) / 2;
+  const px = (x) => ox + x * k, py = (y) => H - haut - oy - y * k;
+  doc.texte(M, H - 34, titre, "F2", 13);
+  for (const l of d.liens) doc.trait(px(l.x1), py(l.y1), px(l.x2), py(l.y2), l.profondeur <= 1 ? ENCRE : GRIS, Math.max(.5, (2.4 - l.profondeur * .5) * k));
+  for (const n of d.noeuds) {
+    const t = CORPS[n.profondeur] * k, l = n.l * k, h = n.h * k;
+    const gx = px(n.x) - l / 2, by = py(n.y) - h / 2;
+    doc.rempli(gx, by, l, h, [1, 1, 1]);
+    doc.contour(gx, by, l, h, n.profondeur === 0 ? ENCRE : GRIS, n.profondeur === 0 ? 1.4 : .6);
+    if (n.profondeur === 1) doc.rempli(gx + 2, by + 1, l - 4, 5, JAUNE);
+    const il = CORPS[n.profondeur] * INTERLIGNE * k;
+    let ty = py(n.y) + ((n.lignes.length - 1) * il) / 2 - t * .34;
+    for (const ligne of n.lignes) { doc.centre(px(n.x), ty, ligne, n.profondeur <= 1 ? "F2" : "F1", t); ty -= il; }
+  }
+  return doc.blob();
+}
+
+/* ── carte mentale en PNG : peinte au canvas, pas rastérisée depuis le SVG,
+      pour garder les polices du document ── */
+async function pngCarte(racine, titre, k) {
+  const d = disposer(racine, new Set()), haut = 56;
+  const c = document.createElement("canvas");
+  c.width = Math.round(d.largeur * k); c.height = Math.round((d.hauteur + haut) * k);
+  const x = c.getContext("2d");
+  x.scale(k, k);
+  x.fillStyle = "#fff"; x.fillRect(0, 0, d.largeur, d.hauteur + haut);
+  const fam = 'var(--display), "Helvetica Neue", Arial, sans-serif';
+  x.fillStyle = "#0b0b0c"; x.font = `600 15px ${fam}`; x.textBaseline = "alphabetic";
+  x.fillText(titre, 24, 32);
+  x.strokeStyle = "#0b0b0c"; x.lineWidth = 1;
+  x.beginPath(); x.moveTo(24, 42); x.lineTo(d.largeur - 24, 42); x.stroke();
+  x.translate(0, haut);
+  for (const l of d.liens) {
+    x.strokeStyle = l.profondeur <= 1 ? "#0b0b0c" : "#9a9a96";
+    x.lineWidth = Math.max(.8, 2.4 - l.profondeur * .5);
+    x.beginPath(); x.moveTo(l.x1, l.y1); x.lineTo(l.x2, l.y2); x.stroke();
+  }
+  x.textAlign = "center";
+  for (const n of d.noeuds) {
+    const t = CORPS[n.profondeur], gx = n.x - n.l / 2, hy = n.y - n.h / 2;
+    x.fillStyle = "#fff"; x.fillRect(gx, hy, n.l, n.h);
+    x.strokeStyle = n.profondeur === 0 ? "#0b0b0c" : "#c9c9c6";
+    x.lineWidth = n.profondeur === 0 ? 1.6 : .8;
+    x.strokeRect(gx, hy, n.l, n.h);
+    if (n.profondeur === 1) { x.fillStyle = "#ffe94a"; x.fillRect(gx + 2, hy + n.h - 6, n.l - 4, 4); }
+    x.fillStyle = "#0b0b0c"; x.font = `${n.profondeur <= 1 ? 600 : 400} ${t}px ${fam}`;
+    const il = t * INTERLIGNE;
+    let ty = n.y - ((n.lignes.length - 1) * il) / 2 + t * .34;
+    for (const ligne of n.lignes) { x.fillText(ligne, n.x, ty); ty += il; }
+  }
+  return await new Promise((ok, ko) => c.toBlob((b) => (b ? ok(b) : ko(new Error("png"))), "image/png"));
+}
+
+function csvAnki(cartes, matiere) {
+  const esc = (v) => { const c = String(v).replace(/\r?\n/g, "<br>"); return /[";]/.test(c) ? `"${c.replace(/"/g, '""')}"` : c; };
+  const lignes = cartes.map((c) => {
+    const dos = c.hint ? `${maths(c.back)}<br><i>${maths(c.hint)}</i>` : maths(c.back);
+    const tags = [matiere, c.tag].filter(Boolean).map((t) => t.replace(/\s+/g, "_")).join(" ");
+    return [maths(c.front), dos, tags].map(esc).join(";");
+  });
+  return new Blob(["\uFEFF" + ["#separator:Semicolon", "#html:true", "#tags column:3", ...lignes].join("\n")], { type: "text/csv;charset=utf-8" });
+}
+
+function markdown(c) {
+  const s = c.summary, out = [`# ${s.title}`, ""];
+  const meta = [s.subject, s.level].filter(Boolean).join(" · ");
+  if (meta) out.push(`*${meta}*`, "");
+  for (const sec of s.sections) {
+    out.push(`## ${sec.heading}`, "");
+    for (const p of sec.paragraphs) out.push(p, "");
+    for (const t of sec.keyTerms) out.push(`**${t.term}** — ${t.definition}`, "");
+    for (const f of sec.formulas) { out.push("```", f.latex, "```", ""); if (f.meaning) out.push(f.meaning, ""); }
+  }
+  if (s.keyPoints.length) { out.push("## À retenir", ""); for (const p of s.keyPoints) out.push(`- ${p}`); out.push(""); }
+  if (s.commonMistakes.length) { out.push("## Pièges classiques", ""); for (const p of s.commonMistakes) out.push(`- ${p}`); out.push(""); }
+  out.push("## Carte mentale", "");
+  (function plan(n, p) {
+    out.push(`${"  ".repeat(p)}- ${n.label}${n.detail ? " — " + n.detail : ""}`);
+    for (const e of n.children || []) plan(e, p + 1);
+  })(c.mindmap.root, 0);
+  out.push("", "## Fiches", "");
+  for (const f of c.flashcards.cards) out.push(`**${f.front}**`, "", f.back, "");
+  return out.join("\n");
+}
+
+function nomFichier(titre) {
+  return (String(titre).normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "").slice(0, 48)) || "cours";
+}
+
+async function exporter(id) {
+  const note = $("note-export");
+  const dire = (t) => { if (note) note.textContent = t; };
+  if (!S.conv) return;
+  const base = nomFichier(S.conv.summary.title);
+  try {
+    dire("Un instant…");
+    if (id === "resume-md") {
+      await navigator.clipboard.writeText(markdown(S.conv));
+      dire("Markdown copié. Notion le lit tel quel.");
+      return;
+    }
+    if (!downloads) { dire("Cette vue ne peut pas enregistrer de fichier. Ouvre le lien depuis claude.ai."); return; }
+    let data, nom;
+    if (id === "resume-pdf") { data = pdfResume(S.conv.summary); nom = `${base}-resume.pdf`; }
+    else if (id === "carte-png") { data = await pngCarte(S.conv.mindmap.root, S.conv.summary.title, 3); nom = `${base}-carte.png`; }
+    else if (id === "carte-pdf") { data = pdfCarte(S.conv.mindmap.root, S.conv.summary.title); nom = `${base}-carte.pdf`; }
+    else if (id === "fiches-pdf") { data = pdfFiches(S.conv.flashcards.cards, S.conv.summary.title, S.conv.summary.subject); nom = `${base}-fiches.pdf`; }
+    else if (id === "fiches-csv") { data = csvAnki(S.conv.flashcards.cards, S.conv.summary.subject); nom = `${base}-anki.csv`; }
+    else return;
+    const r = await downloads.save({ filename: nom, data });
+    dire(r && r.saved === false ? "Enregistrement annulé." : "Enregistré.");
+  } catch (e) {
+    dire(e && e.code === "not_granted" ? "Enregistrement refusé." : "L'export a échoué. Réessaie.");
+  }
+}
+
+/* ═══ 8. Câblage ═══ */
+$("btn-galerie").addEventListener("click", () => $("fichier-galerie").click());
+$("btn-photo").addEventListener("click", () => $("fichier-photo").click());
+for (const id of ["fichier-galerie", "fichier-photo"]) {
+  $(id).addEventListener("change", (e) => { prepare(e.target.files); e.target.value = ""; });
+}
+const depot = $("depot");
+depot.addEventListener("dragover", (e) => { e.preventDefault(); depot.dataset.survol = "1"; });
+depot.addEventListener("dragleave", () => { delete depot.dataset.survol; });
+depot.addEventListener("drop", (e) => { e.preventDefault(); delete depot.dataset.survol; prepare(e.dataTransfer.files); });
+window.addEventListener("dragover", (e) => e.preventDefault());
+window.addEventListener("drop", (e) => e.preventDefault());
+window.addEventListener("paste", (e) => {
+  const f = e.clipboardData && e.clipboardData.files;
+  if (f && f.length) { e.preventDefault(); prepare(f); }
+});
+
+document.addEventListener("click", (e) => {
+  const b = e.target.closest("button, [data-noeud]");
+  if (!b) return;
+  const agir = b.dataset.agir, tab = b.dataset.tab, deck = b.dataset.deck, exp = b.dataset.export, zoom = b.dataset.zoom, noeud = b.dataset.noeud;
+
+  if (agir === "reculer" || agir === "avancer") {
+    const i = Number(b.dataset.i), j = agir === "reculer" ? i - 1 : i + 1;
+    if (j < 0 || j >= S.pages.length) return;
+    const [m] = S.pages.splice(i, 1); S.pages.splice(j, 0, m); rendrePages();
+  } else if (agir === "retirer") {
+    S.pages.splice(Number(b.dataset.i), 1); rendrePages(); rendreDepot();
+  } else if (agir === "convertir") { convertir(); }
+  else if (agir === "vider") {
+    S.pages = []; S.conv = null; S.partiel = null; S.deck = null;
+    rendrePages(); rendreDepot(); rendreResultat(); alerter(null);
+  } else if (tab) { S.tab = tab; rendreResultat(); }
+  else if (exp) { exporter(exp); }
+  else if (zoom) {
+    if (zoom === "0") { S.replies = new Set(); S.echelleFigee = false; rendreCarte($("panneau")); }
+    else { S.echelleFigee = true; S.echelle = Math.min(3, Math.max(.25, S.echelle + Number(zoom) * .15)); majTransform(); }
+  } else if (noeud) {
+    S.replies.has(noeud) ? S.replies.delete(noeud) : S.replies.add(noeud);
+    rendreCarte($("panneau"));
+  } else if (deck === "retourner") { retourner(); }
+  else if (deck === "su" || deck === "revoir" || deck === "pas") { repondre(deck); }
+  else if (deck === "refaire") { S.deck = nouveauDeck(S.conv.flashcards.cards); rendreDeck($("panneau")); }
+});
+
+document.addEventListener("keydown", (e) => {
+  const cible = e.target;
+  if (cible && ["INPUT", "TEXTAREA", "SELECT"].includes(cible.tagName)) return;
+  if (cible && cible.dataset && cible.dataset.noeud && (e.key === "Enter" || e.key === " ")) {
+    e.preventDefault(); cible.click(); return;
+  }
+  if (!S.conv || S.tab !== "fiches" || !S.deck || !S.deck.file.length) return;
+  if (e.key === " " || e.key === "Enter") {
+    if (cible && cible.closest && cible.closest("button")) return;
+    e.preventDefault(); retourner();
+  } else if (e.key === "ArrowRight") retourner(true);
+  else if (e.key === "ArrowLeft") retourner(false);
+  else if (S.deck.retourne && e.key === "1") repondre("su");
+  else if (S.deck.retourne && e.key === "2") repondre("revoir");
+  else if (S.deck.retourne && e.key === "3") repondre("pas");
+});
+
+/* Les onglets répondent aux flèches, comme un vrai groupe d'onglets. */
+document.addEventListener("keydown", (e) => {
+  if (e.key !== "ArrowRight" && e.key !== "ArrowLeft") return;
+  const t = e.target.closest && e.target.closest('[role="tab"]');
+  if (!t) return;
+  e.preventDefault();
+  const i = ONGLETS.findIndex(([k]) => k === S.tab);
+  const j = (i + (e.key === "ArrowRight" ? 1 : ONGLETS.length - 1)) % ONGLETS.length;
+  S.tab = ONGLETS[j][0];
+  rendreResultat();
+  const suivant = $("onglet-" + S.tab);
+  if (suivant) suivant.focus();
+});
+
+initFeuille();
+rendreDepot();
+
+(async () => {
+  if (!window.claude || typeof window.claude.use !== "function") {
+    alerter("Cette page a besoin du lecteur d'artefacts de claude.ai.",
+      "Ouvre le lien depuis claude.ai : la conversion passe par ton propre compte Claude.");
+    return;
+  }
+  sample = await window.claude.use("sample");
+  downloads = await window.claude.use("downloads");
+  if (!sample) {
+    alerter("La conversion n'est pas disponible dans cette vue.",
+      "Ouvre le lien depuis claude.ai, dans un navigateur où tu es connecté.");
+    return;
+  }
+  const limites = await sample.limits().catch(() => null);
+  peutImages = !!(limites && limites.images);
+  if (!peutImages) {
+    alerter("Cette vue ne peut pas envoyer de photos.",
+      "Ouvre le lien depuis claude.ai plutôt que dans un onglet séparé.");
+  } else {
+    depot.classList.add("pret");
+  }
+  rendreDepot();
+})();
+</script>
