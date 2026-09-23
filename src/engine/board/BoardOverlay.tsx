@@ -40,7 +40,7 @@ export function BoardOverlay() {
         <h2 className="font-serif text-base">{def.title}</h2>
         <p className="mt-1 text-[0.7rem] leading-snug text-ivory/70">Tirez le fil rouge d&apos;une pièce à une autre quand l&apos;une contredit l&apos;autre.</p>
       </div>
-      <div className="absolute right-[2vw] top-[3vh] rounded-sm border border-brass/30 bg-[#0b0d12]/80 px-3 py-2 text-right">
+      <div className="absolute right-[2vw] top-[10vh] rounded-sm border border-brass/30 bg-[#0b0d12]/80 px-3 py-2 text-right">
         <p className="text-[0.6rem] uppercase tracking-[0.3em] text-brass/80">Contradictions</p>
         <p className="font-serif text-2xl tabular-nums">
           {found.length} <span className="text-base text-ivory/50">/ {def.links.length}</span>
