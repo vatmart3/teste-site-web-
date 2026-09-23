@@ -1,6 +1,7 @@
 "use client";
 import { CASES, caseStatus, CURRENT_PHASE } from "@/content/cases";
-import { useHub } from "../state";
+import { hubBus, useHub } from "../state";
+import { useProfile } from "../../state/profile";
 import { Shell, Soon } from "./Shell";
 
 const STATUS_LABEL = { completed: "Terminée", available: "Ouverte", soon: "À venir", sealed: "Sous scellés" } as const;
@@ -8,8 +9,10 @@ const STATUS_LABEL = { completed: "Terminée", available: "Ouverte", soon: "À v
 /** Fiche de l'affaire choisie dans l'éventail 3D. */
 export function CasesView() {
   const selected = useHub((s) => s.selectedCase);
+  const records = useProfile((s) => s.cases);
   const meta = CASES.find((c) => c.id === selected);
-  const status = meta ? caseStatus(meta, undefined, false, CURRENT_PHASE) : null;
+  const record = meta ? records[meta.id] : undefined;
+  const status = meta ? caseStatus(meta, record, false, CURRENT_PHASE) : null;
   return (
     <Shell kicker="Saison 1 · L'affaire Meridian" title={meta ? `N° ${meta.number} — ${meta.title}` : "Choisissez une affaire"} align="bottom" className="hub-panel w-[min(44rem,94vw)] rounded-md p-4">
       {meta && status ? (
@@ -24,9 +27,22 @@ export function CasesView() {
             ) : status === "soon" ? (
               <Soon>Cette affaire devient jouable dans une prochaine mise à jour (livraison {meta.availableInPhase}).</Soon>
             ) : (
-              <button type="button" className="rounded-sm bg-brass px-5 py-2 text-xs uppercase tracking-[0.25em] text-navy">
-                Ouvrir le dossier
-              </button>
+              <div className="flex flex-wrap items-center gap-3">
+                <button
+                  type="button"
+                  autoFocus
+                  onClick={() => hubBus.emit({ type: "case", id: meta.id })}
+                  className="rounded-sm bg-brass px-5 py-2 text-xs uppercase tracking-[0.25em] text-navy hover:bg-brass-light"
+                >
+                  {record?.completed ? "Rejouer l'affaire" : "Ouvrir le dossier"}
+                </button>
+                {record?.completed && (
+                  <p className="text-xs text-ivory/70">
+                    Meilleure note <span className="font-serif text-base text-brass-light">{record.grade}</span> · {record.bestScore}/100 · {record.attempts} tentative{record.attempts > 1 ? "s" : ""}
+                  </p>
+                )}
+                {!record?.completed && <p className="text-xs text-ivory/60">Environ 11 minutes · sauvegarde automatique à la fin</p>}
+              </div>
             )}
           </div>
         </div>

@@ -5,6 +5,7 @@ import { audio } from "../audio/AudioEngine";
 import { onFrame } from "../loop";
 import { propAnchors } from "../props/model";
 import { useUi } from "../state/ui";
+import { useRender } from "../state/render";
 import { HUB_OBJECTS, hubBus, useHub, type HubView } from "./state";
 import { BoardView } from "./views/BoardView";
 import { BriefcaseView } from "./views/BriefcaseView";
@@ -23,13 +24,16 @@ const NOTIFICATIONS = [
 ];
 
 const OBJECTS_3D: HubView[] = ["cases", "phone", "briefcase"];
+const ROOM_OBJECTS: HubView[] = ["library", "board", "terminal", "door"];
 
 function A11yButtons() {
+  const room = useRender((s) => s.room);
+  const list = room ? [...OBJECTS_3D, ...ROOM_OBJECTS] : OBJECTS_3D;
   const refs = useRef(new Map<HubView, HTMLButtonElement>());
   useEffect(
     () =>
       onFrame(() => {
-        for (const v of OBJECTS_3D) {
+        for (const v of [...OBJECTS_3D, ...ROOM_OBJECTS]) {
           const el = refs.current.get(v);
           const a = propAnchors[v];
           if (el && a) el.style.transform = `translate(${a.x}px, ${a.y}px) translate(-50%, -50%)`;
@@ -39,7 +43,7 @@ function A11yButtons() {
   );
   return (
     <>
-      {OBJECTS_3D.map((v) => (
+      {list.map((v) => (
         <button
           key={v}
           ref={(n) => {

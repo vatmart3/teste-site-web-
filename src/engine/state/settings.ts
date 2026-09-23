@@ -17,6 +17,8 @@ export interface Settings {
   quality: QualitySetting;
   /** Parallaxe au gyroscope sur mobile (après autorisation). */
   gyro: boolean;
+  /** Option d'accessibilité : pas de pression du temps pendant les épreuves. */
+  noTimer: boolean;
   set: (patch: Partial<Omit<Settings, "set">>) => void;
 }
 
@@ -33,6 +35,7 @@ export const useSettings = create<Settings>()(
       motion: "auto",
       quality: "auto",
       gyro: false,
+      noTimer: false,
       set: (patch) => set(patch),
     }),
     { name: "bh-settings", version: 1 },

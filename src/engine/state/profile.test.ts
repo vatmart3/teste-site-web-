@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { clampRelation, displayName, normalizeName } from "./profile";
+import { bestGrade, clampRelation, displayName, normalizeName } from "./profile";
 
 describe("normalizeName", () => {
   it("nettoie et met les majuscules", () => {
@@ -20,5 +20,13 @@ describe("relations", () => {
   it("affiche le nom complet", () => {
     expect(displayName({ firstName: "Alex", lastName: "Martin" })).toBe("Alex Martin");
     expect(displayName({ firstName: "Alex", lastName: "" })).toBe("Alex");
+  });
+});
+
+describe("progression des affaires", () => {
+  it("garde la meilleure note", () => {
+    expect(bestGrade(null, "B")).toBe("B");
+    expect(bestGrade("A", "B")).toBe("A");
+    expect(bestGrade("B", "S")).toBe("S");
   });
 });

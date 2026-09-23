@@ -3,6 +3,9 @@ import type { CharacterId } from "./characters";
 
 export type LightVariant = "day" | "dusk" | "night";
 
+/** Pièces modélisées en 3D (utilisées tant que la vraie plate photo du plan n'est pas fournie). */
+export type RoomKind = "office-intern" | "office-associate" | "office-senior" | "office-partner";
+
 export type ReverbPreset = "none" | "car" | "street" | "marble" | "elevator" | "office" | "openspace" | "court" | "conference";
 
 /** Source sonore positionnée dans la plate (coordonnées authorées : x→, y↓, profondeur 0..1). */
@@ -90,6 +93,8 @@ export interface SceneDef {
   rainStreaks?: { amount: number; from: Vec2 };
   character?: SceneCharacterDef;
   anchors?: AnchorDef[];
+  /** Pièce 3D de remplacement (réalisme sans plate générée). */
+  room3d?: RoomKind;
   reverb: ReverbPreset;
   ambience: string[];
   sounds?: SpatialSoundDef[];

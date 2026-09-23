@@ -13,6 +13,8 @@ import { plateCommon, plateVertex } from "../plate/plateShader";
 import { viewParams } from "../plate/view";
 import { useStage } from "../state/stage";
 import { useHub } from "./state";
+import { useRender } from "../state/render";
+import { roomState } from "../room/roomState";
 
 const fragment = /* glsl */ `
 precision highp float;
@@ -47,6 +49,8 @@ export function Passerby() {
   const current = useStage((s) => s.current);
   const active = useHub((s) => s.active);
   const scene = current ? getScene(current.sceneId) : null;
+  const room = useRender((s) => s.room);
+  // Dans la pièce 3D, la silhouette passe réellement derrière la vitre (voir OfficeRoom) : on pilote roomState.
   const isDesk = !!scene && scene.id.startsWith("08-desk");
   const walk = useRef<{ start: number; dir: number; dur: number } | null>(null);
   const next = useRef(8);
@@ -118,16 +122,20 @@ export function Passerby() {
     const w = walk.current;
     if (w) {
       const k = (t - w.start) / w.dur;
+      roomState.passerby.visible = !!room && k < 1;
+      roomState.passerby.x = w.dir * (Math.min(1, k) * 2 - 1) * 0.7;
       if (k >= 1) {
         walk.current = null;
         next.current = t + 18 + Math.random() * 25;
+        u.uAlpha!.value = 0;
+      } else if (room) {
         u.uAlpha!.value = 0;
       } else {
         const from = w.dir > 0 ? g.x0 - 0.05 : g.x1 + 0.05;
         const to = w.dir > 0 ? g.x1 + 0.05 : g.x0 - 0.05;
         u.uX!.value = from + (to - from) * k;
         u.uBob!.value = Math.abs(Math.sin(k * Math.PI * 7)) * 0.012;
-        u.uAlpha!.value = rig.exposure;
+        u.uAlpha!.value = 1;
       }
     }
   });

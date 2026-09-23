@@ -130,7 +130,7 @@ export function Hoverable({
   });
 
   return (
-    <group position={[position[0], DESK_Y, position[2]]} rotation={[0, rotationY, 0]}>
+    <group position={[position[0], position[1] ?? DESK_Y, position[2]]} rotation={[0, rotationY, 0]}>
       <ContactShadow w={footprint[0]} d={footprint[1]} lift={lift} />
       <group
           ref={inner}
@@ -155,6 +155,55 @@ export function Hoverable({
         >
           {children}
         </group>
+    </group>
+  );
+}
+
+/**
+ * Zone survolable d'un élément du décor 3D (étagère, liège, écran, porte) : boîte invisible pour le clic,
+ * cadre laiton lumineux au survol.
+ */
+export function RoomZone({ view, position, size }: { view: HubView; position: readonly [number, number, number]; size: readonly [number, number, number] }) {
+  const ref = useRef<THREE.Mesh>(null);
+  const hovered = useHub((s) => s.hovered === view);
+  const blocked = useHub((s) => s.view !== null || s.moving);
+  const gl = useThree((s) => s.gl);
+  if (!propAnchors[view]) propAnchors[view] = { x: 0, y: 0, visible: false };
+  useAnchor(view, ref);
+  const hit = useMemo(() => new THREE.MeshBasicMaterial({ transparent: true, opacity: 0, depthWrite: false }), []);
+  const edges = useMemo(() => new THREE.EdgesGeometry(new THREE.BoxGeometry(size[0], size[1], size[2])), [size]);
+  const line = useMemo(() => new THREE.LineBasicMaterial({ color: new THREE.Color("#e7c878").multiplyScalar(2.2), transparent: true, opacity: 0, toneMapped: false }), []);
+  useFrame((_, dt) => {
+    line.opacity += ((hovered && !blocked ? 1 : 0) - line.opacity) * Math.min(1, dt * 12);
+  });
+  return (
+    <group position={position as [number, number, number]}>
+      <mesh
+        ref={ref}
+        material={hit}
+        userData={{ noShadow: true }}
+        onPointerOver={(e) => {
+          if (blocked) return;
+          e.stopPropagation();
+          if (useHub.getState().hovered !== view) void audio.sfx("sfx-ui-hover", { volume: 0.6 });
+          useHub.getState().set({ hovered: view });
+          gl.domElement.style.cursor = "pointer";
+        }}
+        onPointerOut={() => {
+          if (useHub.getState().hovered === view) useHub.getState().set({ hovered: null });
+          gl.domElement.style.cursor = "";
+        }}
+        onClick={(e) => {
+          if (blocked) return;
+          e.stopPropagation();
+          gl.domElement.style.cursor = "";
+          useHub.getState().set({ hovered: null });
+          hubBus.emit({ type: "open", view });
+        }}
+      >
+        <boxGeometry args={size as [number, number, number]} />
+      </mesh>
+      <lineSegments geometry={edges} material={line} />
     </group>
   );
 }

@@ -27,7 +27,7 @@ export type PhoneScreen =
 
 export const phone = { ...t(0.02, -0.55, -0.75), vibrate: 0, progress: 0 };
 export const badge = { ...t(0, -0.6, -0.8), glow: 0, float: 0 };
-export const folder = { ...t(0.05, -0.42, -2.4), cover: 0, fan: 0, float: 0 };
+export const folder = { ...t(0.05, -0.42, -2.4), cover: 0, fan: 0, float: 0, stamp: 0, grade: "" };
 
 /** Position écran (px CSS) des accessoires, pour y accrocher des hotspots HTML accessibles. */
 export const propAnchors: Record<string, { x: number; y: number; visible: boolean }> = {

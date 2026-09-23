@@ -67,6 +67,10 @@ export function Controls() {
             </select>
           </label>
           <label className="flex items-center justify-between text-sm">
+            <span className="text-ivory/80">Sans chrono</span>
+            <input type="checkbox" checked={s.noTimer} onChange={(e) => s.set({ noTimer: e.target.checked })} className="accent-brass" />
+          </label>
+          <label className="flex items-center justify-between text-sm">
             <span className="text-ivory/80">Gyroscope (mobile)</span>
             <input type="checkbox" checked={s.gyro} onChange={(e) => s.set({ gyro: e.target.checked })} className="accent-brass" />
           </label>

@@ -12,25 +12,25 @@ import type { Director, Sequence } from "@/engine/director/director";
 import { caseFan } from "@/engine/hub/CaseFolders";
 import { briefcaseState } from "@/engine/hub/DeskObjects";
 import { moveState } from "@/engine/hub/Promotion3D";
-import { DESK_PITCH, officeVariant } from "@/engine/hub/space";
+import { DESK_PITCH } from "@/engine/hub/space";
 import { hubBus, useHub, type HubAction, type HubView } from "@/engine/hub/state";
 import { propCamera } from "@/engine/props/model";
 import { useProfile } from "@/engine/state/profile";
 import { useStage } from "@/engine/state/stage";
 import type { Transition } from "@/engine/state/stage";
 import { resetArrivalState } from "./arrival";
+import { playMidnightAudit } from "./audit";
+import { officeFor } from "@/engine/career/office";
+import { roomClock, roomState } from "@/engine/room/roomState";
 
 const hub = () => useHub.getState();
 const profile = () => useProfile.getState();
 
-function officeFor(rank: number) {
-  const r = RANKS[rank] ?? RANKS[0]!;
-  const variant = r.office === "08-desk-intern-night" ? undefined : officeVariant(newYorkTime().hours);
-  return { scene: r.office, variant };
-}
-
 async function enterOffice(d: Director, transition: Transition = "cut") {
   hub().set({ active: false, view: null, hovered: null, selectedCase: null });
+  roomClock.mode = "ny";
+  roomState.lamp = 1;
+  roomState.neon = 1;
   const { scene, variant } = officeFor(profile().officeRank);
   const cur = useStage.getState().current;
   if (!cur || cur.sceneId !== scene || cur.variant !== variant) {
@@ -191,6 +191,13 @@ export const hubSequence: Sequence = async (d) => {
         case "visit":
           await closeView(d);
           await visitHarlow(d);
+          break;
+        case "case":
+          if (a.id === "midnight-audit") {
+            await closeView(d);
+            await playMidnightAudit(d);
+            await enterOffice(d, "cut");
+          }
           break;
       }
     }

@@ -3,7 +3,7 @@
  * Tant que les vraies plates ne sont pas dans /public/scenes, le moteur génère des plates provisoires
  * (dégradés + profondeur procédurale, cf. engine/plate/placeholders.ts).
  */
-import type { SceneDef } from "./types";
+import type { RoomKind, SceneDef } from "./types";
 
 const base = {
   aspect: 16 / 9,
@@ -26,7 +26,7 @@ export const DESK_LAYOUT = {
   doorGlass: { x0: 0.855, y0: 0.06, x1: 0.975, y1: 0.58 },
 } as const;
 
-function deskScene(id: string, title: string): SceneDef {
+function deskScene(id: string, title: string, room3d: RoomKind): SceneDef {
   const L = DESK_LAYOUT;
   return {
     id,
@@ -38,6 +38,7 @@ function deskScene(id: string, title: string): SceneDef {
     aperture: 0.25,
     reverb: "office",
     ambience: ["amb-office-day"],
+    room3d,
     hotspots: [
       { id: "shelf", kind: "region", label: "Bibliothèque de leçons", at: L.shelf.at, size: L.shelf.size, depth: L.shelf.depth },
       { id: "board", kind: "region", label: "Tableau d'enquête", at: L.board.at, size: L.board.size, depth: L.board.depth },
@@ -229,10 +230,10 @@ export const SCENES = {
     character: { id: "harlow", at: { x: 0.5, y: 0.34 }, depth: 0.45, radius: 0.22 },
   },
   // ---------------------------------------------------------------- Plan 8 — Votre bureau (hub), selon le rang
-  "08-desk-intern-night": { ...deskScene("08-desk-intern-night", "Votre bureau — stagiaire"), flicker: 0.35, ambience: ["amb-office-night"] },
-  "08-desk-associate": { ...deskScene("08-desk-associate", "Votre bureau — collaborateur"), variants: ["day", "dusk", "night"] },
-  "08-desk-senior": { ...deskScene("08-desk-senior", "Votre bureau — senior"), variants: ["day", "dusk", "night"] },
-  "08-desk-partner": { ...deskScene("08-desk-partner", "Votre bureau d'angle — associé"), variants: ["day", "dusk", "night"] },
+  "08-desk-intern-night": { ...deskScene("08-desk-intern-night", "Votre bureau — stagiaire", "office-intern"), flicker: 0.35, ambience: ["amb-office-night"] },
+  "08-desk-associate": { ...deskScene("08-desk-associate", "Votre bureau — collaborateur", "office-associate"), variants: ["day", "dusk", "night"] },
+  "08-desk-senior": { ...deskScene("08-desk-senior", "Votre bureau — senior", "office-senior"), variants: ["day", "dusk", "night"] },
+  "08-desk-partner": { ...deskScene("08-desk-partner", "Votre bureau d'angle — associé", "office-partner"), variants: ["day", "dusk", "night"] },
 } satisfies Record<string, SceneDef>;
 
 export type SceneId = keyof typeof SCENES;

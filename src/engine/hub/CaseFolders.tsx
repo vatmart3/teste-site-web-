@@ -25,25 +25,24 @@ export function CaseFolders() {
   const refs = useRef<(THREE.Group | null)[]>([]);
   const hoverLift = useRef<number[]>(CASES.map(() => 0));
   const selected = useHub((s) => s.selectedCase);
-  const progress = useProfile((s) => s.flags);
+  const progress = useProfile((s) => s.cases);
   const gl = useThree((s) => s.gl);
   const hovered = useRef<number>(-1);
 
   const mats = useMemo(
     () =>
       CASES.map((c) => {
-        const status = caseStatus(c, undefined, false, CURRENT_PHASE);
+        const rec = progress[c.id];
+        const status = caseStatus(c, rec, false, CURRENT_PHASE);
         return [
           new THREE.MeshStandardMaterial({ color: "#c29f62", roughness: 0.85 }),
           (() => {
-            const t = tex(drawCaseCover(c, status, null));
+            const t = tex(drawCaseCover(c, status, rec?.grade ?? null));
             // L'émission compense l'assombrissement du décor pendant la vue : les chemises restent lisibles.
             return new THREE.MeshStandardMaterial({ map: t, emissiveMap: t, emissive: "#ffffff", emissiveIntensity: 0.35, roughness: 0.8 });
           })(),
         ] as const;
       }),
-    // Les statuts dépendront de la progression (phase 4+).
-    // eslint-disable-next-line react-hooks/exhaustive-deps
     [progress],
   );
 

@@ -13,6 +13,8 @@ import { coverScale, fromAuthoring, imageToScreen, screenToCss } from "../plate/
 import { viewParams } from "../plate/view";
 import { useStage } from "../state/stage";
 import { useHub } from "../hub/state";
+import { useRender } from "../state/render";
+import { propAnchors } from "../props/model";
 
 /** État mutable des éléments accrochés (animé par le directeur). */
 export const anchorState = { floor: 1, reader: "idle" as "idle" | "ok" | "denied" };
@@ -113,8 +115,32 @@ function AnchorView({ a }: { a: AnchorDef }) {
   }
 }
 
+/** Dans la pièce 3D : la notification du chat s'accroche à l'écran 3D. */
+function RoomNotification() {
+  const ref = useRef<HTMLDivElement>(null);
+  useEffect(
+    () =>
+      onFrame(() => {
+        const a = propAnchors.terminal;
+        const el = ref.current;
+        if (!a || !el) return;
+        el.style.transform = `translate(${a.x}px, ${a.y - window.innerHeight * 0.12}px) translate(-50%, -50%)`;
+        el.style.fontSize = `${window.innerHeight * 0.03}px`;
+      }),
+    [],
+  );
+  return (
+    <div className="pointer-events-none fixed inset-0 z-[15]">
+      <div ref={ref} className="absolute left-0 top-0">
+        <Notification />
+      </div>
+    </div>
+  );
+}
+
 export function Anchors() {
   const current = useStage((s) => s.current);
+  const room = useRender((s) => s.room);
   const scene = current ? getScene(current.sceneId) : null;
   const refs = useRef(new Map<string, HTMLDivElement>());
 
@@ -141,6 +167,7 @@ export function Anchors() {
     });
   }, [scene]);
 
+  if (room) return <RoomNotification />;
   if (!scene?.anchors) return null;
   return (
     <div className="pointer-events-none fixed inset-0 z-[15]">

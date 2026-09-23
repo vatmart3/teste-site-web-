@@ -17,6 +17,8 @@ import { Anchors } from "./ui/Anchors";
 import { Controls } from "./ui/Controls";
 import { Panels } from "./ui/Panels";
 import { HubOverlay } from "./hub/HubOverlay";
+import { AuditOverlay } from "./audit/AuditOverlay";
+import { DebriefOverlay } from "./audit/DebriefOverlay";
 import { Hotspots } from "./ui/Hotspots";
 import { Letterbox } from "./ui/Letterbox";
 import { Prompt } from "./ui/Prompt";
@@ -106,6 +108,8 @@ export function EngineRoot({ children }: { children?: ReactNode }) {
       <Prompt />
       <Panels />
       <HubOverlay />
+      <AuditOverlay />
+      <DebriefOverlay />
       {children}
       <Controls />
     </div>

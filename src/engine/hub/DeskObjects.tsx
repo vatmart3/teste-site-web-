@@ -12,6 +12,7 @@ import { rig } from "../camera/rig";
 import { drawPhoneLcd } from "./textures";
 import { useHub } from "./state";
 import { useOptionalModel } from "./useOptionalModel";
+import { roomState } from "../room/roomState";
 
 const std = (color: string, roughness = 0.7, metalness = 0) => new THREE.MeshStandardMaterial({ color, roughness, metalness });
 const brass = () => new THREE.MeshStandardMaterial({ color: "#c9a24a", roughness: 0.3, metalness: 0.9 });
@@ -183,7 +184,7 @@ export function CoffeeCup() {
   }, []);
   useFrame(({ clock }) => {
     steam.m.uniforms.uTime!.value = rig.reducedMotion ? 0 : clock.elapsedTime;
-    steam.m.uniforms.uAmount!.value = useHub.getState().view ? 0.4 : 1;
+    steam.m.uniforms.uAmount!.value = (useHub.getState().view ? 0.4 : 1) * roomState.coffeeHeat;
   });
   return (
     <group>

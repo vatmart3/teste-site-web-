@@ -14,6 +14,7 @@ describe("affaires", () => {
     const c4 = CASES[3]!;
     expect(caseStatus(c1, undefined, false, 4)).toBe("available");
     expect(caseStatus(c1, undefined, false, 3)).toBe("soon");
+    expect(caseStatus(CASES[1]!, undefined, false, 4)).toBe("soon");
     expect(caseStatus(c1, { completed: true, grade: "A" }, false, 3)).toBe("completed");
     expect(caseStatus(c4, undefined, false, 9)).toBe("sealed");
     expect(caseStatus(c4, undefined, true, 9)).toBe("available");

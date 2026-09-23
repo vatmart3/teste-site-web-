@@ -17,6 +17,8 @@
     "voices:csv": "node --experimental-strip-types --no-warnings tools/export-voices.mts"
   },
   "dependencies": {
+    "@pmndrs/assets": "^1.7.0",
+    "@react-three/drei": "^10.7.8",
     "@react-three/fiber": "^9.8.0",
     "@react-three/postprocessing": "^3.1.2",
     "@react-three/rapier": "^2.2.0",

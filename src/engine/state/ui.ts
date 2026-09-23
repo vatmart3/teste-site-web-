@@ -17,7 +17,8 @@ export interface ChoiceOption {
 export type Panel =
   | { kind: "identity" }
   | { kind: "choice"; prompt?: string; options: ChoiceOption[] }
-  | { kind: "swipe"; label: string };
+  | { kind: "swipe"; label: string }
+  | { kind: "lesson"; ids: string[] };
 
 export interface UiState {
   panel: Panel | null;

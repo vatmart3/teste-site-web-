@@ -18,6 +18,7 @@ export function StageCanvas({ quality }: { quality: "high" | "medium" }) {
       dpr={quality === "high" ? [1, 1.75] : [1, 1.25]}
       gl={{ antialias: false, alpha: false, powerPreference: "high-performance", toneMapping: NoToneMapping }}
       flat
+      shadows="soft"
       frameloop="always"
       camera={{ fov: PROP_FOV, position: [0, 0, 0], near: 0.01, far: 100 }}
       onCreated={({ gl }) => gl.setClearColor("#05070c")}

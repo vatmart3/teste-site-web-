@@ -8,7 +8,8 @@ export type HubAction =
   | { type: "open"; view: HubView }
   | { type: "close" }
   | { type: "play"; messageId: string }
-  | { type: "visit"; place: "harlow" };
+  | { type: "visit"; place: "harlow" }
+  | { type: "case"; id: string };
 
 export interface HubState {
   /** Le bureau est affiché et interactif. */

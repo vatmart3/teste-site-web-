@@ -9,13 +9,13 @@ export const DESK_NEAR = -0.35;
 export const DESK_FAR = -1.15;
 
 export const DESK_SPOTS = {
-  cases: [-0.3, DESK_Y, -0.9] as const,
-  briefcase: [-0.58, DESK_Y, -1.02] as const,
-  cup: [0.17, DESK_Y, -0.88] as const,
-  phone: [0.43, DESK_Y, -0.95] as const,
-  stamp: [-0.04, DESK_Y, -0.86] as const,
-  pen: [0.04, DESK_Y, -1.0] as const,
-  ball: [0.26, DESK_Y, -1.06] as const,
+  cases: [-0.14, DESK_Y, -0.76] as const,
+  briefcase: [-0.5, DESK_Y, -0.72] as const,
+  cup: [0.46, DESK_Y, -0.74] as const,
+  phone: [0.62, DESK_Y, -0.9] as const,
+  stamp: [0.12, DESK_Y, -0.66] as const,
+  pen: [0.24, DESK_Y, -0.68] as const,
+  ball: [0.64, DESK_Y, -0.66] as const,
 };
 
 /** Variante de lumière du bureau selon l'heure réelle de New York. */

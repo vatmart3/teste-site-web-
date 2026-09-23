@@ -207,6 +207,37 @@ const sfx: Record<string, Gen> = {
         d[i] = (motor + steps) * Math.min(1, t * 8) * Math.min(1, (2.2 - t) * 6);
       }
     }),
+  "sfx-coins-counter": (ctx) =>
+    make(ctx, 2.4, 1, (_c, d, sr) => {
+      // Compteur mécanique : cliquetis qui ralentissent, puis « ding » de fin.
+      const r = rng(78);
+      let t0 = 0;
+      let gap = 0.035;
+      while (t0 < 2.0) {
+        const s0 = Math.floor(t0 * sr);
+        for (let i = 0; i < sr * 0.02 && s0 + i < d.length; i++) {
+          const t = i / sr;
+          d[s0 + i]! += ((r() * 2 - 1) * 0.3 + Math.sin(tau * 2600 * t) * 0.2) * Math.exp(-t * 300);
+        }
+        t0 += gap;
+        gap *= 1.045;
+      }
+      for (let i = Math.floor(2.05 * sr); i < d.length; i++) {
+        const t = i / sr - 2.05;
+        d[i]! += Math.sin(tau * 1568 * t) * 0.25 * Math.exp(-t * 6);
+      }
+    }),
+  "sfx-highlighter": (ctx) =>
+    make(ctx, 0.5, 1, (_c, d, sr) => {
+      const r = rng(79);
+      let y = 0;
+      for (let i = 0; i < d.length; i++) {
+        const t = i / sr;
+        y += ((r() * 2 - 1) - y) * 0.35;
+        const squeak = Math.sin(tau * (1900 + Math.sin(tau * 7 * t) * 150) * t) * 0.02;
+        d[i] = (y * 0.25 + squeak) * Math.sin(Math.PI * Math.min(1, t / 0.45));
+      }
+    }),
   "sfx-desk-knock": (ctx) =>
     make(ctx, 0.25, 1, (_c, d, sr) => {
       const r = rng(85);

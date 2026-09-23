@@ -23,3 +23,19 @@ theo-voicemail-welcome-2,theo,"Enfin… traitez-moi bien, et je suis votre homme
 harlow-voicemail-desk,harlow,"Le dossier Meridian est sur votre bureau. Huit heures, demain matin. Je ne rappellerai pas.",froid,public/audio/vo-harlow-voicemail-desk.mp3
 harlow-visit,harlow,"Vous n'avez pas un dossier à lire ?",froid,public/audio/vo-harlow-visit.mp3
 harlow-visit-late,harlow,"Il est tard. Soit vous avez trouvé quelque chose, soit vous perdez mon temps.",froid,public/audio/vo-harlow-visit-late.mp3
+audit-intro-2,theo,"Je vous ai laissé le bilan, le compte de résultat, les annexes et un ordre de mission. Café frais. Bon courage.",chaleureux,public/audio/vo-audit-intro-2.mp3
+harlow-audit-ask,harlow,"Alors ? Montrez-moi ce que Meridian ne voulait pas qu'on voie.",froid,public/audio/vo-harlow-audit-ask.mp3
+harlow-audit-s,harlow,"Tout. Vous avez tout vu, et vous l'avez prouvé. Je ne dis pas ça souvent : impeccable.",grave,public/audio/vo-harlow-audit-s.mp3
+harlow-audit-a,harlow,"Solide. Il manque peu de chose. Avec ça, Meridian va passer une mauvaise semaine.",grave,public/audio/vo-harlow-audit-a.mp3
+harlow-audit-b,harlow,"Correct. Correct n'a jamais gagné un procès, mais c'est un début.",froid,public/audio/vo-harlow-audit-b.mp3
+harlow-audit-c,harlow,"C'est tout ? Les chauffeurs ont perdu soixante millions. Recommencez.",froid,public/audio/vo-harlow-audit-c.mp3
+harlow-audit-false,harlow,"Et évitez d'accuser ce qui est propre. Une fausse accusation, et la partie adverse ne lit plus le reste.",froid,public/audio/vo-harlow-audit-false.mp3
+harlow-audit-dismiss,harlow,"Vos heures sont facturées. Allez dormir deux heures. Ensuite, on va chercher Rourke.",grave,public/audio/vo-harlow-audit-dismiss.mp3
+harlow-audit-found-cutoff,harlow,"Bien vu. Halvorsen : tout le contrat passé en chiffre d'affaires le jour de la signature, alors que le premier camion ne roule qu'en janvier. IFRS 15 : on reconnaît le revenu quand le service est rendu.",grave,public/audio/vo-harlow-audit-found-cutoff.mp3
+harlow-audit-missed-cutoff,harlow,"Et vous avez raté ceci : Halvorsen : tout le contrat passé en chiffre d'affaires le jour de la signature, alors que le premier camion ne roule qu'en janvier. IFRS 15 : on reconnaît le revenu quand le service est rendu.",froid,public/audio/vo-harlow-audit-missed-cutoff.mp3
+harlow-audit-found-related,harlow,"Bien vu. Orca facture des millions de « conseil » à Meridian et lui doit une avance sans garantie. Un administrateur des deux côtés : l'argent tourne en rond.",grave,public/audio/vo-harlow-audit-found-related.mp3
+harlow-audit-missed-related,harlow,"Et vous avez raté ceci : Orca facture des millions de « conseil » à Meridian et lui doit une avance sans garantie. Un administrateur des deux côtés : l'argent tourne en rond.",froid,public/audio/vo-harlow-audit-missed-related.mp3
+harlow-audit-found-depreciation,harlow,"Bien vu. Allonger la durée d'amortissement de 5 à 9 ans sans étude technique, c'est fabriquer 71 millions de bénéfice d'un trait de plume. La flotte grossit, la dotation baisse : ça ne tient pas.",grave,public/audio/vo-harlow-audit-found-depreciation.mp3
+harlow-audit-missed-depreciation,harlow,"Et vous avez raté ceci : Allonger la durée d'amortissement de 5 à 9 ans sans étude technique, c'est fabriquer 71 millions de bénéfice d'un trait de plume. La flotte grossit, la dotation baisse : ça ne tient pas.",froid,public/audio/vo-harlow-audit-missed-depreciation.mp3
+harlow-audit-found-inventory,harlow,"Bien vu. Des pièces pour des camions retirés du service, gardées au prix d'achat. Les stocks gonflent trois fois plus vite que l'activité.",grave,public/audio/vo-harlow-audit-found-inventory.mp3
+harlow-audit-missed-inventory,harlow,"Et vous avez raté ceci : Des pièces pour des camions retirés du service, gardées au prix d'achat. Les stocks gonflent trois fois plus vite que l'activité.",froid,public/audio/vo-harlow-audit-missed-inventory.mp3

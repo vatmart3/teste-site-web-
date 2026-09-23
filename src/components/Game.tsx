@@ -11,6 +11,8 @@ import { useSettings } from "@/engine/state/settings";
 import { propAnchors, useProps } from "@/engine/props/model";
 import { useStage } from "@/engine/state/stage";
 import { hubBus, useHub } from "@/engine/hub/state";
+import { auditBus, useAudit } from "@/engine/audit/state";
+import { useDebrief } from "@/engine/audit/DebriefOverlay";
 import { TitleScreen, type TitleChoice } from "./TitleScreen";
 
 export default function Game() {
@@ -19,7 +21,7 @@ export default function Game() {
   // Accès de débogage (tests automatisés) : /?debug
   useEffect(() => {
     if (new URLSearchParams(window.location.search).has("debug")) {
-      (window as unknown as { __game: unknown }).__game = { useProps, useProfile, useStage, useHub, hubBus, grantReputation, propAnchors };
+      (window as unknown as { __game: unknown }).__game = { useProps, useProfile, useStage, useHub, hubBus, grantReputation, propAnchors, useAudit, auditBus, useDebrief };
     }
   }, []);
 

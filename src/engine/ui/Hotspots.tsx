@@ -12,6 +12,7 @@ import { useStage } from "../state/stage";
 import { useUi } from "../state/ui";
 import { PROP_LABELS, propAnchors } from "../props/model";
 import { hubBus, useHub, type HubView } from "../hub/state";
+import { useRender } from "../state/render";
 
 /** Zones du décor du bureau → vue ouverte. */
 const REGION_VIEW: Record<string, HubView> = { shelf: "library", board: "board", terminal: "terminal", door: "door" };
@@ -26,7 +27,9 @@ export function Hotspots() {
   const refs = useRef(new Map<string, HTMLButtonElement>());
   const scene = current ? getScene(current.sceneId) : null;
   const hubOpen = useHub((s) => s.active && !s.view && !s.moving);
-  const list: HotspotDef[] = scene?.hotspots?.filter((h) => active.includes(h.id) || (hubOpen && h.kind === "region" && REGION_VIEW[h.id])) ?? [];
+  // Dans la pièce 3D, les zones du décor sont des objets 3D (RoomZone), pas des zones HTML.
+  const room3d = useRender((s) => s.room);
+  const list: HotspotDef[] = scene?.hotspots?.filter((h) => active.includes(h.id) || (hubOpen && !room3d && h.kind === "region" && REGION_VIEW[h.id])) ?? [];
   // Hotspots accrochés aux accessoires 3D (« prop:folder »…).
   const propList = useMemo(() => active.filter((id) => id.startsWith("prop:")), [active]);
 
