@@ -13,7 +13,12 @@ import { preloadPlate, loadPlateTextures } from "../plate/textures";
 import { whenPlateReady } from "../plate/registry";
 import { useStage, type Transition } from "../state/stage";
 import { useUi } from "../state/ui";
-import { advanceBus, hotspotBus, skipBus } from "./events";
+import { advanceBus, hotspotBus, panelBus, skipBus } from "./events";
+import { CHARACTERS, type CharacterId, type CharacterState } from "@/content/characters";
+import { voiceFile, type Line } from "@/content/dialogue/types";
+import { cast, setCharacterState, stateOf } from "../characters/performance";
+import { displayName, useProfile } from "../state/profile";
+import type { Panel } from "../state/ui";
 
 export class Aborted extends Error {
   constructor() {
@@ -21,7 +26,7 @@ export class Aborted extends Error {
   }
 }
 
-type RigVars = Partial<Pick<CameraRig, "panX" | "panY" | "dolly" | "dollyX" | "dollyY" | "roll" | "focus" | "aperture" | "shake" | "exposure" | "lookAmount">>;
+type RigVars = Partial<Pick<CameraRig, "panX" | "panY" | "dolly" | "dollyX" | "dollyY" | "roll" | "lift" | "focus" | "aperture" | "shake" | "exposure" | "lookAmount">>;
 
 export interface ShowOptions {
   variant?: LightVariant;
@@ -93,6 +98,11 @@ export class Director {
     return this.track(gsap.delayedCall(seconds, () => undefined));
   }
 
+  /** Attend indéfiniment (jusqu'à l'interruption de la séquence) : le joueur a la main. */
+  hold(): Promise<never> {
+    return this.guard(new Promise<never>(() => undefined));
+  }
+
   /** Anime la caméra. `duration` en secondes, `ease` GSAP (défaut : power2.inOut). */
   cam(vars: RigVars, duration = 1.5, ease = "power2.inOut"): Promise<void> {
     if (duration <= 0) {
@@ -133,6 +143,7 @@ export class Director {
     try {
       if (transition === "fade") await this.track(gsap.to(h.uniforms.uOpacity, { value: 1, duration, ease: "power1.inOut" }));
       else if (transition === "depth") await this.track(gsap.to(h.uniforms.uReveal, { value: 1, duration, ease: "power2.inOut" }));
+      else if (transition === "doors") await this.track(gsap.to(h.uniforms.uReveal, { value: 1, duration, ease: "power3.inOut" }));
     } finally {
       h.uniforms.uOpacity.value = 1;
       h.uniforms.uReveal.value = 1;
@@ -175,6 +186,57 @@ export class Director {
     }
   }
 
+  /** Anime n'importe quel objet mutable (accessoire 3D, uniform…) et attend la fin. */
+  tween<T extends object>(target: T, vars: gsap.TweenVars, duration = 1, ease = "power2.inOut"): Promise<void> {
+    return this.track(gsap.to(target, { ...vars, duration, ease }));
+  }
+
+  /** Anime sans attendre (l'animation est tout de même annulée si la séquence est interrompue). */
+  tweenAsync<T extends object>(target: T, vars: gsap.TweenVars, duration = 1, ease = "power2.inOut"): Promise<void> {
+    const p = this.tween(target, vars, duration, ease);
+    p.catch(() => undefined);
+    return p;
+  }
+
+  /** Change l'état de jeu d'un personnage (fondu enchaîné de sa vidéo, micro-signes). */
+  mood(id: CharacterId, state: CharacterState): void {
+    setCharacterState(id, state);
+  }
+
+  /** Réplique écrite dans /content : nom affiché, voix, et le personnage passe en état « talk ». */
+  async line(l: Line, opts: { state?: CharacterState; after?: CharacterState; hold?: number } = {}): Promise<void> {
+    const id = l.speaker in CHARACTERS ? (l.speaker as CharacterId) : null;
+    const before = id ? stateOf(id) : "idle";
+    if (id) {
+      cast.speaker = id;
+      setCharacterState(id, opts.state ?? "talk");
+    }
+    try {
+      await this.say(speakerLabel(l.speaker), fillTemplate(l.text), { voice: voiceFile(l), hold: opts.hold });
+    } finally {
+      if (id) {
+        setCharacterState(id, opts.after ?? (before === "talk" ? "idle" : before));
+        if (cast.speaker === id) cast.speaker = null;
+      }
+    }
+  }
+
+  /** Ouvre un panneau d'interaction (identité, choix, geste) et attend la réponse du joueur. */
+  async panel<T>(panel: Panel): Promise<T> {
+    useUi.getState().set({ panel });
+    let off: () => void = () => undefined;
+    try {
+      return await this.guard(
+        new Promise<T>((resolve) => {
+          off = panelBus.on((v) => resolve(v as T));
+        }),
+      );
+    } finally {
+      off();
+      useUi.getState().set({ panel: null });
+    }
+  }
+
   /** Propose un ou plusieurs hotspots du plan courant et attend le clic du joueur. */
   async waitForHotspot(ids: string | string[], prompt?: string): Promise<string> {
     const list = Array.isArray(ids) ? ids : [ids];
@@ -204,7 +266,25 @@ export class Director {
     intensity: (i: number, fade?: number) => audio.setIntensity(i, fade),
     cut: () => audio.cutMusic(),
     resume: (fade?: number) => audio.resumeMusic(fade),
+    /** 20000 = ouvert ; ~1400 = haut-parleur d'ascenseur. */
+    filter: (freq: number, seconds?: number) => audio.setMusicFilter(freq, seconds),
   };
+}
+
+/** Nom affiché dans les sous-titres. */
+export function speakerLabel(speaker: string): string | undefined {
+  if (speaker === "narrator") return undefined;
+  if (speaker === "sms") return "SMS — R. Harlow";
+  if (speaker === "player") return displayName(useProfile.getState()) || "Vous";
+  return CHARACTERS[speaker as CharacterId]?.name ?? speaker;
+}
+
+/** Remplace {firstName}, {lastName}, {fullName} par l'identité du joueur. */
+export function fillTemplate(text: string, p = useProfile.getState()): string {
+  return text
+    .replace(/\{firstName\}/g, p.firstName || "vous")
+    .replace(/\{lastName\}/g, p.lastName)
+    .replace(/\{fullName\}/g, displayName(p) || "vous");
 }
 
 export type Sequence = (d: Director) => Promise<void>;

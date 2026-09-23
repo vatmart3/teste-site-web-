@@ -77,6 +77,29 @@ function addClicks(d: Float32Array, sr: number, r: () => number, perSec: number,
 const tau = Math.PI * 2;
 
 const ambience: Record<string, Gen> = {
+  "amb-conversation": (ctx) =>
+    make(ctx, 9, 1, (_c, d, sr) => {
+      // Deux voix étouffées qui alternent (bruit formantique modulé en syllabes).
+      const m = new Float32Array(d.length);
+      pinkNoise(m, rng(52), 0.18, 1.2);
+      for (let i = 0; i < d.length; i++) {
+        const t = i / sr;
+        const who = Math.sin(tau * 0.18 * t) > 0 ? 1 : 0;
+        const syl = Math.max(0, Math.sin(tau * (who ? 4.1 : 3.3) * t + Math.sin(tau * 0.7 * t) * 2)) ** 1.5;
+        const pause = Math.sin(tau * 0.43 * t + 1) > -0.6 ? 1 : 0;
+        d[i] = m[i]! * syl * pause * (who ? 0.9 : 0.7) + Math.sin(tau * (who ? 140 : 210) * t) * syl * pause * 0.02;
+      }
+      loopFade(d, sr);
+    }),
+  "amb-office-day": (ctx) =>
+    make(ctx, 8, 2, (c, d, sr) => {
+      const r = rng(64 + c);
+      pinkNoise(d, r, 0.12, 0.25); // climatisation
+      const city = new Float32Array(d.length);
+      brown(city, rng(65 + c), 0.25); // ville très loin, derrière le double vitrage
+      for (let i = 0; i < d.length; i++) d[i]! += city[i]!;
+      loopFade(d, sr);
+    }),
   "amb-rain-taxi": (ctx) =>
     make(ctx, 8, 2, (c, d, sr) => {
       const r = rng(10 + c);
@@ -174,6 +197,37 @@ const ambience: Record<string, Gen> = {
 };
 
 const sfx: Record<string, Gen> = {
+  "sfx-badge-print": (ctx) =>
+    make(ctx, 2.2, 1, (_c, d, sr) => {
+      const r = rng(88);
+      for (let i = 0; i < d.length; i++) {
+        const t = i / sr;
+        const motor = Math.sin(tau * 180 * t + Math.sin(tau * 31 * t) * 2) * 0.08;
+        const steps = (r() * 2 - 1) * 0.1 * (0.5 + 0.5 * Math.sign(Math.sin(tau * 24 * t)));
+        d[i] = (motor + steps) * Math.min(1, t * 8) * Math.min(1, (2.2 - t) * 6);
+      }
+    }),
+  "sfx-footsteps": (ctx) =>
+    make(ctx, 1.6, 1, (_c, d, sr) => {
+      const r = rng(87);
+      for (const at of [0.05, 0.5, 0.95, 1.4]) {
+        const s0 = Math.floor(at * sr);
+        for (let i = 0; i < sr * 0.12 && s0 + i < d.length; i++) {
+          const t = i / sr;
+          d[s0 + i] = ((r() * 2 - 1) * 0.25 * Math.exp(-t * 60) + Math.sin(tau * 110 * t) * 0.3 * Math.exp(-t * 35)) * (at === 0.95 ? 0.8 : 1);
+        }
+      }
+    }),
+  "sfx-camera-flash": (ctx) =>
+    make(ctx, 0.9, 1, (_c, d, sr) => {
+      const r = rng(86);
+      for (let i = 0; i < d.length; i++) {
+        const t = i / sr;
+        const shutter = t < 0.03 ? (r() * 2 - 1) * 0.4 : 0;
+        const whine = t > 0.05 ? Math.sin(tau * (2000 + t * 4000) * t) * 0.02 * Math.exp(-(t - 0.05) * 3) : 0;
+        d[i] = shutter + whine;
+      }
+    }),
   "sfx-elevator-ding": (ctx) =>
     make(ctx, 2.5, 1, (_c, d, sr) => {
       for (let i = 0; i < d.length; i++) {

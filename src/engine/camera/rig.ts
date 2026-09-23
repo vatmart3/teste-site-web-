@@ -16,6 +16,8 @@ export interface CameraRig {
   dollyY: number;
   /** Roulis en degrés. */
   roll: number;
+  /** Montée d'ascenseur : décale les plans lointains vers le bas (uv image). */
+  lift: number;
   /** Profondeur de mise au point (0 = infini, 1 = objectif). */
   focus: number;
   /** Ouverture : intensité du flou hors mise au point (0 = tout net). */
@@ -55,6 +57,7 @@ export function createRig(): CameraRig {
     dollyX: 0.5,
     dollyY: 0.5,
     roll: 0,
+    lift: 0,
     focus: 0.5,
     aperture: 0,
     shake: 0,
@@ -86,6 +89,7 @@ export function resetRig(r: CameraRig = rig): void {
   r.dollyX = fresh.dollyX;
   r.dollyY = fresh.dollyY;
   r.roll = fresh.roll;
+  r.lift = 0;
   r.focus = fresh.focus;
   r.aperture = fresh.aperture;
   r.shake = 0;

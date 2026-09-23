@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { manifestFrom, resolveAudio, resolvePlate } from "./manifest";
+import { manifestFrom, resolveAudio, resolveCharacterVideo, resolvePlate, resolvePlayerPortrait } from "./manifest";
 
 describe("resolvePlate", () => {
   const m = manifestFrom([
@@ -40,5 +40,17 @@ describe("resolveAudio", () => {
     const m = manifestFrom(["audio/sfx-gavel.mp3", "audio/sfx-gavel.webm"]);
     expect(resolveAudio(m, "sfx-gavel")).toBe("/audio/sfx-gavel.webm");
     expect(resolveAudio(m, "sfx-stamp")).toBeNull();
+  });
+});
+
+describe("personnages", () => {
+  const m = manifestFrom(["characters/rourke-tense.mp4", "characters/player-2.webp"]);
+  it("trouve les vidéos d'état", () => {
+    expect(resolveCharacterVideo(m, "rourke", "tense")).toEqual({ webm: null, mp4: "/characters/rourke-tense.mp4" });
+    expect(resolveCharacterVideo(m, "rourke", "idle")).toBeNull();
+  });
+  it("trouve les portraits du joueur (1 à 6)", () => {
+    expect(resolvePlayerPortrait(m, 1)).toBe("/characters/player-2.webp");
+    expect(resolvePlayerPortrait(m, 0)).toBeNull();
   });
 });

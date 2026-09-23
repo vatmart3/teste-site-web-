@@ -5,6 +5,7 @@
 import gsap from "gsap";
 import { rig, stepRig } from "./camera/rig";
 import { audio } from "./audio/AudioEngine";
+import { cast, syntheticSpeech } from "./characters/performance";
 
 type Sub = (dt: number) => void;
 const subs = new Set<Sub>();
@@ -22,6 +23,9 @@ export function installLoop(): void {
     const dt = Math.min(0.1, deltaMs / 1000);
     stepRig(rig, dt);
     audio.updateListener(rig);
+    // Niveau de parole du personnage qui parle : voix réelle, sinon enveloppe pendant la frappe.
+    const target = audio.voiceActive ? audio.voiceLevel() : cast.typing ? syntheticSpeech(rig.time) * 0.7 : 0;
+    cast.level += (target - cast.level) * Math.min(1, dt * 18);
     for (const s of subs) s(dt);
   });
 }

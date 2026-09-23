@@ -13,7 +13,8 @@
     "predev": "node tools/build-manifest.mjs",
     "prebuild": "node tools/build-manifest.mjs",
     "assets:manifest": "node tools/build-manifest.mjs",
-    "assets:depth": "python3 tools/depth.py"
+    "assets:depth": "python3 tools/depth.py",
+    "voices:csv": "node --experimental-strip-types --no-warnings tools/export-voices.mts"
   },
   "dependencies": {
     "@react-three/fiber": "^9.8.0",

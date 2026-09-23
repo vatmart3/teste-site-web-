@@ -1,0 +1,20 @@
+﻿id,personnage,réplique,émotion,fichier
+guard-name,guard,"Nouveau ? Votre nom ?",las,public/audio/vo-guard-name.mp3
+guard-photo,guard,"Regardez l'objectif… Voilà. La photo est pas terrible, mais ça ira.",amusé,public/audio/vo-guard-photo.mp3
+guard-welcome,guard,"Bienvenue chez Harlow & Vance. Passez votre badge sur le lecteur.",chaleureux,public/audio/vo-guard-welcome.mp3
+guard-floor,guard,"Ascenseur panoramique, tout au fond. Cinquante-deuxième.",neutre,public/audio/vo-guard-floor.mp3
+harlow-voicemail-1,harlow,"C'est Harlow. Je sais que vous êtes dans l'ascenseur, alors écoutez bien.",grave,public/audio/vo-harlow-voicemail-1.mp3
+harlow-voicemail-2,harlow,"Meridian Logistics. Quatre mille camions, une cotation au Nasdaq, et un fonds de pension pour ses chauffeurs.",grave,public/audio/vo-harlow-voicemail-2.mp3
+harlow-voicemail-3,harlow,"Ce fonds a perdu soixante millions de dollars en dix-huit mois. Les chauffeurs nous ont choisis pour les récupérer.",grave,public/audio/vo-harlow-voicemail-3.mp3
+harlow-voicemail-4,harlow,"Meridian jure que ses comptes sont propres. Les chiffres, eux, sont trop beaux pour être honnêtes.",froid,public/audio/vo-harlow-voicemail-4.mp3
+harlow-voicemail-5,harlow,"Trouvez-moi la fraude. Le reste, c'est de la plaidoirie.",froid,public/audio/vo-harlow-voicemail-5.mp3
+nora-welcome,nora,"Il vous attend. Dernier bureau au fond. Et… bonne chance.",chaleureux,public/audio/vo-nora-welcome.mp3
+mercer-intro,mercer,"C'est toi le stagiaire de Harlow ? Je parie que tu tiens pas une semaine.",moqueur,public/audio/vo-mercer-intro.mp3
+mercer-after-ignore,mercer,"… Charmant. On verra si tu snobes aussi Harlow.",tendu,public/audio/vo-mercer-after-ignore.mp3
+mercer-after-retort,mercer,"Ha. On en reparlera quand tu auras facturé ta première heure.",moqueur,public/audio/vo-mercer-after-retort.mp3
+mercer-after-smile,mercer,"Souris tant que tu peux. Le cinquante-deuxième, ça use.",amusé,public/audio/vo-mercer-after-smile.mp3
+harlow-stand,harlow,"Asseyez-vous. Non… restez debout. On réfléchit mieux debout.",froid,public/audio/vo-harlow-stand.mp3
+harlow-message,harlow,"Vous avez écouté mon message. Bien.",grave,public/audio/vo-harlow-message.mp3
+harlow-briefing,harlow,"Meridian publie ses comptes dans trois jours. Si la fraude existe, elle est dans ces pages.",grave,public/audio/vo-harlow-briefing.mp3
+harlow-folder,harlow,"États financiers, annexes, contrats. Tout ce qu'ils ont bien voulu nous donner.",grave,public/audio/vo-harlow-folder.mp3
+harlow-deadline,harlow,"Vous avez jusqu'à demain matin. Huit heures. Pas une minute de plus.",froid,public/audio/vo-harlow-deadline.mp3

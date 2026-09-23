@@ -4,153 +4,11 @@
  * Elles servent de démo tant que les vraies plates (annexe A) ne sont pas dans /public/scenes.
  */
 import type { LightVariant } from "@/content/types";
+import { BRASS, lightFor, NAVY, newLayer, Painter, rng } from "./placeholderKit";
+import { arrivalPlate } from "./placeholderArrival";
 
-export interface PlaceholderPlate {
-  color: HTMLCanvasElement;
-  depth: HTMLCanvasElement;
-  layers: Record<string, HTMLCanvasElement>;
-}
-
-type Ctx = CanvasRenderingContext2D;
-
-/** Générateur pseudo-aléatoire déterministe (mulberry32). */
-function rng(seed: number) {
-  let a = seed >>> 0;
-  return () => {
-    a = (a + 0x6d2b79f5) >>> 0;
-    let t = a;
-    t = Math.imul(t ^ (t >>> 15), t | 1);
-    t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
-    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
-  };
-}
-
-const gray = (d: number) => {
-  const v = Math.round(Math.max(0, Math.min(1, d)) * 255);
-  return `rgb(${v},${v},${v})`;
-};
-
-/**
- * Le « peintre » : chaque appel dessine la même forme dans le canvas couleur et dans le canvas de
- * profondeur, avec un remplissage différent pour chacun.
- */
-class Painter {
-  readonly color: HTMLCanvasElement;
-  readonly depth: HTMLCanvasElement;
-  readonly c: Ctx;
-  readonly d: Ctx;
-  constructor(
-    readonly w: number,
-    readonly h: number,
-  ) {
-    this.color = document.createElement("canvas");
-    this.depth = document.createElement("canvas");
-    this.color.width = this.depth.width = w;
-    this.color.height = this.depth.height = h;
-    this.c = this.color.getContext("2d")!;
-    this.d = this.depth.getContext("2d")!;
-  }
-
-  /** Dessine un chemin dans les deux canvas. `fillC`/`fillD` : style ou fabrique de dégradé. */
-  shape(
-    path: (ctx: Ctx) => void,
-    fillC: string | CanvasGradient | ((ctx: Ctx) => string | CanvasGradient) | null,
-    fillD: number | ((ctx: Ctx) => string | CanvasGradient) | null,
-    blur = 0,
-  ) {
-    if (fillC !== null) {
-      const c = this.c;
-      c.save();
-      if (blur) c.filter = `blur(${blur}px)`;
-      c.beginPath();
-      path(c);
-      c.fillStyle = typeof fillC === "function" ? fillC(c) : fillC;
-      c.fill();
-      c.restore();
-    }
-    if (fillD !== null) {
-      const d = this.d;
-      d.save();
-      d.beginPath();
-      path(d);
-      d.fillStyle = typeof fillD === "number" ? gray(fillD) : fillD(d);
-      d.fill();
-      d.restore();
-    }
-  }
-
-  /** Ne peint que la couleur (lumières, reflets…). */
-  glow(x: number, y: number, radius: number, color: string, alpha = 1, mode: GlobalCompositeOperation = "lighter") {
-    const r = Math.max(1, Math.abs(radius));
-    const c = this.c;
-    c.save();
-    c.globalCompositeOperation = mode;
-    c.globalAlpha = alpha;
-    const g = c.createRadialGradient(x, y, 0, x, y, r);
-    g.addColorStop(0, color);
-    g.addColorStop(1, "rgba(0,0,0,0)");
-    c.fillStyle = g;
-    c.fillRect(x - r, y - r, r * 2, r * 2);
-    c.restore();
-  }
-
-  linear(ctx: Ctx, x0: number, y0: number, x1: number, y1: number, stops: [number, string][]) {
-    const g = ctx.createLinearGradient(x0, y0, x1, y1);
-    for (const [o, s] of stops) g.addColorStop(o, s);
-    return g;
-  }
-
-  depthLinear(x0: number, y0: number, x1: number, y1: number, d0: number, d1: number) {
-    return (ctx: Ctx) => this.linear(ctx, x0, y0, x1, y1, [
-      [0, gray(d0)],
-      [1, gray(d1)],
-    ]);
-  }
-
-  /** Grain + vignettage pour que la plate provisoire ait déjà un peu de « matière ». */
-  finish(seed: number, grain = 10) {
-    const { c, w, h } = this;
-    const img = c.getImageData(0, 0, w, h);
-    const r = rng(seed);
-    for (let i = 0; i < img.data.length; i += 4) {
-      const n = (r() - 0.5) * grain;
-      img.data[i] = img.data[i]! + n;
-      img.data[i + 1] = img.data[i + 1]! + n;
-      img.data[i + 2] = img.data[i + 2]! + n;
-    }
-    c.putImageData(img, 0, 0);
-    // Adoucit la carte de profondeur (comme une vraie sortie Depth Anything).
-    const soft = document.createElement("canvas");
-    soft.width = w;
-    soft.height = h;
-    const s = soft.getContext("2d")!;
-    s.filter = `blur(${Math.round(w / 500)}px)`;
-    s.drawImage(this.depth, 0, 0);
-    this.d.drawImage(soft, 0, 0);
-  }
-}
-
-function newLayer(w: number, h: number) {
-  const cv = document.createElement("canvas");
-  cv.width = w;
-  cv.height = h;
-  return { cv, ctx: cv.getContext("2d")! };
-}
-
-// Palette « drame juridique » : bleu nuit profond, laiton chaud.
-const NAVY = "#070d1a";
-const BRASS = "#c9a24a";
-
-function lightFor(variant: LightVariant | undefined) {
-  switch (variant) {
-    case "night":
-      return { sky: ["#03060d", "#0a1528", "#1a2a44"], win: "#ffcf7a", ambient: 0.55 };
-    case "dusk":
-      return { sky: ["#1b1030", "#6a2d3a", "#f08a4b"], win: "#ffd38a", ambient: 0.8 };
-    default:
-      return { sky: ["#6f8fb3", "#b8cde0", "#f3e3c6"], win: "#fff4dc", ambient: 1 };
-  }
-}
+export type { PlaceholderPlate } from "./placeholderKit";
+import type { PlaceholderPlate } from "./placeholderKit";
 
 // ---------------------------------------------------------------------------------------------
 // 01 — Taxi de nuit sous la pluie
@@ -481,6 +339,11 @@ export function placeholderPlate(sceneId: string, variant?: LightVariant): Place
   const hit = cache.get(key);
   if (hit) return hit;
   let plate: PlaceholderPlate;
+  const arrival = arrivalPlate(sceneId, variant);
+  if (arrival) {
+    cache.set(key, arrival);
+    return arrival;
+  }
   switch (sceneId) {
     case "01-taxi-night":
       plate = taxi();
@@ -493,6 +356,9 @@ export function placeholderPlate(sceneId: string, variant?: LightVariant): Place
       break;
     case "06b-openspace":
       plate = openspace(62, variant);
+      break;
+    case "06c-openspace":
+      plate = openspace(63, variant);
       break;
     default:
       plate = openspace(61, variant);

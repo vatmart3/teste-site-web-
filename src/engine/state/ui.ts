@@ -7,7 +7,20 @@ export interface Subtitle {
   text: string;
 }
 
+export interface ChoiceOption {
+  id: string;
+  label: string;
+  hint?: string;
+}
+
+/** Panneau d'interaction qui attend une réponse du joueur. */
+export type Panel =
+  | { kind: "identity" }
+  | { kind: "choice"; prompt?: string; options: ChoiceOption[] }
+  | { kind: "swipe"; label: string };
+
 export interface UiState {
+  panel: Panel | null;
   letterbox: boolean;
   subtitle: Subtitle | null;
   /** Hotspots cliquables actuellement proposés (ids du plan courant). */
@@ -22,6 +35,7 @@ export interface UiState {
 }
 
 export const useUi = create<UiState>()((set) => ({
+  panel: null,
   letterbox: false,
   subtitle: null,
   activeHotspots: [],

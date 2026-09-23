@@ -3,7 +3,7 @@ import { create } from "zustand";
 import type { SceneId } from "@/content/scenes";
 import type { LightVariant } from "@/content/types";
 
-export type Transition = "cut" | "fade" | "depth";
+export type Transition = "cut" | "fade" | "depth" | "doors";
 
 export interface PlateInstance {
   key: number;

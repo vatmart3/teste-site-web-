@@ -22,3 +22,5 @@ export const hotspotBus = bus<string>();
 export const advanceBus = bus<void>();
 /** Le joueur demande à sauter la cinématique. */
 export const skipBus = bus<void>();
+/** Réponse du joueur à un panneau (identité, choix, geste). */
+export const panelBus = bus<unknown>();

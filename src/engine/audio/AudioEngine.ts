@@ -77,6 +77,10 @@ class AudioEngine {
   private musicCut = false;
   private volumes: Volumes = { master: 0.9, music: 0.6, voice: 1, sfx: 0.9, muted: false };
   private listeners = new Set<() => void>();
+  private voiceAnalyser: AnalyserNode | null = null;
+  private voiceBuf: Float32Array<ArrayBuffer> | null = null;
+  private voicesPlaying = 0;
+  private musicFilter: BiquadFilterNode | null = null;
 
   get unlocked(): boolean {
     return !!this.ctx && this.ctx.state === "running";
@@ -101,6 +105,17 @@ class AudioEngine {
         amb: ctx.createGain(),
       };
       for (const b of Object.values(this.buses)) b.connect(this.master);
+      // Musique : filtre passe-bas (haut-parleur d'ascenseur, musique « derrière une porte »).
+      this.buses.music.disconnect();
+      this.musicFilter = ctx.createBiquadFilter();
+      this.musicFilter.type = "lowpass";
+      this.musicFilter.frequency.value = 20000;
+      this.buses.music.connect(this.musicFilter).connect(this.master);
+      // Analyse de la voix : l'amplitude pilote les mouvements de tête / de bouche des personnages.
+      this.voiceAnalyser = ctx.createAnalyser();
+      this.voiceAnalyser.fftSize = 512;
+      this.voiceBuf = new Float32Array(this.voiceAnalyser.fftSize);
+      this.buses.voice.connect(this.voiceAnalyser);
       this.reverbInput = ctx.createGain();
       const mk = () => {
         const conv = ctx.createConvolver();
@@ -293,6 +308,7 @@ class AudioEngine {
     this.buses.music.gain.setTargetAtTime(this.volumes.music * 0.45, t, 0.15);
     this.buses.amb.gain.setTargetAtTime(this.volumes.sfx * 0.5, t, 0.15);
     const p = this.startSource(buf, this.buses.voice, { send: 0.35 });
+    this.voicesPlaying++;
     await new Promise<void>((resolve) => {
       p.src.onended = () => resolve();
       signal?.addEventListener("abort", () => {
@@ -300,7 +316,33 @@ class AudioEngine {
         resolve();
       });
     });
+    this.voicesPlaying = Math.max(0, this.voicesPlaying - 1);
     this.applyVolumes();
+  }
+
+  /** Une voix doublée est-elle en cours ? */
+  get voiceActive(): boolean {
+    return this.voicesPlaying > 0;
+  }
+
+  /** Amplitude (RMS, ~0..1) de la voix en cours. */
+  voiceLevel(): number {
+    const a = this.voiceAnalyser;
+    const b = this.voiceBuf;
+    if (!a || !b || !this.voicesPlaying) return 0;
+    a.getFloatTimeDomainData(b);
+    let sum = 0;
+    for (let i = 0; i < b.length; i++) sum += b[i]! * b[i]!;
+    return Math.min(1, Math.sqrt(sum / b.length) * 5);
+  }
+
+  /** Filtre de la musique : 20000 = ouvert, ~1200 = petit haut-parleur d'ascenseur. */
+  setMusicFilter(freq: number, seconds = 0.5): void {
+    if (!this.ctx || !this.musicFilter) return;
+    const t = this.ctx.currentTime;
+    this.musicFilter.frequency.cancelScheduledValues(t);
+    this.musicFilter.frequency.setValueAtTime(this.musicFilter.frequency.value, t);
+    this.musicFilter.frequency.exponentialRampToValueAtTime(Math.max(40, freq), t + Math.max(0.01, seconds));
   }
 
   // --------------------------------------------------------------------- Musique adaptative

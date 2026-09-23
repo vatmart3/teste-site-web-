@@ -40,6 +40,7 @@ uniform float uOpacity;
 uniform float uReveal;
 uniform float uAmount;
 uniform float uFocus;
+uniform float uExposure;
 varying float vGlow;
 varying float vDepth;
 void main() {
@@ -47,7 +48,7 @@ void main() {
   // Les particules hors mise au point deviennent de gros disques doux (bokeh).
   float blur = clamp(abs(vDepth - uFocus) * 1.6, 0.05, 0.5);
   float a = smoothstep(0.5, 0.5 - blur, length(c));
-  float b = (0.012 + vGlow * 0.55) * uAmount * uOpacity * clamp(uReveal * 2.0 - 1.0, 0.0, 1.0);
+  float b = (0.012 + vGlow * 0.55) * uAmount * uOpacity * uExposure * clamp(uReveal * 2.0 - 1.0, 0.0, 1.0);
   gl_FragColor = vec4(vec3(1.0, 0.9, 0.75) * b * a, 1.0);
   #include <colorspace_fragment>
 }
@@ -59,12 +60,14 @@ export function Dust({
   opacity,
   reveal,
   order,
+  exposure,
 }: {
   amount: number;
   scene: SceneDef;
   opacity: THREE.IUniform<number>;
   reveal: THREE.IUniform<number>;
   order: number;
+  exposure: THREE.IUniform<number>;
 }) {
   const dpr = useThree((s) => s.viewport.dpr);
   const { geometry, material } = useMemo(() => {
@@ -78,7 +81,7 @@ export function Dust({
     const m = new THREE.ShaderMaterial({
       vertexShader: vertex,
       fragmentShader: fragment,
-      transparent: true,
+      transparent: false,
       depthTest: false,
       depthWrite: false,
       blending: THREE.AdditiveBlending,
@@ -92,10 +95,11 @@ export function Dust({
         uReveal: reveal,
         uAmount: { value: amount },
         uFocus: { value: 0.5 },
+        uExposure: exposure,
       },
     });
     return { geometry: g, material: m };
-  }, [amount, scene, opacity, reveal]);
+  }, [amount, scene, opacity, reveal, exposure]);
 
   useFrame(({ clock, size }) => {
     const { cover, proj } = viewParams(scene, rig, size.width, size.height);

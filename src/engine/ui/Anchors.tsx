@@ -1,0 +1,147 @@
+"use client";
+/**
+ * Éléments d'interface accrochés au décor : compteur d'étages mécanique de l'ascenseur,
+ * horloge murale à l'heure de New York, voyant du lecteur de badge.
+ */
+import { useEffect, useRef, useState } from "react";
+import { getScene } from "@/content/scenes";
+import type { AnchorDef } from "@/content/types";
+import { clockHands, newYorkTime } from "@/lib/time";
+import { rig } from "../camera/rig";
+import { onFrame } from "../loop";
+import { coverScale, fromAuthoring, imageToScreen, screenToCss } from "../plate/projection";
+import { viewParams } from "../plate/view";
+import { useStage } from "../state/stage";
+
+/** État mutable des éléments accrochés (animé par le directeur). */
+export const anchorState = { floor: 1, reader: "idle" as "idle" | "ok" | "denied" };
+
+function Odometer() {
+  const units = useRef<HTMLDivElement>(null);
+  const tens = useRef<HTMLDivElement>(null);
+  useEffect(
+    () =>
+      onFrame(() => {
+        const f = Math.max(0, anchorState.floor);
+        const u = f % 10;
+        const t = Math.floor(f / 10) + Math.max(0, u - 9);
+        if (units.current) units.current.style.transform = `translateY(${-u}em)`;
+        if (tens.current) tens.current.style.transform = `translateY(${-(t % 10)}em)`;
+      }),
+    [],
+  );
+  const wheel = (ref: React.RefObject<HTMLDivElement | null>) => (
+    <div className="odometer-window">
+      <div ref={ref} className="odometer-strip">
+        {[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 0].map((d, i) => (
+          <span key={i}>{d}</span>
+        ))}
+      </div>
+    </div>
+  );
+  return (
+    <div className="flex gap-[0.08em] rounded-[0.15em] bg-[#0b0906] p-[0.08em] shadow-[inset_0_0_0.2em_#000]" aria-label="Étage">
+      {wheel(tens)}
+      {wheel(units)}
+    </div>
+  );
+}
+
+function WallClock() {
+  const [t, setT] = useState(() => newYorkTime());
+  useEffect(() => {
+    const id = window.setInterval(() => setT(newYorkTime()), 1000);
+    return () => window.clearInterval(id);
+  }, []);
+  const h = clockHands(t);
+  return (
+    <svg viewBox="-50 -50 100 100" className="h-full w-full drop-shadow-[0_0.3em_0.4em_rgba(0,0,0,0.6)]" role="img" aria-label={`Heure de New York : ${t.label}`}>
+      <circle r="47" fill="#f1ece0" stroke="#1a1a1a" strokeWidth="4" />
+      {Array.from({ length: 12 }, (_, i) => (
+        <line key={i} x1="0" y1="-40" x2="0" y2={i % 3 ? "-36" : "-33"} stroke="#222" strokeWidth={i % 3 ? 1.5 : 3} transform={`rotate(${i * 30})`} />
+      ))}
+      <text y="18" textAnchor="middle" fontSize="7" fontFamily="Georgia, serif" fill="#555">
+        NEW YORK
+      </text>
+      <line y2="-22" stroke="#111" strokeWidth="4" strokeLinecap="round" transform={`rotate(${h.hour})`} />
+      <line y2="-34" stroke="#111" strokeWidth="2.5" strokeLinecap="round" transform={`rotate(${h.minute})`} />
+      <line y1="8" y2="-36" stroke="#b01818" strokeWidth="1" transform={`rotate(${h.second})`} />
+      <circle r="2.5" fill="#b01818" />
+    </svg>
+  );
+}
+
+function ReaderLight() {
+  const ref = useRef<HTMLDivElement>(null);
+  useEffect(
+    () =>
+      onFrame(() => {
+        const el = ref.current;
+        if (!el) return;
+        const s = anchorState.reader;
+        el.dataset.state = s;
+      }),
+    [],
+  );
+  return <div ref={ref} className="reader-light h-full w-full rounded-full" data-state="idle" />;
+}
+
+function AnchorView({ a }: { a: AnchorDef }) {
+  switch (a.kind) {
+    case "floor-counter":
+      return <Odometer />;
+    case "wall-clock":
+    case "desk-clock":
+      return <WallClock />;
+    case "reader-light":
+      return <ReaderLight />;
+  }
+}
+
+export function Anchors() {
+  const current = useStage((s) => s.current);
+  const scene = current ? getScene(current.sceneId) : null;
+  const refs = useRef(new Map<string, HTMLDivElement>());
+
+  useEffect(() => {
+    if (!scene) return;
+    return onFrame(() => {
+      const w = window.innerWidth;
+      const h = window.innerHeight;
+      const { cover, proj } = viewParams(scene, rig, w, h);
+      for (const a of scene.anchors ?? []) {
+        const el = refs.current.get(a.id);
+        if (!el) continue;
+        let s;
+        if (a.locked) {
+          const sc = coverScale(w / h, 16 / 9);
+          const p = fromAuthoring(a.at);
+          s = { x: (p.x - 0.5) / sc.x + 0.5, y: (p.y - 0.5) / sc.y + 0.5 };
+        } else s = imageToScreen(fromAuthoring(a.at), a.depth, proj, cover);
+        const p = screenToCss(s, w, h);
+        el.style.transform = `translate(${p.x}px, ${p.y}px) translate(-50%, -50%)`;
+        el.style.fontSize = `${a.size * h}px`;
+        el.style.opacity = String(rig.exposure);
+      }
+    });
+  }, [scene]);
+
+  if (!scene?.anchors) return null;
+  return (
+    <div className="pointer-events-none fixed inset-0 z-[15]">
+      {scene.anchors.map((a) => (
+        <div
+          key={`${current?.key}-${a.id}`}
+          ref={(n) => {
+            if (n) refs.current.set(a.id, n);
+            else refs.current.delete(a.id);
+          }}
+          className="absolute left-0 top-0"
+          style={a.kind === "floor-counter" ? { opacity: 0 } : { width: "1em", height: "1em", opacity: 0 }}
+        >
+          <AnchorView a={a} />
+        </div>
+      ))}
+    </div>
+  );
+}

@@ -83,3 +83,18 @@ export function resolveAudio(m: AssetManifest, name: string): string | null {
     AUDIO_EXT.map((e) => `audio/${name}.${e}`),
   );
 }
+
+/** Vidéo d'état d'un personnage (`characters/rourke-tense.webm` + `.mp4`), ou null. */
+export function resolveCharacterVideo(m: AssetManifest, id: string, state: string): { webm: string | null; mp4: string | null } | null {
+  const webm = firstExisting(m, [`characters/${id}-${state}.webm`]);
+  const mp4 = firstExisting(m, [`characters/${id}-${state}.mp4`]);
+  return webm || mp4 ? { webm, mp4 } : null;
+}
+
+/** Portrait de joueur proposé à l'accueil (`characters/player-1.png` … `player-6.png`). */
+export function resolvePlayerPortrait(m: AssetManifest, index: number): string | null {
+  return firstExisting(
+    m,
+    IMAGE_EXT.map((e) => `characters/player-${index + 1}.${e}`),
+  );
+}

@@ -33,6 +33,10 @@ uniform float uOpacity;
 uniform float uReveal;
 uniform float uExposure;
 uniform float uTime;
+uniform float uLift;
+uniform vec4 uChar;
+uniform vec3 uCharMotion;
+uniform float uRevealMode;
 varying vec2 vUv;
 
 float hash21(vec2 p) {
@@ -60,7 +64,22 @@ vec2 screenToBase(vec2 s) {
 
 vec2 proj(vec2 base, float layer) {
   float s = 1.0 + uDolly * (0.35 + 0.65 * layer);
-  return uDollyCenter + (base - uDollyCenter) / s + uOffset * (layer - uPivot);
+  vec2 uv = uDollyCenter + (base - uDollyCenter) / s + uOffset * (layer - uPivot);
+  // Ascenseur : quand la cabine monte, les plans lointains « tombent » (le proche reste fixe).
+  uv.y += uLift * (1.0 - layer);
+  // Personnage « vivant » : respiration et micro-mouvements de tête, limités aux pixels
+  // situés à la profondeur du personnage et autour de sa position (marche aussi sur une photo fixe).
+  if (uChar.w > 0.0) {
+    float wd = exp(-pow((layer - uChar.z) / 0.14, 2.0));
+    vec2 dv = (base - uChar.xy) * vec2(uViewAspect, 1.0);
+    float wr = exp(-dot(dv, dv) / (uChar.w * uChar.w));
+    float w = wd * wr;
+    float torsoBase = uChar.y - uChar.w;
+    uv.y -= uCharMotion.x * (base.y - torsoBase) * w;
+    float head = smoothstep(uChar.y - uChar.w * 0.1, uChar.y + uChar.w * 0.6, base.y);
+    uv -= uCharMotion.yz * w * head;
+  }
+  return uv;
 }
 
 // Carré de Vogel (répartition uniforme sur un disque).
@@ -79,6 +98,10 @@ float vnoise(vec2 p) {
 
 float revealMask(float depth, vec2 s) {
   if (uReveal >= 1.0) return 1.0;
+  if (uRevealMode > 0.5) {
+    // Portes d'ascenseur : l'image s'ouvre depuis le centre.
+    return smoothstep(0.0, 0.015, uReveal * 0.53 - abs(s.x - 0.5));
+  }
   // Les plans proches apparaissent en premier, avec une frange organique (bruit lissé, type encre).
   vec2 q = s * vec2(uViewAspect, 1.0);
   float n = (vnoise(q * 6.0) * 0.65 + vnoise(q * 17.0) * 0.35) * 0.18;
@@ -90,6 +113,9 @@ float revealMask(float depth, vec2 s) {
 export const plateFragment = /* glsl */ `
 precision highp float;
 uniform sampler2D uColor;
+uniform sampler2D uColorB;
+uniform float uMix;
+uniform vec4 uWiper;
 uniform sampler2D uDepth;
 uniform vec2 uTexel;
 uniform float uMaxLod;
@@ -170,17 +196,49 @@ vec3 marchSurface(vec2 base) {
   return vec3(mix(uv, prevUv, w), mix(layer, prevLayer, w));
 }
 
-vec3 sampleBlur(vec2 uv, float radius) {
-  if (radius < 0.0006) return texture(uColor, uv).rgb;
+vec3 sampleBlurTex(sampler2D tex, vec2 uv, float radius) {
+  if (radius < 0.0006) return texture(tex, uv).rgb;
   float lod = clamp(log2(radius / max(uTexel.x, 1e-6)) - 1.5, 0.0, uMaxLod);
   vec3 acc = vec3(0.0);
   float phi = hash21(gl_FragCoord.xy) * 6.2831;
   const int TAPS = DOF_TAPS;
   for (int i = 0; i < TAPS; i++) {
     vec2 o = vogel(i, TAPS, phi) * radius * vec2(1.0, uTexel.y / uTexel.x);
-    acc += textureLod(uColor, uv + o, lod).rgb;
+    acc += textureLod(tex, uv + o, lod).rgb;
   }
   return acc / float(TAPS);
+}
+
+// Fondu enchaîné entre deux sources (états d'un personnage : idle → talk…).
+vec3 sampleBlur(vec2 uv, float radius) {
+  vec3 a = sampleBlurTex(uColor, uv, radius);
+  if (uMix <= 0.0) return a;
+  return mix(a, sampleBlurTex(uColorB, uv, radius), uMix);
+}
+
+// ---------------------------------------------------------------- Essuie-glaces
+// uWiper = (actif, période en s, amplitude en rad, longueur du balai en hauteur d'écran).
+// Renvoie (temps écoulé depuis le dernier passage du balai, masque du balai).
+vec2 wiper(vec2 ps, vec2 pivot, float t) {
+  float T = uWiper.y;
+  float A = uWiper.z;
+  float theta0 = 0.12;
+  vec2 d = ps - pivot;
+  float r = length(d);
+  float phi = atan(d.y, d.x);
+  // Le balai part de la droite (angle 0.12) et balaie vers la gauche puis revient.
+  float u = clamp((phi - theta0) / A, 0.0, 1.0);
+  float t1 = T / 6.2831 * acos(1.0 - 2.0 * u);
+  float t2 = T - t1;
+  float tm = mod(t, T);
+  float since = tm >= t2 ? tm - t2 : (tm >= t1 ? tm - t1 : tm + (T - t2));
+  float inside = step(r, uWiper.w) * step(0.12, r);
+  float theta = theta0 + A * (0.5 - 0.5 * cos(6.2831 * tm / T));
+  vec2 dir = vec2(cos(theta), sin(theta));
+  float perp = abs(d.x * dir.y - d.y * dir.x);
+  float along = dot(d, dir);
+  float blade = (1.0 - smoothstep(0.004, 0.009, perp)) * step(0.1, along) * step(along, uWiper.w);
+  return vec2(mix(99.0, since, inside), blade);
 }
 
 float luma(vec3 c) { return dot(c, vec3(0.2126, 0.7152, 0.0722)); }
@@ -192,11 +250,25 @@ void main() {
   // Pluie : les gouttes réfractent (et inversent) l'image derrière, la buée floute le reste.
   float dropMask = 0.0;
   vec2 dropN = vec2(0.0);
+  float wiperBlade = 0.0;
   if (uRain > 0.0) {
     vec3 b = beads(ps, uTime);
     vec3 r1 = runners(ps, uTime);
     vec3 r2 = runners(ps * 1.37 + 3.1, uTime * 0.9);
     vec3 drops = b * 0.8 + r1 + r2;
+    float clean = 1.0;
+    float blade = 0.0;
+    if (uWiper.x > 0.0) {
+      for (int k = 0; k < 2; k++) {
+        vec2 pivot = k == 0 ? vec2(0.28 * uViewAspect, -0.08) : vec2(0.72 * uViewAspect, -0.08);
+        vec2 w = wiper(ps, pivot, uTime + float(k) * 0.08);
+        clean = min(clean, smoothstep(0.0, 2.2, w.x));
+        blade = max(blade, w.y);
+      }
+    }
+    drops.xy *= clean;
+    drops.z *= clean;
+    wiperBlade = blade;
     dropMask = clamp(drops.z, 0.0, 1.0) * uRain;
     dropN = drops.xy;
     // Une goutte est une petite lentille : elle montre l'image derrière, inversée et nette.
@@ -209,7 +281,7 @@ void main() {
   float depth = surf.z;
 
   float coc = abs(depth - uFocus) * uAperture * 0.02;
-  coc += uFog * (1.0 - dropMask) * 0.006;
+  coc += uFog * (1.0 - dropMask) * 0.006 * (uWiper.x > 0.0 ? 0.6 : 1.0);
   coc *= 1.0 - dropMask * 0.85;
   vec3 col = sampleBlur(uv, coc);
 
@@ -234,6 +306,8 @@ void main() {
   float spec = pow(max(dot(normalize(dropN + 1e-4), vec2(-0.35, 0.94)), 0.0), 12.0) * smoothstep(0.35, 0.8, length(dropN));
   col += spec * dropMask * vec3(0.5, 0.55, 0.6);
 
+  col = mix(col, vec3(0.008), wiperBlade * 0.95);
+
   // Néon qui grésille.
   if (uFlicker > 0.0) {
     float f = step(0.93, hash21(vec2(floor(uTime * 18.0), 3.0))) * hash21(vec2(floor(uTime * 40.0), 7.0));
@@ -252,13 +326,20 @@ export const layerFragment = /* glsl */ `
 precision highp float;
 uniform sampler2D uLayer;
 uniform float uDepthConst;
+uniform float uLocked;
+uniform vec2 uLockScale;
 uniform float uMaxLod;
 uniform vec3 uTint;
 ${common}
 
 void main() {
-  vec2 base = screenToBase(vUv);
-  vec2 uv = proj(base, uDepthConst);
+  vec2 uv;
+  if (uLocked > 0.5) {
+    // Calque attaché à la caméra (cabine d'ascenseur, pare-brise) : ne suit ni le panoramique ni la montée.
+    uv = (rotateScreen(vUv) - 0.5) * uLockScale + 0.5 + uOffset * (uDepthConst - uPivot) * 0.5;
+  } else {
+    uv = proj(screenToBase(vUv), uDepthConst);
+  }
   float coc = abs(uDepthConst - uFocus) * uAperture;
   float lod = clamp(coc * 6.0, 0.0, uMaxLod);
   vec4 c = textureLod(uLayer, uv, lod);

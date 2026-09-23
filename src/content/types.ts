@@ -1,4 +1,5 @@
 import type { Vec2 } from "@/engine/plate/projection";
+import type { CharacterId } from "./characters";
 
 export type LightVariant = "day" | "dusk" | "night";
 
@@ -28,6 +29,32 @@ export interface PlateLayerDef {
   /** Fichier PNG détouré de même dimension que la plate (ex. `06a-openspace.layer-plant.png`). */
   name: string;
   depth: number;
+  /** Attaché à la caméra (cabine d'ascenseur…) : ignore panoramique et montée. Calque en 16:9. */
+  locked?: boolean;
+}
+
+/** Personnage présent dans le plan : zone animée (respiration, tête) + vidéos d'états éventuelles. */
+export interface SceneCharacterDef {
+  id: CharacterId;
+  /** Centre de la tête / du buste (coordonnées authorées). */
+  at: Vec2;
+  depth: number;
+  /** Rayon de la zone animée, en hauteur d'image. */
+  radius: number;
+}
+
+export type AnchorKind = "floor-counter" | "wall-clock" | "reader-light" | "desk-clock";
+
+/** Élément d'interface HTML accroché à un point de la plate (compteur d'étages, horloge…). */
+export interface AnchorDef {
+  id: string;
+  kind: AnchorKind;
+  at: Vec2;
+  depth: number;
+  /** Taille en fraction de la hauteur d'écran. */
+  size: number;
+  /** Accroché à un calque « locked » (cabine) plutôt qu'au décor. */
+  locked?: boolean;
 }
 
 export interface SceneDef {
@@ -54,6 +81,12 @@ export interface SceneDef {
   shaft?: { at: Vec2; strength: number };
   /** Particules de poussière dans les faisceaux. */
   dust?: number;
+  /** Essuie-glaces sur la pluie (taxi). */
+  wipers?: boolean;
+  /** Pluie qui tombe vers la caméra : intensité + point de fuite (coordonnées authorées). */
+  rainStreaks?: { amount: number; from: Vec2 };
+  character?: SceneCharacterDef;
+  anchors?: AnchorDef[];
   reverb: ReverbPreset;
   ambience: string[];
   sounds?: SpatialSoundDef[];

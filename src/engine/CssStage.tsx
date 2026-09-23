@@ -49,6 +49,8 @@ function CssPlate({ inst, z }: { inst: PlateInstance; z: number }) {
         const u = uniforms.current;
         el.style.opacity = String(u.uOpacity.value * Math.min(1, u.uReveal.value * 1.2));
         el.style.filter = `brightness(${rig.exposure})`;
+        // Montée d'ascenseur : le décor descend (approximation sans profondeur).
+        b.style.marginTop = `${rig.lift * h * 0.9}px`;
         // Taille de l'image affichée (cover + overscan) en px.
         const iw = w / cover.scale.x;
         const ih = h / cover.scale.y;
@@ -66,7 +68,14 @@ function CssPlate({ inst, z }: { inst: PlateInstance; z: number }) {
         place(b, scene.pivot);
         (scene.layers ?? []).forEach((l, i) => {
           const n = layers.current[i];
-          if (n) place(n, l.depth);
+          if (!n) return;
+          if (l.locked) {
+            // Calque attaché à la caméra (cabine) : 16:9 plein écran, sans panoramique.
+            const ar = w / h;
+            n.style.width = `${ar > 16 / 9 ? w : (h * 16) / 9}px`;
+            n.style.height = `${ar > 16 / 9 ? (w * 9) / 16 : h}px`;
+            n.style.transform = "translate(-50%, -50%)";
+          } else place(n, l.depth);
         });
       }),
     [scene],

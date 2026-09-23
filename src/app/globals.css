@@ -125,3 +125,55 @@ body {
     animation: none;
   }
 }
+
+/* Papier (registre, fiches de choix) */
+.paper {
+  background:
+    radial-gradient(ellipse at 20% 10%, rgba(255, 255, 255, 0.5), transparent 60%),
+    linear-gradient(180deg, #f5efe2, #e9e0cc);
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.6) inset,
+    0 18px 40px rgba(0, 0, 0, 0.45);
+  border-radius: 2px;
+}
+.choice-card {
+  box-shadow: 0 14px 30px rgba(0, 0, 0, 0.5);
+  background-image:
+    repeating-linear-gradient(180deg, transparent 0 1.55rem, rgba(90, 120, 170, 0.18) 1.55rem 1.6rem),
+    linear-gradient(180deg, #f7f1e4, #ece3cf);
+  min-height: 7.5rem;
+}
+
+/* Compteur d'étages mécanique */
+.odometer-window {
+  width: 0.62em;
+  height: 1em;
+  overflow: hidden;
+  background: linear-gradient(180deg, #1a140c, #0b0906 30%, #0b0906 70%, #1a140c);
+  border-radius: 0.06em;
+  box-shadow: inset 0 0.08em 0.12em rgba(0, 0, 0, 0.9);
+}
+.odometer-strip {
+  display: flex;
+  flex-direction: column;
+  font-family: var(--font-serif);
+  font-weight: 600;
+  line-height: 1em;
+  color: #f0d48c;
+  text-align: center;
+  text-shadow: 0 0 0.25em rgba(255, 190, 90, 0.6);
+  will-change: transform;
+}
+.odometer-strip span {
+  height: 1em;
+}
+
+/* Voyant du lecteur de badge */
+.reader-light {
+  background: radial-gradient(circle, #ff4a3a 0 35%, rgba(255, 60, 40, 0.35) 36%, transparent 70%);
+  transition: background 0.2s;
+}
+.reader-light[data-state="ok"] {
+  background: radial-gradient(circle, #6dff9a 0 35%, rgba(90, 255, 140, 0.45) 36%, transparent 75%);
+  box-shadow: 0 0 1.2em rgba(90, 255, 140, 0.7);
+}

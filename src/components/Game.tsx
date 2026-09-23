@@ -1,31 +1,42 @@
 "use client";
-import { useCallback, useState } from "react";
-import { engineDemo, engineDemoEnd } from "@/content/sequences/engineDemo";
+import { useCallback, useEffect, useState } from "react";
+import { arrival, deskHub, resetArrivalState } from "@/content/sequences/arrival";
 import { audio } from "@/engine/audio/AudioEngine";
 import { runSequence } from "@/engine/director/director";
 import { EngineRoot, requestGyro } from "@/engine/EngineRoot";
 import { isMobileViewport } from "@/engine/device";
+import { useProfile } from "@/engine/state/profile";
 import { useSettings } from "@/engine/state/settings";
-import { TitleScreen } from "./TitleScreen";
+import { useProps } from "@/engine/props/model";
+import { useStage } from "@/engine/state/stage";
+import { TitleScreen, type TitleChoice } from "./TitleScreen";
 
 export default function Game() {
   const [started, setStarted] = useState(false);
 
-  const start = useCallback(async () => {
+  // Accès de débogage (tests automatisés) : /?debug
+  useEffect(() => {
+    if (new URLSearchParams(window.location.search).has("debug")) {
+      (window as unknown as { __game: unknown }).__game = { useProps, useProfile, useStage };
+    }
+  }, []);
+
+  const start = useCallback(async (choice: TitleChoice) => {
     setStarted(true);
     await audio.unlock();
     if (isMobileViewport() && (await requestGyro())) useSettings.getState().set({ gyro: true });
-    // La démo boucle : « Recommencer » relance la séquence.
-    for (;;) {
-      let r = await runSequence(engineDemo, { skippable: true });
-      if (r === "skipped") r = await runSequence(engineDemoEnd);
-      if (r === "aborted") break;
+    if (choice === "new") useProfile.getState().reset();
+    if (choice !== "continue") {
+      // L'arrivée n'est sautable qu'une fois vue en entier.
+      const r = await runSequence(arrival, { skippable: useProfile.getState().arrivalSeen, onSkip: resetArrivalState });
+      if (r === "aborted") return;
     }
+    await runSequence(deskHub);
   }, []);
 
   return (
     <EngineRoot>
-      {!started && <TitleScreen onStart={() => void start()} />}
+      {!started && <TitleScreen onStart={(c) => void start(c)} />}
       <RotateHint />
     </EngineRoot>
   );

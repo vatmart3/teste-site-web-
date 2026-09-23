@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useRef } from "react";
+import { useEffect, useMemo, useRef } from "react";
 import { getScene } from "@/content/scenes";
 import type { HotspotDef } from "@/content/types";
 import { audio } from "../audio/AudioEngine";
@@ -10,6 +10,7 @@ import { fromAuthoring, imageToScreen, screenToCss } from "../plate/projection";
 import { viewParams } from "../plate/view";
 import { useStage } from "../state/stage";
 import { useUi } from "../state/ui";
+import { PROP_LABELS, propAnchors } from "../props/model";
 
 /**
  * Points de passage (cercles laiton au sol) et objets cliquables. Ils sont positionnés à chaque frame
@@ -21,6 +22,22 @@ export function Hotspots() {
   const refs = useRef(new Map<string, HTMLButtonElement>());
   const scene = current ? getScene(current.sceneId) : null;
   const list: HotspotDef[] = scene?.hotspots?.filter((h) => active.includes(h.id)) ?? [];
+  // Hotspots accrochés aux accessoires 3D (« prop:folder »…).
+  const propList = useMemo(() => active.filter((id) => id.startsWith("prop:")), [active]);
+
+  useEffect(
+    () =>
+      onFrame(() => {
+        for (const id of propList) {
+          const el = refs.current.get(id);
+          const a = propAnchors[id.slice(5)];
+          if (!el || !a) continue;
+          el.style.transform = `translate(${a.x}px, ${a.y}px) translate(-50%, -50%)`;
+          el.style.visibility = a.visible ? "visible" : "hidden";
+        }
+      }),
+    [propList],
+  );
 
   useEffect(() => {
     if (!scene) return;
@@ -56,6 +73,24 @@ export function Hotspots() {
         >
           <span className="hotspot-ring" />
           <span className="hotspot-label">{hs.label}</span>
+        </button>
+      ))}
+      {propList.map((id) => (
+        <button
+          key={id}
+          ref={(n) => {
+            if (n) refs.current.set(id, n);
+            else refs.current.delete(id);
+          }}
+          type="button"
+          aria-label={PROP_LABELS[id] ?? id}
+          onClick={() => hotspotBus.emit(id)}
+          onPointerEnter={() => void audio.sfx("sfx-ui-hover", { volume: 0.5 })}
+          className="hotspot pointer-events-auto absolute left-0 top-0 animate-hotspot-in"
+          data-kind="object"
+        >
+          <span className="hotspot-ring" />
+          <span className="hotspot-label">{PROP_LABELS[id] ?? id}</span>
         </button>
       ))}
     </div>

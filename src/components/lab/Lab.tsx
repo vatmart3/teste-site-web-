@@ -5,15 +5,17 @@
  */
 import { useEffect, useState } from "react";
 import { SCENES, type SceneId } from "@/content/scenes";
-import type { LightVariant } from "@/content/types";
+import type { LightVariant, SceneDef } from "@/content/types";
 import { audio } from "@/engine/audio/AudioEngine";
 import { rig, resetRig } from "@/engine/camera/rig";
 import { runSequence } from "@/engine/director/director";
 import { EngineRoot } from "@/engine/EngineRoot";
 import { fxOverrides } from "@/engine/plate/registry";
 import { useUi } from "@/engine/state/ui";
+import type { CharacterState } from "@/content/characters";
+import { setCharacterState, cast } from "@/engine/characters/performance";
 
-type RigKey = "focus" | "aperture" | "dolly" | "panX" | "panY" | "roll" | "exposure";
+type RigKey = "focus" | "aperture" | "dolly" | "panX" | "panY" | "roll" | "exposure" | "lift";
 const RIG_SLIDERS: { key: RigKey; label: string; min: number; max: number }[] = [
   { key: "focus", label: "Mise au point", min: 0, max: 1 },
   { key: "aperture", label: "Ouverture (flou)", min: 0, max: 1.5 },
@@ -22,6 +24,7 @@ const RIG_SLIDERS: { key: RigKey; label: string; min: number; max: number }[] = 
   { key: "panY", label: "Panoramique Y", min: -0.4, max: 0.4 },
   { key: "roll", label: "Roulis (°)", min: -6, max: 6 },
   { key: "exposure", label: "Exposition", min: 0, max: 2 },
+  { key: "lift", label: "Montée (ascenseur)", min: -0.2, max: 0.6 },
 ];
 
 type FxKey = "rain" | "fog" | "flicker" | "shaft" | "dust";
@@ -33,7 +36,7 @@ const FX: { key: FxKey; label: string; max: number }[] = [
   { key: "dust", label: "Poussière", max: 1.5 },
 ];
 
-const SFX = ["sfx-elevator-ding", "sfx-badge-beep", "sfx-phone-vibrate", "sfx-door-revolving", "sfx-paper-slide", "sfx-stamp", "sfx-gavel", "sfx-heartbeat", "sfx-car-door"];
+const SFX = ["sfx-badge-print", "sfx-camera-flash", "sfx-footsteps", "sfx-elevator-ding", "sfx-badge-beep", "sfx-phone-vibrate", "sfx-door-revolving", "sfx-paper-slide", "sfx-stamp", "sfx-gavel", "sfx-heartbeat", "sfx-car-door"];
 
 export default function Lab() {
   const [sceneId, setSceneId] = useState<SceneId>("06a-openspace");
@@ -42,7 +45,7 @@ export default function Lab() {
   const [fx, setFx] = useState<Record<FxKey, number | null>>({ rain: null, fog: null, flicker: null, shaft: null, dust: null });
   const [intensity, setIntensity] = useState(0);
   const letterbox = useUi((s) => s.letterbox);
-  const scene = SCENES[sceneId];
+  const scene: SceneDef = SCENES[sceneId];
 
   useEffect(() => {
     void runSequence(async (d) => {
@@ -82,6 +85,30 @@ export default function Lab() {
             <option value="night">Nuit</option>
           </select>
         </label>
+
+        {scene.character && (
+          <label className="mt-2 block">
+            Personnage ({scene.character.id})
+            <select
+              className="mt-1 w-full rounded bg-black/40 p-1"
+              defaultValue="idle"
+              key={sceneId}
+              onChange={(e) => {
+                const st = e.target.value as CharacterState;
+                setCharacterState(scene.character!.id, st);
+                // « talk » sans voix : on simule la parole pour voir les mouvements de tête.
+                cast.speaker = st === "talk" ? scene.character!.id : null;
+                cast.typing = st === "talk";
+              }}
+            >
+              {(["idle", "talk", "pleased", "tense", "break"] as const).map((st) => (
+                <option key={st} value={st}>
+                  {st}
+                </option>
+              ))}
+            </select>
+          </label>
+        )}
 
         <h2 className="mt-4 text-[0.65rem] uppercase tracking-[0.25em] text-brass/80">Caméra</h2>
         {RIG_SLIDERS.map((s) => (

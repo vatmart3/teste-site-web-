@@ -1,6 +1,7 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
 import { audio } from "../audio/AudioEngine";
+import { cast } from "../characters/performance";
 import { advanceBus } from "../director/events";
 import { useSettings } from "../state/settings";
 import { useUi } from "../state/ui";
@@ -17,6 +18,7 @@ export function Subtitles() {
     if (!sub) return;
     setShown(0);
     typing.current = true;
+    cast.typing = true;
     let i = 0;
     const id = window.setInterval(() => {
       i += 1;
@@ -24,10 +26,14 @@ export function Subtitles() {
       if (i % 4 === 0) void audio.sfx("sfx-typewriter-soft", { volume: 0.12, rate: 0.9 + Math.random() * 0.2 });
       if (i >= sub.text.length) {
         typing.current = false;
+        cast.typing = false;
         window.clearInterval(id);
       }
     }, 28);
-    return () => window.clearInterval(id);
+    return () => {
+      window.clearInterval(id);
+      cast.typing = false;
+    };
   }, [sub]);
 
   useEffect(() => {
@@ -46,6 +52,7 @@ export function Subtitles() {
     if (!sub) return;
     if (typing.current) {
       typing.current = false;
+      cast.typing = false;
       setShown(sub.text.length);
     } else advanceBus.emit();
   }

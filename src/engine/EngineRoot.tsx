@@ -12,7 +12,9 @@ import { prefersReducedMotion, resolveQuality, type Quality } from "./device";
 import { installLoop } from "./loop";
 import { StageCanvas } from "./StageCanvas";
 import { useSettings } from "./state/settings";
+import { Anchors } from "./ui/Anchors";
 import { Controls } from "./ui/Controls";
+import { Panels } from "./ui/Panels";
 import { Hotspots } from "./ui/Hotspots";
 import { Letterbox } from "./ui/Letterbox";
 import { Prompt } from "./ui/Prompt";
@@ -93,10 +95,12 @@ export function EngineRoot({ children }: { children?: ReactNode }) {
   return (
     <div className="fixed inset-0 overflow-hidden bg-[#05070c] select-none">
       {quality === "css" ? <CssStage /> : quality ? <StageCanvas quality={quality} /> : null}
+      <Anchors />
       <Hotspots />
       <Letterbox />
       <Subtitles />
       <Prompt />
+      <Panels />
       {children}
       <Controls />
     </div>

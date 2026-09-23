@@ -3,7 +3,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { useFrame } from "@react-three/fiber";
 import * as THREE from "three";
 import { getScene } from "@/content/scenes";
-import { fromAuthoring } from "./projection";
+import { coverScale, fromAuthoring } from "./projection";
 import { rig, type CameraRig } from "../camera/rig";
 import type { PlateInstance } from "../state/stage";
 import { layerFragment, plateFragment, plateVertex } from "./plateShader";
@@ -11,6 +11,9 @@ import { fxOverrides, registerPlate, unregisterPlate } from "./registry";
 import { loadPlateTextures, type PlateTextures } from "./textures";
 import { viewParams } from "./view";
 import { Dust } from "../fx/Dust";
+import { RainStreaks } from "../fx/RainStreaks";
+import { cast, characterMotion, stateOf } from "../characters/performance";
+import { useCharacterVideos } from "./characterVideos";
 
 function maxLod(t: THREE.Texture): number {
   const img = t.image as { width?: number; height?: number } | undefined;
@@ -24,6 +27,25 @@ function texel(t: THREE.Texture): THREE.Vector2 {
 }
 
 /** Une plate 2,5D (image + profondeur + calques + vidéo éventuelle), plein écran. */
+/**
+ * Les plates sont dessinées dans la passe « opaque » (triée par renderOrder) avec un mélange alpha
+ * manuel : les accessoires 3D, rendus ensuite, passent ainsi toujours devant le décor.
+ */
+const PLATE_BLENDING = {
+  transparent: false,
+  depthTest: false,
+  depthWrite: false,
+  blending: THREE.CustomBlending,
+  blendSrc: THREE.SrcAlphaFactor,
+  blendDst: THREE.OneMinusSrcAlphaFactor,
+  blendSrcAlpha: THREE.OneFactor,
+  blendDstAlpha: THREE.OneMinusSrcAlphaFactor,
+} as const;
+
+function readyVideo(t: THREE.VideoTexture | undefined): THREE.VideoTexture | null {
+  return t && (t.image as HTMLVideoElement).readyState >= 2 ? t : null;
+}
+
 function snapshot(r: CameraRig): CameraRig {
   return { ...r, offset: { ...r.offset }, pan: { ...r.pan } };
 }
@@ -69,7 +91,11 @@ export function PlatePlane({
       uFocus: { value: scene.focus },
       uAperture: { value: scene.aperture },
       uOpacity: { value: inst.transition === "fade" ? 0 : 1 },
-      uReveal: { value: inst.transition === "depth" ? 0 : 1 },
+      uReveal: { value: inst.transition === "depth" || inst.transition === "doors" ? 0 : 1 },
+      uRevealMode: { value: inst.transition === "doors" ? 1 : 0 },
+      uLift: { value: 0 },
+      uChar: { value: new THREE.Vector4(0, 0, 0, 0) },
+      uCharMotion: { value: new THREE.Vector3() },
       uExposure: { value: 1 },
       uTime: { value: 0 },
       uTint: { value: new THREE.Vector3(1, 1, 1) },
@@ -84,12 +110,13 @@ export function PlatePlane({
       vertexShader: plateVertex,
       fragmentShader: plateFragment,
       defines: quality === "high" ? { MARCH_STEPS: 24, DOF_TAPS: 12 } : { MARCH_STEPS: 14, DOF_TAPS: 8 },
-      transparent: true,
-      depthTest: false,
-      depthWrite: false,
+      ...PLATE_BLENDING,
       uniforms: {
         ...shared,
         uColor: { value: tex.color },
+        uColorB: { value: tex.color },
+        uMix: { value: 0 },
+        uWiper: { value: new THREE.Vector4(scene.wipers ? 1 : 0, 2.4, 1.9, 0.78) },
         uDepth: { value: tex.depth },
         uTexel: { value: texel(tex.color) },
         uMaxLod: { value: maxLod(tex.color) },
@@ -100,7 +127,7 @@ export function PlatePlane({
         uShaft: { value: 0 },
       },
     });
-  }, [tex, shared, quality]);
+  }, [tex, shared, quality, scene.wipers]);
 
   const layerMaterials = useMemo(() => {
     if (!tex) return [];
@@ -111,18 +138,21 @@ export function PlatePlane({
           new THREE.ShaderMaterial({
             vertexShader: plateVertex,
             fragmentShader: layerFragment,
-            transparent: true,
-            depthTest: false,
-            depthWrite: false,
+            ...PLATE_BLENDING,
             uniforms: {
               ...shared,
               uLayer: { value: tex.layers[l.name] },
               uDepthConst: { value: l.depth },
+              uLocked: { value: l.locked ? 1 : 0 },
+              uLockScale: { value: new THREE.Vector2(1, 1) },
               uMaxLod: { value: maxLod(tex.layers[l.name]!) },
             },
           }),
       );
   }, [tex, scene.layers, shared]);
+
+  const charVideos = useCharacterVideos(scene.character?.id ?? null);
+  const charFade = useRef<{ shown: THREE.Texture | null; target: THREE.Texture | null }>({ shown: null, target: null });
 
   useEffect(() => {
     if (!material) return;
@@ -153,6 +183,42 @@ export function PlatePlane({
     shared.uExposure.value = r.exposure;
     shared.uTime.value = clock.elapsedTime;
     shared.uTint.value.set(...fxOverrides.tint);
+    shared.uLift.value = r.lift;
+    for (let i = 0; i < layerMaterials.length; i++) {
+      const lm = layerMaterials[i]!;
+      if (lm.uniforms.uLocked!.value > 0.5) {
+        const sc = coverScale(cover.viewAspect, 16 / 9);
+        lm.uniforms.uLockScale!.value.set(sc.x, sc.y);
+      }
+    }
+
+    // Personnage : zone animée + fondu enchaîné entre vidéos d'états.
+    const ch = scene.character;
+    if (ch) {
+      const at = fromAuthoring(ch.at);
+      shared.uChar.value.set(at.x, at.y, ch.depth, ch.radius);
+      const state = stateOf(ch.id);
+      const talk = cast.speaker === ch.id ? cast.level : 0;
+      const m = rig.reducedMotion ? [0, 0, 0] : characterMotion(state, clock.elapsedTime, talk);
+      shared.uCharMotion.value.set(m[0]!, m[1]!, m[2]!);
+      const f = charFade.current;
+      const idle = tex?.video ?? tex?.color ?? null;
+      const want = readyVideo(charVideos[state]) ?? readyVideo(charVideos.idle) ?? idle;
+      if (want && want !== (f.target ?? f.shown ?? u.uColor!.value)) {
+        f.target = want;
+        u.uColorB!.value = want;
+        u.uMix!.value = 0;
+      }
+      if (f.target) {
+        u.uMix!.value = Math.min(1, u.uMix!.value + dt / 0.35);
+        if (u.uMix!.value >= 1) {
+          u.uColor!.value = f.target;
+          f.shown = f.target;
+          f.target = null;
+          u.uMix!.value = 0;
+        }
+      }
+    }
 
     u.uRain!.value = rig.reducedMotion ? 0 : (fxOverrides.rain ?? scene.rain ?? 0);
     u.uFog!.value = fxOverrides.fog ?? scene.fog ?? 0;
@@ -165,7 +231,7 @@ export function PlatePlane({
 
     // La boucle vidéo remplace l'image fixe dès qu'elle a des images à afficher.
     const v = tex?.video;
-    if (v && (v.image as HTMLVideoElement).readyState >= 2 && u.uColor!.value !== v) {
+    if (!scene.character && v && (v.image as HTMLVideoElement).readyState >= 2 && u.uColor!.value !== v) {
       u.uColor!.value = v;
       u.uMaxLod!.value = 0;
     }
@@ -183,7 +249,10 @@ export function PlatePlane({
           <planeGeometry args={[2, 2]} />
         </mesh>
       ))}
-      {dust > 0 && <Dust amount={dust} scene={scene} opacity={shared.uOpacity} reveal={shared.uReveal} order={order * 10 + 1} />}
+      {scene.rainStreaks && !rig.reducedMotion && (
+        <RainStreaks amount={scene.rainStreaks.amount} from={scene.rainStreaks.from} opacity={shared.uOpacity} order={order * 10 + 5} />
+      )}
+      {dust > 0 && <Dust amount={dust} scene={scene} opacity={shared.uOpacity} reveal={shared.uReveal} exposure={shared.uExposure} order={order * 10 + 1} />}
     </group>
   );
 }
