@@ -1,0 +1,5 @@
+# Outils de production des plates (Python 3.10+)
+pillow>=11.2        # lecture/écriture AVIF intégrée
+numpy>=1.26
+torch>=2.2
+transformers>=4.45  # Depth Anything V2 (pipeline "depth-estimation")

@@ -1,0 +1,189 @@
+"use client";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { useFrame } from "@react-three/fiber";
+import * as THREE from "three";
+import { getScene } from "@/content/scenes";
+import { fromAuthoring } from "./projection";
+import { rig, type CameraRig } from "../camera/rig";
+import type { PlateInstance } from "../state/stage";
+import { layerFragment, plateFragment, plateVertex } from "./plateShader";
+import { fxOverrides, registerPlate, unregisterPlate } from "./registry";
+import { loadPlateTextures, type PlateTextures } from "./textures";
+import { viewParams } from "./view";
+import { Dust } from "../fx/Dust";
+
+function maxLod(t: THREE.Texture): number {
+  const img = t.image as { width?: number; height?: number } | undefined;
+  const m = Math.max(img?.width ?? 1, img?.height ?? 1);
+  return Math.max(0, Math.floor(Math.log2(m)) - 1);
+}
+
+function texel(t: THREE.Texture): THREE.Vector2 {
+  const img = t.image as { width?: number; height?: number } | undefined;
+  return new THREE.Vector2(1 / (img?.width ?? 1), 1 / (img?.height ?? 1));
+}
+
+/** Une plate 2,5D (image + profondeur + calques + vidéo éventuelle), plein écran. */
+function snapshot(r: CameraRig): CameraRig {
+  return { ...r, offset: { ...r.offset }, pan: { ...r.pan } };
+}
+
+export function PlatePlane({
+  inst,
+  order,
+  isCurrent,
+  quality,
+}: {
+  inst: PlateInstance;
+  order: number;
+  isCurrent: boolean;
+  quality: "high" | "medium";
+}) {
+  const scene = getScene(inst.sceneId);
+  const [tex, setTex] = useState<PlateTextures | null>(null);
+  // Quand un plan cède la place, il garde la caméra figée au moment de la coupe (et continue
+  // doucement sa poussée) : le plan suivant peut repartir d'une caméra neutre sans à-coup.
+  const frozen = useRef<CameraRig | null>(null);
+  if (isCurrent) frozen.current = null;
+  else if (!frozen.current) frozen.current = snapshot(rig);
+
+  useEffect(() => {
+    let alive = true;
+    loadPlateTextures(scene, inst.variant).then((t) => alive && setTex(t));
+    return () => {
+      alive = false;
+    };
+  }, [scene, inst.variant]);
+
+  // Uniforms « vue » partagés entre la plate et ses calques (mêmes objets {value}).
+  const shared = useMemo(
+    () => ({
+      uScale: { value: new THREE.Vector2(1, 1) },
+      uPan: { value: new THREE.Vector2() },
+      uRoll: { value: 0 },
+      uViewAspect: { value: 16 / 9 },
+      uOffset: { value: new THREE.Vector2() },
+      uPivot: { value: scene.pivot },
+      uDolly: { value: 0 },
+      uDollyCenter: { value: new THREE.Vector2(0.5, 0.5) },
+      uFocus: { value: scene.focus },
+      uAperture: { value: scene.aperture },
+      uOpacity: { value: inst.transition === "fade" ? 0 : 1 },
+      uReveal: { value: inst.transition === "depth" ? 0 : 1 },
+      uExposure: { value: 1 },
+      uTime: { value: 0 },
+      uTint: { value: new THREE.Vector3(1, 1, 1) },
+    }),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [],
+  );
+
+  const material = useMemo(() => {
+    if (!tex) return null;
+    return new THREE.ShaderMaterial({
+      vertexShader: plateVertex,
+      fragmentShader: plateFragment,
+      defines: quality === "high" ? { MARCH_STEPS: 24, DOF_TAPS: 12 } : { MARCH_STEPS: 14, DOF_TAPS: 8 },
+      transparent: true,
+      depthTest: false,
+      depthWrite: false,
+      uniforms: {
+        ...shared,
+        uColor: { value: tex.color },
+        uDepth: { value: tex.depth },
+        uTexel: { value: texel(tex.color) },
+        uMaxLod: { value: maxLod(tex.color) },
+        uRain: { value: 0 },
+        uFog: { value: 0 },
+        uFlicker: { value: 0 },
+        uShaftPos: { value: new THREE.Vector2(0.5, 1) },
+        uShaft: { value: 0 },
+      },
+    });
+  }, [tex, shared, quality]);
+
+  const layerMaterials = useMemo(() => {
+    if (!tex) return [];
+    return (scene.layers ?? [])
+      .filter((l) => tex.layers[l.name])
+      .map(
+        (l) =>
+          new THREE.ShaderMaterial({
+            vertexShader: plateVertex,
+            fragmentShader: layerFragment,
+            transparent: true,
+            depthTest: false,
+            depthWrite: false,
+            uniforms: {
+              ...shared,
+              uLayer: { value: tex.layers[l.name] },
+              uDepthConst: { value: l.depth },
+              uMaxLod: { value: maxLod(tex.layers[l.name]!) },
+            },
+          }),
+      );
+  }, [tex, scene.layers, shared]);
+
+  useEffect(() => {
+    if (!material) return;
+    registerPlate(inst.key, { uniforms: { uOpacity: shared.uOpacity, uReveal: shared.uReveal } });
+    return () => {
+      unregisterPlate(inst.key);
+      material.dispose();
+      for (const m of layerMaterials) m.dispose();
+    };
+  }, [material, layerMaterials, inst.key, shared]);
+
+  useFrame(({ size, clock }, dt) => {
+    if (!material) return;
+    const f = frozen.current;
+    if (f) f.dolly += dt * 0.12;
+    const r = f ?? rig;
+    const { cover, proj } = viewParams(scene, r, size.width, size.height);
+    const u = material.uniforms;
+    shared.uScale.value.set(cover.scale.x, cover.scale.y);
+    shared.uPan.value.set(cover.pan.x, cover.pan.y);
+    shared.uRoll.value = cover.roll;
+    shared.uViewAspect.value = cover.viewAspect;
+    shared.uOffset.value.set(proj.offset.x, proj.offset.y);
+    shared.uDolly.value = proj.dolly;
+    shared.uDollyCenter.value.set(proj.dollyCenter.x, proj.dollyCenter.y);
+    shared.uFocus.value = r.focus;
+    shared.uAperture.value = r.aperture;
+    shared.uExposure.value = r.exposure;
+    shared.uTime.value = clock.elapsedTime;
+    shared.uTint.value.set(...fxOverrides.tint);
+
+    u.uRain!.value = rig.reducedMotion ? 0 : (fxOverrides.rain ?? scene.rain ?? 0);
+    u.uFog!.value = fxOverrides.fog ?? scene.fog ?? 0;
+    u.uFlicker!.value = rig.reducedMotion ? 0 : (fxOverrides.flicker ?? scene.flicker ?? 0);
+    if (scene.shaft) {
+      const sp = fromAuthoring(scene.shaft.at);
+      u.uShaftPos!.value.set(sp.x, sp.y);
+    }
+    u.uShaft!.value = fxOverrides.shaft ?? scene.shaft?.strength ?? 0;
+
+    // La boucle vidéo remplace l'image fixe dès qu'elle a des images à afficher.
+    const v = tex?.video;
+    if (v && (v.image as HTMLVideoElement).readyState >= 2 && u.uColor!.value !== v) {
+      u.uColor!.value = v;
+      u.uMaxLod!.value = 0;
+    }
+  });
+
+  if (!material) return null;
+  const dust = fxOverrides.dust ?? scene.dust ?? 0;
+  return (
+    <group>
+      <mesh frustumCulled={false} renderOrder={order * 10} material={material}>
+        <planeGeometry args={[2, 2]} />
+      </mesh>
+      {layerMaterials.map((m, i) => (
+        <mesh key={i} frustumCulled={false} renderOrder={order * 10 + 2 + i} material={m}>
+          <planeGeometry args={[2, 2]} />
+        </mesh>
+      ))}
+      {dust > 0 && <Dust amount={dust} scene={scene} opacity={shared.uOpacity} reveal={shared.uReveal} order={order * 10 + 1} />}
+    </group>
+  );
+}

@@ -1,0 +1,127 @@
+@import "tailwindcss";
+
+@theme {
+  --color-navy: #070d1a;
+  --color-ink: #05070c;
+  --color-brass: #c9a24a;
+  --color-brass-light: #e7c878;
+  --color-ivory: #f3ede1;
+  --font-sans: var(--font-instrument-sans), ui-sans-serif, system-ui, sans-serif;
+  --font-serif: var(--font-cormorant), ui-serif, Georgia, serif;
+  --animate-hotspot-in: hotspot-in 0.6s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+
+@keyframes hotspot-in {
+  from {
+    opacity: 0;
+    filter: blur(4px);
+  }
+  to {
+    opacity: 1;
+    filter: blur(0);
+  }
+}
+
+@keyframes hotspot-pulse {
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 rgba(201, 162, 74, 0.45), inset 0 0 12px rgba(231, 200, 120, 0.25);
+  }
+  50% {
+    box-shadow: 0 0 0 12px rgba(201, 162, 74, 0), inset 0 0 18px rgba(231, 200, 120, 0.45);
+  }
+}
+
+html,
+body {
+  height: 100%;
+  background: var(--color-ink);
+  color: var(--color-ivory);
+  overscroll-behavior: none;
+}
+
+/* Hotspots : cercle laiton discret ; au sol (waypoint) il est écrasé en perspective. */
+.hotspot {
+  width: 64px;
+  height: 64px;
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  outline: none;
+}
+.hotspot-ring {
+  width: 44px;
+  height: 44px;
+  border-radius: 9999px;
+  border: 1.5px solid rgba(231, 200, 120, 0.85);
+  background: radial-gradient(circle, rgba(201, 162, 74, 0.18), rgba(201, 162, 74, 0.02) 70%);
+  outline: 1px solid rgba(0, 0, 0, 0.35);
+  outline-offset: 1px;
+  filter: drop-shadow(0 0 6px rgba(0, 0, 0, 0.6));
+  animation: hotspot-pulse 2.4s ease-in-out infinite;
+  transition: transform 0.35s cubic-bezier(0.2, 0.8, 0.2, 1), border-color 0.3s;
+}
+.hotspot[data-kind="waypoint"] .hotspot-ring {
+  width: 72px;
+  height: 72px;
+  transform: rotateX(68deg);
+}
+.hotspot:hover .hotspot-ring,
+.hotspot:focus-visible .hotspot-ring {
+  border-color: #fff3cf;
+  transform: scale(1.12);
+}
+.hotspot[data-kind="waypoint"]:hover .hotspot-ring,
+.hotspot[data-kind="waypoint"]:focus-visible .hotspot-ring {
+  transform: rotateX(68deg) scale(1.15);
+}
+.hotspot-label {
+  position: absolute;
+  top: 100%;
+  white-space: nowrap;
+  font-family: var(--font-sans);
+  font-size: 0.7rem;
+  letter-spacing: 0.25em;
+  text-transform: uppercase;
+  color: var(--color-ivory);
+  text-shadow: 0 1px 3px #000;
+  opacity: 0;
+  transform: translateY(-4px);
+  transition: opacity 0.3s, transform 0.3s;
+}
+.hotspot:hover .hotspot-label,
+.hotspot:focus-visible .hotspot-label {
+  opacity: 1;
+  transform: none;
+}
+@media (pointer: coarse) {
+  .hotspot-label {
+    opacity: 0.85;
+    transform: none;
+  }
+}
+
+.icon-btn {
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 9999px;
+  color: rgba(243, 237, 225, 0.75);
+  background: rgba(0, 0, 0, 0.35);
+  border: 1px solid rgba(201, 162, 74, 0.25);
+  backdrop-filter: blur(4px);
+  transition: color 0.2s, border-color 0.2s;
+}
+.icon-btn:hover,
+.icon-btn:focus-visible {
+  color: var(--color-brass-light);
+  border-color: rgba(201, 162, 74, 0.7);
+  outline: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hotspot-ring {
+    animation: none;
+  }
+}
