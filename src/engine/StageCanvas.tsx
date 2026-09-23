@@ -5,6 +5,7 @@ import { useStage } from "./state/stage";
 import { PlatePlane } from "./plate/PlatePlane";
 import { Effects } from "./fx/Effects";
 import { Passerby } from "./hub/Passerby";
+import { RoomStage } from "./room/RoomStage";
 import { PropsLayer } from "./props/PropsLayer";
 import { PROP_FOV } from "./props/model";
 
@@ -21,11 +22,16 @@ export function StageCanvas({ quality }: { quality: "high" | "medium" }) {
       shadows="soft"
       frameloop="always"
       camera={{ fov: PROP_FOV, position: [0, 0, 0], near: 0.01, far: 100 }}
-      onCreated={({ gl }) => gl.setClearColor("#05070c")}
+      onCreated={(state) => {
+        state.gl.setClearColor("#05070c");
+        // Débogage : ?debug expose l'état R3F (scène, caméra) pour les tests automatisés.
+        if (window.location.search.includes("debug")) (window as unknown as { __r3f: unknown }).__r3f = state;
+      }}
     >
       {plates.map((p, i) => (
         <PlatePlane key={p.key} inst={p} order={i + 1} isCurrent={p.key === current?.key} quality={quality} />
       ))}
+      <RoomStage quality={quality} />
       <Passerby />
       <PropsLayer />
       <Effects quality={quality} />

@@ -21,7 +21,7 @@ import type { Transition } from "@/engine/state/stage";
 import { resetArrivalState } from "./arrival";
 import { playMidnightAudit } from "./audit";
 import { officeFor } from "@/engine/career/office";
-import { roomClock, roomState } from "@/engine/room/roomState";
+import { harlowTurn, roomClock, roomState } from "@/engine/room/roomState";
 
 const hub = () => useHub.getState();
 const profile = () => useProfile.getState();
@@ -93,6 +93,7 @@ async function visitHarlow(d: Director) {
   await d.fadeBlack(1, 0.6);
   propCamera.pitch = 0;
   d.sfx("sfx-footsteps", { volume: 0.6 });
+  harlowTurn.value = 1;
   await d.show("07-corner-office", { transition: "cut", camera: { focus: 0.45, aperture: 0.35, dolly: 0.15, dollyX: 0.5, dollyY: 0.45 } });
   void d.letterbox(true);
   await d.fadeBlack(0, 0.9);

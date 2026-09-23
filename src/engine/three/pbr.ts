@@ -120,6 +120,21 @@ export const PBR = {
       color: o.color ?? "#2a3040",
     });
   },
+  /**
+   * Verre clair « bon marché » : transparent + reflets de l'environnement, sans passe de transmission
+   * (qui re-rendrait toute la ville derrière chaque vitre).
+   */
+  glass(o: MatOptions & { opacity?: number } = {}) {
+    return new THREE.MeshPhysicalMaterial({
+      color: o.color ?? "#e6eef2",
+      roughness: o.roughness ?? 0.03,
+      metalness: 0,
+      transparent: true,
+      opacity: o.opacity ?? 0.14,
+      depthWrite: false,
+      specularIntensity: 1,
+    });
+  },
   marble(o: MatOptions = {}) {
     const r = o.repeat ?? [2, 2];
     return new THREE.MeshPhysicalMaterial({

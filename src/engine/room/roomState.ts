@@ -28,3 +28,6 @@ export const ROOM = {
   sideX: 1.9,
   desk: { y: -0.42, x0: -0.8, x1: 0.8, z0: -0.3, z1: -1.12, thickness: 0.04 },
 } as const;
+
+/** Harlow se retourne dans son bureau d'angle (0 = dos à la pièce, 1 = face à la caméra). Animé par le directeur. */
+export const harlowTurn = { value: 1 };

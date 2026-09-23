@@ -212,21 +212,30 @@ def carpet(s=1024):
 
 
 def marble(s=2048):
-    base_n = spectral(s, s, 1.9, seed=71)
-    wx = (spectral(s, s, 2.2, seed=72) - 0.5) * s * 0.18
-    wy = (spectral(s, s, 2.2, seed=73) - 0.5) * s * 0.18
-    n = warp_sample(spectral(s, s, 1.7, seed=74), wx, wy)
-    ridge = 1 - np.abs(n - 0.5) * 2
-    veins = ridge ** 28
-    n2 = warp_sample(spectral(s, s, 1.4, seed=75), wx * 0.6, wy * 0.6)
-    fine = (1 - np.abs(n2 - 0.5) * 2) ** 60
-    cloud = (base_n - 0.5)
-    base = rgb("#0c0b0b")[None, None] + cloud[..., None] * 0.05
-    col = mix(base, rgb("#b8923f")[None, None], np.clip(veins * 1.1 + fine * 0.5, 0, 1))
-    col = mix(col, rgb("#2a2622")[None, None], np.clip(ridge ** 6 * 0.25, 0, 1))
-    save("marble_albedo", col, 90)
-    save("marble_rough", 0.07 + veins * 0.2 + fine * 0.1 + cloud * 0.03)
+    """Marbre noir « Portoro » : fond noir nuageux, grandes veines d'or torsadées, veines secondaires et cheveux."""
+    # Champ de déformation : grandes torsions (basse fréquence) + frisures (moyenne fréquence).
+    wx = (spectral(s, s, 3.0, seed=72) - 0.5) * s * 0.45 + (spectral(s, s, 2.3, seed=82) - 0.5) * s * 0.05
+    wy = (spectral(s, s, 3.0, seed=73) - 0.5) * s * 0.45 + (spectral(s, s, 2.3, seed=83) - 0.5) * s * 0.05
 
+    def ridge(beta: float, seed: int) -> np.ndarray:
+        n = warp_sample(spectral(s, s, beta, seed=seed), wx, wy)
+        return 1 - np.abs(n - 0.5) * 2
+
+    r1, r2, r3, r4 = ridge(2.7, 74), ridge(2.5, 75), ridge(2.3, 76), ridge(2.2, 79)
+    mask = smooth(0.3, 0.7, spectral(s, s, 3.2, seed=77))  # zones plus ou moins veinées
+    main_core = smooth(0.975, 0.997, r1)
+    sec_core = smooth(0.985, 0.998, r2) * (0.4 + 0.6 * mask)
+    hair = np.maximum(smooth(0.992, 0.999, r3), smooth(0.994, 0.9993, r4) * 0.7) * mask
+    cloud = spectral(s, s, 2.2, seed=78) - 0.5
+    fog = smooth(0.55, 0.9, spectral(s, s, 2.6, seed=80)) * 0.5
+    base = rgb("#0b0a0a")[None, None] + cloud[..., None] * np.array([0.05, 0.045, 0.04])
+    col = mix(base, rgb("#1d1a17")[None, None], fog * 0.6)
+    col = mix(col, rgb("#3a2f22")[None, None], np.clip(r1 ** 18 * 0.55 + r2 ** 20 * 0.25, 0, 1))
+    col = mix(col, rgb("#b48a42")[None, None], np.clip(sec_core * 0.8 + hair * 0.55, 0, 1))
+    col = mix(col, rgb("#b48a42")[None, None], main_core)
+    col = mix(col, rgb("#e4d8bf")[None, None], smooth(0.993, 0.9995, r1) * 0.6)
+    save("marble_albedo", col, 90)
+    save("marble_rough", 0.06 + main_core * 0.18 + sec_core * 0.1 + hair * 0.05 + cloud * 0.03)
 
 if __name__ == "__main__":
     OUT.mkdir(parents=True, exist_ok=True)

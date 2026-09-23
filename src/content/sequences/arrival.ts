@@ -9,7 +9,9 @@ import { rig } from "@/engine/camera/rig";
 import type { Director, Sequence } from "@/engine/director/director";
 import { fxOverrides } from "@/engine/plate/registry";
 import { readerScreen } from "@/engine/props/Badge";
-import { badge, folder, phone, PROP_FOV, resetTransform, screenToCamera, useProps } from "@/engine/props/model";
+import { badge, folder, phone, propCamera, resetTransform, screenToCamera, useProps } from "@/engine/props/model";
+import { roomAnchor } from "@/engine/room/anchors";
+import { harlowTurn } from "@/engine/room/roomState";
 import { useProfile } from "@/engine/state/profile";
 import { anchorState } from "@/engine/ui/Anchors";
 import type { IdentityResult } from "@/engine/ui/IdentityForm";
@@ -21,16 +23,32 @@ function todayLabel(): string {
   return new Date().toLocaleDateString("fr-FR", { weekday: "long", day: "numeric", month: "long" });
 }
 
-/** Travelling avant vers un point du plan, puis fondu de profondeur vers le plan suivant. */
+/**
+ * Travelling avant vers un point du plan, puis fondu de profondeur vers le plan suivant. Dans une pièce
+ * 3D qui continue au plan suivant, on marche réellement jusqu'à la station suivante.
+ */
 async function travel(d: Director, to: SceneId, at: { x: number; y: number }, focus = 0.3) {
   d.sfx("sfx-footsteps", { volume: 0.5 });
-  await d.cam({ dolly: 0.85, dollyX: at.x, dollyY: at.y }, 1.3, "power2.in");
+  const room = d.room;
+  if (room && room === (await d.roomFor(to))) {
+    await d.show(to, { transition: "depth", duration: 2.6, camera: { focus, panX: 0, panY: 0 } });
+    return;
+  }
+  await d.cam({ dolly: 0.85, ...aim(at) }, 1.3, "power2.in");
   await d.show(to, { transition: "depth", duration: 1.2, camera: { dolly: 0, dollyX: 0.5, dollyY: 0.5, focus, panX: 0, panY: 0 } });
+}
+
+/** Centre de poussée : le point du décor 3D s'il existe (ancre de la pièce), sinon le point du plan. */
+function aim(at: { x: number; y: number }, anchor?: string): { dollyX: number; dollyY: number } {
+  const a = anchor ? roomAnchor(anchor) : null;
+  if (a) return { dollyX: a.x / window.innerWidth, dollyY: a.y / window.innerHeight };
+  return { dollyX: at.x, dollyY: at.y };
 }
 
 /** Remet les accessoires et effets à zéro (début, saut, fin). */
 export function resetArrivalState(): void {
   props().set({ phone: false, badge: false, folder: false, badgeDraggable: false, phoneScreen: { mode: "off" } });
+  harlowTurn.value = 1;
   fxOverrides.tint = [1, 1, 1];
   anchorState.floor = 1;
   anchorState.reader = "idle";
@@ -99,7 +117,7 @@ export const arrival: Sequence = async (d) => {
   await d.focus(0.45, 1.8);
   await d.waitForHotspot("desk", "Avancez jusqu'à l'accueil");
   d.sfx("sfx-footsteps", { volume: 0.6 });
-  await d.cam({ dolly: 0.6, dollyX: 0.5, dollyY: 0.55 }, 1.4);
+  await d.cam({ dolly: 0.6, ...aim({ x: 0.5, y: 0.55 }, "desk") }, 1.4);
   await d.show("03b-lobby-guard", { transition: "depth", duration: 1.1, sound: false, camera: { dolly: 0, focus: 0.62, aperture: 0.55 } });
   await d.line(ARRIVAL.guardName);
 
@@ -113,7 +131,7 @@ export const arrival: Sequence = async (d) => {
   await d.cam({ exposure: 1 }, 0.7, "power2.out");
   d.sfx("sfx-badge-print", { at: { x: 0.2, y: 0.72 }, depth: 0.85 });
   const aspect = window.innerWidth / window.innerHeight;
-  const slot = screenToCamera(0.21, 0.27, -0.5, PROP_FOV, aspect);
+  const slot = screenToCamera(0.21, 0.27, -0.5, propCamera.fov, aspect);
   resetTransform(badge, slot.x, slot.y, -0.5);
   badge.rx = -1.35;
   badge.ry = Math.PI;
@@ -127,15 +145,16 @@ export const arrival: Sequence = async (d) => {
   await d.line(ARRIVAL.guardWelcome);
 
   // Retour au plan large : le badge en main, à glisser sur le lecteur du portique.
-  await d.show("03-lobby", { transition: "fade", duration: 0.9, sound: false, camera: { focus: 0.7, aperture: 0.35 } });
-  await d.tween(badge, { x: 0.09, y: -0.075, z: -0.4, rz: 0.1 }, 0.8, "power2.out");
+  await d.show("03-lobby", { transition: "fade", duration: 0.9, sound: false, station: "gates", camera: { focus: 0.7, aperture: 0.35 } });
+  // (Hall 3D : le lecteur est à droite du cadre, le badge se tient à gauche.)
+  await d.tween(badge, { x: d.room === "lobby" ? -0.07 : 0.09, y: -0.075, z: -0.4, rz: 0.1 }, 0.8, "power2.out");
   props().set({ badgeDraggable: true });
   await d.waitForHotspot("reader", "Glissez votre badge sur le lecteur");
   props().set({ badgeDraggable: false });
   badge.float = 0;
   const reader = readerScreen(window.innerWidth, window.innerHeight);
   if (reader) {
-    const at = screenToCamera(reader.x, reader.y, -0.55, PROP_FOV, aspect);
+    const at = screenToCamera(reader.x, reader.y, -0.55, propCamera.fov, aspect);
     await d.tween(badge, { x: at.x, y: at.y + 0.02, z: -0.55, rx: -0.4, rz: 0, scale: 0.8 }, 0.45, "power2.out");
   }
   d.sfx("sfx-badge-beep", { at: { x: 0.435, y: 0.69 }, depth: 0.72 });
@@ -149,15 +168,17 @@ export const arrival: Sequence = async (d) => {
   // ================================================================ Plan 4 — L'ascenseur panoramique
   d.preload("04-elevator-dawn");
   d.preload("05-reception-52");
-  await d.cam({ dolly: 0.9, dollyX: 0.44, dollyY: 0.62 }, 1.5, "power2.in");
+  await d.cam({ dolly: 0.9, ...aim({ x: 0.44, y: 0.62 }, "reader") }, 1.5, "power2.in");
   await d.fadeBlack(1, 0.5);
   anchorState.reader = "idle";
   anchorState.floor = 1;
   fxOverrides.tint = [0.5, 0.62, 1];
+  const cabin3d = (await d.roomFor("04-elevator-dawn")) !== null;
   await d.show("04-elevator-dawn", {
     transition: "cut",
     soundFade: 0.6,
-    camera: { dolly: 0, lift: 0, panX: 0, panY: -0.31, focus: 0.2, aperture: 0.2, lookAmount: 0.6 },
+    // Plate verticale : on cadre le bas de l'image ; cabine 3D : regard droit sur la ville.
+    camera: { dolly: 0, dollyX: 0.5, dollyY: 0.5, lift: 0, panX: 0, panY: cabin3d ? 0 : -0.31, focus: 0.2, aperture: 0.2, lookAmount: 0.6 },
   });
   d.music.start();
   d.music.intensity(0, 0.1);
@@ -198,8 +219,10 @@ export const arrival: Sequence = async (d) => {
     transition: "doors",
     duration: 1.8,
     soundFade: 1.2,
-    camera: { lift: 0, panY: 0, focus: 0.25, aperture: 0.45, lookAmount: 1 },
+    // (La cabine 3D reste visible derrière les portes : l'étage ne change qu'une fois le plan installé.)
+    camera: { panY: 0, focus: 0.25, aperture: 0.45, lookAmount: 1 },
   });
+  rig.lift = 0;
 
   // ================================================================ Plan 5 — Accueil du 52e
   d.preload("06a-openspace");
@@ -253,17 +276,23 @@ export const arrival: Sequence = async (d) => {
 
   // ================================================================ Plan 7 — Le bureau d'angle
   d.sfx("sfx-footsteps", { volume: 0.5 });
+  harlowTurn.value = 0;
   await d.cam({ panX: 0.12, dolly: 0.5, dollyX: 0.8, dollyY: 0.5 }, 1.2, "power2.in");
   await d.show("07-corner-office", { transition: "depth", duration: 1.6, camera: { panX: 0, dolly: 0, focus: 0.1, aperture: 0.4 } });
+  const office3d = d.room === "corner-office";
   d.music.intensity(0.2, 3);
   await d.wait(0.6);
   await d.focus(0.45, 1.6); // Harlow se découpe à contre-jour
+  // Dans la pièce 3D, il se retourne lentement vers vous en parlant.
+  d.tweenAsync(harlowTurn, { value: 1 }, 2.6, "power2.inOut");
   await d.line(ARRIVAL.harlowStand);
   await d.line(ARRIVAL.harlowMessage);
   await d.line(ARRIVAL.harlowBriefing);
 
-  // Il fait glisser la chemise « MERIDIAN » sur le bureau en verre.
-  resetTransform(folder, 0.03, -0.34, -2.2);
+  // Il fait glisser la chemise « MERIDIAN » sur le bureau en verre (en 3D : on s'assoit face au bureau).
+  if (office3d) await d.station("desk", 1.8);
+  const deskY = office3d ? -0.405 : -0.34;
+  resetTransform(folder, 0.03, deskY, office3d ? -1.45 : -2.2);
   folder.rx = -Math.PI / 2;
   folder.rz = 0.7;
   props().set({ folder: true });
@@ -276,6 +305,7 @@ export const arrival: Sequence = async (d) => {
   await d.waitForHotspot("prop:folder", "Attrapez le dossier");
 
   d.sfx("sfx-paper-flip", { volume: 0.7 });
+  if (office3d) void d.station("hold", 1.1).catch(() => undefined); // on relève la tête, dossier en main
   await Promise.all([d.tween(folder, { x: 0.05, y: 0.0, z: -0.72, rx: -0.2, rz: 0 }, 0.8, "power3.out"), d.focus(1, 0.6)]);
   folder.float = 1;
   await d.wait(0.3);

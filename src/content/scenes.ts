@@ -89,6 +89,8 @@ export const SCENES = {
   "03-lobby": {
     ...base,
     id: "03-lobby",
+    room3d: "lobby",
+    station: "entry",
     title: "Le hall",
     pivot: 0.4,
     focus: 0.45,
@@ -120,6 +122,7 @@ export const SCENES = {
   "04-elevator-dawn": {
     ...base,
     id: "04-elevator-dawn",
+    room3d: "elevator",
     title: "L'ascenseur panoramique",
     aspect: 9 / 16,
     pivot: 0.9,
@@ -150,6 +153,8 @@ export const SCENES = {
   "06a-openspace": {
     ...base,
     id: "06a-openspace",
+    room3d: "corridor",
+    station: "a",
     title: "L'open space",
     pivot: 0.35,
     focus: 0.3,
@@ -171,6 +176,8 @@ export const SCENES = {
   "06b-openspace": {
     ...base,
     id: "06b-openspace",
+    room3d: "corridor",
+    station: "b",
     title: "L'open space — plus loin",
     pivot: 0.35,
     focus: 0.25,
@@ -192,6 +199,8 @@ export const SCENES = {
   "06c-openspace": {
     ...base,
     id: "06c-openspace",
+    room3d: "corridor",
+    station: "c",
     title: "L'open space — le fond du couloir",
     pivot: 0.35,
     focus: 0.2,
@@ -219,6 +228,8 @@ export const SCENES = {
   "07-corner-office": {
     ...base,
     id: "07-corner-office",
+    room3d: "corner-office",
+    station: "enter",
     title: "Le bureau d'angle",
     pivot: 0.4,
     focus: 0.45,

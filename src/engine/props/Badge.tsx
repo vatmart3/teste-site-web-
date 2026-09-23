@@ -14,13 +14,17 @@ import { useProfile } from "../state/profile";
 import { useStage } from "../state/stage";
 import { loadAvatar } from "./avatars";
 import { drawBadgeBack, drawBadgeFront } from "./canvasTextures";
-import { badge, cameraToScreen, PROP_FOV, screenToCamera, useProps } from "./model";
+import { badge, cameraToScreen, propCamera, screenToCamera, useProps } from "./model";
+import { roomAnchor } from "../room/anchors";
 import { useAnchor } from "./useAnchor";
 
 /** Position écran (uv GL) du lecteur de badge du hall, ou null si on n'est pas dans le hall. */
 export function readerScreen(width: number, height: number): { x: number; y: number } | null {
   const cur = useStage.getState().current;
   if (!cur || cur.sceneId !== "03-lobby") return null;
+  // Hall en 3D : le lecteur modélisé, projeté par la caméra de la pièce.
+  const ra = roomAnchor("reader");
+  if (ra) return { x: ra.x / width, y: 1 - ra.y / height };
   const scene = getScene("03-lobby");
   const hs = scene.hotspots?.find((h) => h.id === "reader");
   if (!hs) return null;
@@ -84,7 +88,7 @@ export function Badge() {
       const rect = el.getBoundingClientRect();
       const u = (e.clientX - rect.left) / rect.width;
       const v = 1 - (e.clientY - rect.top) / rect.height;
-      const p = screenToCamera(u, v, badge.z, PROP_FOV, rect.width / rect.height);
+      const p = screenToCamera(u, v, badge.z, propCamera.fov, rect.width / rect.height);
       badge.x = p.x;
       badge.y = p.y;
       badge.rz = (u - 0.5) * -0.3;
@@ -94,7 +98,7 @@ export function Badge() {
       dragging.current = false;
       el.style.cursor = "";
       const reader = readerScreen(size.width, size.height);
-      const s = cameraToScreen(badge.x, badge.y, badge.z, PROP_FOV, size.width / size.height);
+      const s = cameraToScreen(badge.x, badge.y, badge.z, propCamera.fov, size.width / size.height);
       const near = reader && Math.hypot((s.u - reader.x) * (size.width / size.height), s.v - reader.y) < 0.14;
       if (near) hotspotBus.emit("reader");
       else gsap.to(badge, { x: 0, y: -0.01, rz: 0, duration: 0.6, ease: "back.out(1.6)" });

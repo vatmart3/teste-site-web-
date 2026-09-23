@@ -17,7 +17,7 @@ import { DESK_PITCH } from "@/engine/hub/space";
 import { useHub } from "@/engine/hub/state";
 import { onFrame } from "@/engine/loop";
 import { folder, propCamera, resetTransform, useProps } from "@/engine/props/model";
-import { roomClock, roomState } from "@/engine/room/roomState";
+import { harlowTurn, roomClock, roomState } from "@/engine/room/roomState";
 import { useProfile } from "@/engine/state/profile";
 import { useSettings } from "@/engine/state/settings";
 
@@ -168,21 +168,24 @@ async function debrief(d: Director, def: AuditCaseDef, r: AuditResult) {
   propCamera.pitch = 0;
   roomClock.mode = "ny";
   d.music.intensity(0.15, 2);
-  await d.show("07-corner-office", { transition: "cut", camera: { exposure: 0, focus: 0.45, aperture: 0.35, dolly: 0.1, dollyX: 0.5, dollyY: 0.45, panX: 0, panY: 0 } });
+  harlowTurn.value = 1;
+  // Pièce 3D : assis face au bureau en verre, Harlow debout derrière.
+  await d.show("07-corner-office", { transition: "cut", station: "hold", camera: { exposure: 0, focus: 0.45, aperture: 0.35, dolly: 0.1, dollyX: 0.5, dollyY: 0.45, panX: 0, panY: 0 } });
+  const office3d = d.room === "corner-office";
   void d.letterbox(true);
   await d.fadeBlack(0, 1.2);
   await d.line(AUDIT.harlowAsk);
 
   // Le mémo (la chemise MERIDIAN) posé sur le bureau en verre.
-  resetTransform(folder, 0, -0.26, -0.9);
-  folder.rx = -Math.PI / 2 + 0.35;
+  resetTransform(folder, 0, office3d ? -0.405 : -0.26, office3d ? -1.3 : -0.9);
+  folder.rx = office3d ? -Math.PI / 2 : -Math.PI / 2 + 0.35;
   folder.stamp = 0;
   folder.grade = "";
   folder.cover = 0;
   folder.fan = 0;
   useProps.getState().set({ folder: true });
   d.sfx("sfx-paper-slide", { volume: 0.7 });
-  await d.tween(folder, { y: -0.2, z: -0.72 }, 0.9, "power3.out");
+  await d.tween(folder, office3d ? { z: -0.9 } : { y: -0.2, z: -0.72 }, 0.9, "power3.out");
   await d.focus(0.7, 0.8);
 
   for (const a of def.anomalies) {
@@ -192,6 +195,7 @@ async function debrief(d: Director, def: AuditCaseDef, r: AuditResult) {
   await d.line({ S: AUDIT.harlowS, A: AUDIT.harlowA, B: AUDIT.harlowB, C: AUDIT.harlowC }[r.grade]);
 
   // Le tampon de note s'écrase sur la couverture.
+  if (office3d) await d.station("desk", 1.3);
   folder.grade = r.grade;
   await d.tween(folder, { stamp: 0.5 }, 0.45, "power3.in");
   d.shake(0.35);

@@ -13,6 +13,7 @@ import { useUi } from "../state/ui";
 import { PROP_LABELS, propAnchors } from "../props/model";
 import { hubBus, useHub, type HubView } from "../hub/state";
 import { useRender } from "../state/render";
+import { roomAnchors } from "../room/anchors";
 
 /** Zones du décor du bureau → vue ouverte. */
 const REGION_VIEW: Record<string, HubView> = { shelf: "library", board: "board", terminal: "terminal", door: "door" };
@@ -56,6 +57,14 @@ export function Hotspots() {
       for (const hs of scene.hotspots ?? []) {
         const el = refs.current.get(hs.id);
         if (!el) continue;
+        // Pièce 3D : le point de passage est accroché au décor modélisé.
+        const ra = roomAnchors[hs.id];
+        if (ra) {
+          el.style.transform = `translate(${ra.x}px, ${ra.y}px) translate(-50%, -50%)`;
+          el.style.visibility = ra.visible ? "visible" : "hidden";
+          continue;
+        }
+        el.style.visibility = "";
         const s = imageToScreen(fromAuthoring(hs.at), hs.depth, proj, cover);
         const p = screenToCss(s, w, h);
         el.style.transform = `translate(${p.x}px, ${p.y}px) translate(-50%, -50%)`;

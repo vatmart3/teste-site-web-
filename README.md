@@ -14,6 +14,47 @@ npm run build
 npm run voices:csv   # liste des répliques à doubler → content/voices.csv
 ```
 
+## Phase 4 — Affaire 1 « L'audit de minuit » + rendu réaliste (livrée)
+
+**Jouable** : depuis le bureau, pile de chemises → *Meridian Logistics* → « Ouvrir le dossier ». Il est
+22 h ; l'horloge murale 3D tourne en temps de jeu (6 h avant le rendez-vous de Harlow, ~12 min réelles,
+option « sans chrono » dans les réglages). Quatre pièces imprimées, **en 3D sur le bureau** : bilan,
+compte de résultat, annexe (petits caractères), bon de livraison. On les prend en main, on les approche,
+on tourne les pages (vraie courbure du papier).
+
+- **Surligneur** : on trace sur la ligne suspecte (l'encre se dépose dans la texture de la feuille) ;
+  **loupe** (lentille dans le shader de la feuille) pour lire les notes de bas de page ; **post-it** pour
+  annoter ; **crayon rouge de l'expert** (atout de la mallette) qui entoure une anomalie.
+- Événements de la nuit : le café refroidit (la vapeur disparaît), notifications du chat, « plus qu'une heure ».
+- **Moteur de score** testé (`src/engine/audit/scoring.ts`) : poids par anomalie, preuve corroborée sur deux
+  documents, faux positifs pénalisés, bonus de temps, notes S/A/B/C, heures facturées et honoraires.
+- **Débriefing** dans le bureau d'angle : Harlow reprend chaque anomalie, le tampon de note s'écrase sur la
+  chemise, compteur d'honoraires, leçons débloquées dans la bibliothèque, profil sauvegardé (v3).
+
+**Rendu réaliste** : tant qu'un plan n'a pas sa vraie plate photo, il est affiché comme une **pièce 3D
+complète** au lieu d'une peinture provisoire — même moteur que le bureau :
+
+| Plan | Pièce 3D |
+|---|---|
+| `08-desk-*` | les 4 bureaux (lampe banquier, bibliothèque, liège, horloge, écran, porte vitrée, fenêtre) |
+| `03-lobby` | hall : sol en marbre noir veiné d'or à reflets réels, lambris de noyer, lettres de laiton extrudées, comptoir et vigile, portiques et lecteurs de badge (le voyant passe au vert) |
+| `04-elevator-dawn` | cabine de verre et laiton qui **monte réellement de 190 m** au-dessus d'une ville 3D ; la nuit se lève, soleil rasant sur les façades ; compteur d'étages accroché au montant |
+| `06a/b/c-openspace` | couloir vitré (bureaux, collaborateurs, baies sur la ville) : **on marche réellement** d'une station à l'autre |
+| `07-corner-office` | bureau d'angle au lever du soleil : Harlow à contre-jour se retourne, bureau en verre ; la chemise glisse sur le plateau |
+
+Textures PBR procédurales (bois, marbre, cuir, moquette, plâtre, métal brossé : `tools/make-textures.py`),
+éclairage par HDRI (Poly Haven CC0), ombres douces, occlusion ambiante, vraie profondeur de champ,
+exposition, bloom, ACES. Les plans avec personnage en gros plan (vigile, Nora, Mercer) restent des plates
+2,5D : leurs vraies images/vidéos (annexe B) ne peuvent pas être remplacées par une silhouette 3D.
+Transitions : même pièce → la caméra glisse ; plate → pièce → fondu enchaîné ; pièce → plate → la plate se
+révèle par-dessus (portes de l'ascenseur, profondeur).
+
+### Assets attendus (phase 4)
+- Sons → `public/audio/` : `sfx-highlighter`, `sfx-pin`, `sfx-coins-counter` (les autres sont ceux des phases 2 et 3).
+- Voix : `content/voices.csv` (40 répliques, dont 16 pour l'audit et le débriefing).
+- Plates facultatives : toute plate déposée pour `03-lobby`, `04-elevator-dawn`, `06a/b/c-openspace`,
+  `07-corner-office` ou un bureau **remplace automatiquement** la pièce 3D correspondante.
+
 ## Phase 3 — Le bureau (hub) (livrée)
 
 **Jouable** : à la fin de l'arrivée (ou via « Continuer » sur l'écran-titre), on s'assoit à son bureau.
@@ -46,7 +87,7 @@ Vue à la première personne, parallaxe à la souris / au gyroscope, profondeur 
 **Honnêteté des écrans** : les affaires, le classement, le Dossier du jour et l'export PDF affichent clairement
 « à venir » avec la livraison prévue ; aucun chiffre de joueurs n'est inventé.
 
-**Ce qui manque** : le contenu jouable des affaires (phase 4), le tableau d'enquête interactif (phase 5).
+**Ce qui manque** : le tableau d'enquête interactif (phase 5).
 
 ## Phase 2 — Séquence d'arrivée (livrée)
 
@@ -108,8 +149,9 @@ physique (rapier) et reflets de la ville sur les vitres restent à faire.
 
 ### Plates provisoires
 
-Tant qu'un plan n'a pas son image dans `public/scenes`, le moteur peint une plate procédurale (couleur +
-profondeur cohérentes) : tout est jouable sans aucun asset. Dès qu'une vraie plate est présente dans le
+Tant qu'un plan n'a pas son image dans `public/scenes`, le moteur affiche sa pièce 3D s'il en a une (voir
+phase 4), sinon il peint une plate procédurale (couleur + profondeur cohérentes) : tout est jouable sans
+aucun asset. Dès qu'une vraie plate est présente dans le
 manifeste, elle la remplace automatiquement.
 
 ## Pipeline d'assets

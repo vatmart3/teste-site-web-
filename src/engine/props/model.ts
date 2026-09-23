@@ -84,4 +84,8 @@ export function cameraToScreen(x: number, y: number, z: number, fovDeg: number, 
 export const PROP_FOV = 40;
 
 /** Inclinaison de la caméra des objets 3D (0 pendant l'arrivée, vers le plateau dans le bureau). */
-export const propCamera = { pitch: 0 };
+export const propCamera = {
+  pitch: 0,
+  /** Champ vertical courant de la caméra 3D (degrés), mis à jour à chaque frame. */
+  fov: PROP_FOV,
+};

@@ -3,7 +3,7 @@
  * Éclairage d'ambiance par image (IBL) : HDRI Poly Haven (CC0) du paquet @pmndrs/assets (512 px, EXR),
  * préfiltrés (PMREM) une fois puis mis en cache. Donne des reflets réels sur le laiton, le vernis, le verre.
  */
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useThree } from "@react-three/fiber";
 import * as THREE from "three";
 import { EXRLoader } from "three/examples/jsm/loaders/EXRLoader.js";
@@ -67,4 +67,23 @@ export function SceneEnvironment({ name, intensity = 1, rotationY = 0 }: { name:
     };
   }, [gl, scene, name, intensity, rotationY]);
   return null;
+}
+
+/**
+ * Le même HDRI préfiltré, à assigner à un matériau précis (material.envMap) : son envMapIntensity ne
+ * s'applique qu'ainsi (avec scene.environment, three utilise scene.environmentIntensity).
+ */
+export function useEnvMap(name: HdriName): THREE.Texture | null {
+  const gl = useThree((s) => s.gl);
+  const [env, setEnv] = useState<THREE.Texture | null>(null);
+  useEffect(() => {
+    let alive = true;
+    void load(gl, name)
+      .then((t) => alive && setEnv(t))
+      .catch(() => undefined);
+    return () => {
+      alive = false;
+    };
+  }, [gl, name]);
+  return env;
 }

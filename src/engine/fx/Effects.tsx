@@ -8,6 +8,8 @@ import { rig } from "../camera/rig";
 import { useRender } from "../state/render";
 import { Exposure } from "./ExposureEffect";
 import { useAudit } from "../audit/state";
+import { roomBaseCamera } from "../room/registry";
+import { propCamera } from "../props/model";
 
 /** Distance de la feuille tenue en main (null si aucune) : la mise au point s'y cale. */
 function heldSheetDistance(): number | null {
@@ -28,13 +30,18 @@ function RoomDepthOfField() {
     const e = ref.current;
     if (!e) return;
     const held = heldSheetDistance();
-    const want = held ?? 0.5 / Math.max(0.04, rig.focus);
+    // Pièces autres que le bureau : la station donne la distance du sujet ; une mise au point très
+    // proche (objet en main) prend le dessus.
+    const r = useRender.getState();
+    const cam = r.room ? roomBaseCamera(r.room, r.station, propCamera.pitch) : null;
+    const subject = cam?.focus;
+    const want = held ?? (subject !== undefined ? (rig.focus >= 0.8 ? 0.8 / rig.focus : subject) : 0.5 / Math.max(0.04, rig.focus));
     // La mise au point « glisse » d'un plan à l'autre, comme un pointeur de mise au point.
     cur.current += (want - cur.current) * Math.min(1, dt * 5);
     const d = cur.current;
     e.cocMaterial.focusDistance = d;
     e.cocMaterial.focusRange = Math.max(held ? 0.08 : 0.12, d * (held ? 0.35 : 0.55));
-    e.bokehScale = held ? 4.5 : 1 + rig.aperture * 6;
+    e.bokehScale = held ? 4.5 : (1 + rig.aperture * (subject !== undefined && d > 3 ? 3 : 6)) * (cam?.dof ?? 1);
   });
   return <DepthOfField ref={ref} focusDistance={1} focusRange={0.5} bokehScale={2} resolutionScale={0.5} />;
 }

@@ -6,11 +6,12 @@
  */
 import gsap from "gsap";
 import { getScene, type SceneId } from "@/content/scenes";
-import type { LightVariant } from "@/content/types";
+import type { LightVariant, RoomKind } from "@/content/types";
 import { audio } from "../audio/AudioEngine";
 import { rig, resetRig, type CameraRig } from "../camera/rig";
 import { preloadPlate, loadPlateTextures } from "../plate/textures";
-import { whenPlateReady } from "../plate/registry";
+import { plateHandle, whenPlateReady } from "../plate/registry";
+import { useRender } from "../state/render";
 import { useStage, type Transition } from "../state/stage";
 import { useUi } from "../state/ui";
 import { advanceBus, hotspotBus, panelBus, skipBus } from "./events";
@@ -37,6 +38,8 @@ export interface ShowOptions {
   soundFade?: number;
   /** Position de caméra à appliquer au moment où le plan apparaît. */
   camera?: RigVars;
+  /** Pièce 3D : station de caméra (remplace celle du plan). */
+  station?: string;
 }
 
 export interface SayOptions {
@@ -130,14 +133,47 @@ export class Director {
     preloadPlate(getScene(id), variant);
   }
 
-  /** Affiche un plan avec transition (cut, fondu, fondu de profondeur : le proche apparaît d'abord). */
+  /** Pièce 3D qui remplace la plate de ce plan (null si une vraie plate existe, ou en rendu CSS). */
+  async roomFor(id: SceneId, variant?: LightVariant): Promise<RoomKind | null> {
+    const scene = getScene(id);
+    if (!scene.room3d || useUi.getState().quality === "css") return null;
+    const tex = await this.guard(loadPlateTextures(scene, variant));
+    return tex.placeholder ? scene.room3d : null;
+  }
+
+  /** Pièce 3D affichée en ce moment (null sur une plate 2,5D). */
+  get room(): RoomKind | null {
+    return useRender.getState().room;
+  }
+
+  /** Déplace la caméra vers une autre station de la pièce 3D courante (sans effet sur une plate). */
+  async station(name: string, duration = 1.8): Promise<void> {
+    const r = useRender.getState();
+    if (!r.room || r.station === name) return;
+    r.set({ station: name, glide: duration });
+    await this.wait(duration);
+  }
+
+  /**
+   * Affiche un plan avec transition (cut, fondu, fondu de profondeur : le proche apparaît d'abord).
+   * Sans plate photo, le plan est une pièce 3D : même pièce → la caméra glisse vers la nouvelle station ;
+   * autre pièce → bref passage au noir ; plate → pièce → fondu enchaîné ; pièce → plate → la plate se
+   * révèle par-dessus la pièce, retirée à la fin de la transition.
+   */
   async show(id: SceneId, opts: ShowOptions = {}): Promise<void> {
     const scene = getScene(id);
     const transition = opts.transition ?? "depth";
     const duration = opts.duration ?? 1.4;
-    await this.guard(loadPlateTextures(scene, opts.variant));
+    const tex = await this.guard(loadPlateTextures(scene, opts.variant));
+    const render = useRender.getState();
+    const prevRoom = render.room;
+    const nextRoom = tex.placeholder && scene.room3d && useUi.getState().quality !== "css" ? scene.room3d : null;
+    if (nextRoom) return this.showRoom(id, nextRoom, prevRoom, opts, transition, duration);
+
     const inst = useStage.getState().push({ sceneId: id, variant: opts.variant, transition });
     const h = await this.guard(whenPlateReady(inst.key));
+    // La pièce 3D reste visible sous la plate qui se révèle : sa caméra ne bouge plus.
+    if (prevRoom) useRender.getState().set({ frozen: true });
     if (opts.camera) Object.assign(rig, opts.camera);
     if (opts.sound !== false) void audio.setPlace(scene.reverb, scene.ambience, scene.sounds, opts.soundFade ?? duration);
     try {
@@ -148,13 +184,47 @@ export class Director {
       h.uniforms.uOpacity.value = 1;
       h.uniforms.uReveal.value = 1;
       useStage.getState().settle(inst.key);
+      if (prevRoom) useRender.getState().set({ room: null, station: "", glide: 0, frozen: false });
+    }
+  }
+
+  private async showRoom(id: SceneId, room: RoomKind, prevRoom: RoomKind | null, opts: ShowOptions, transition: Transition, duration: number): Promise<void> {
+    const scene = getScene(id);
+    const render = useRender.getState();
+    const station = opts.station ?? scene.station ?? "";
+    const sameRoom = prevRoom === room;
+    const prevPlate = useStage.getState().current;
+    const exposure = rig.exposure;
+    // Changement de pièce, image visible : bref passage au noir (on ne voit jamais deux pièces à la fois).
+    const dip = !sameRoom && !!prevRoom && transition !== "cut" && exposure > 0.05;
+    if (dip) await this.track(gsap.to(rig, { exposure: 0, duration: duration * 0.35, ease: "power1.in", overwrite: "auto" }));
+    const inst = useStage.getState().push({ sceneId: id, variant: opts.variant, transition: "cut" });
+    await this.guard(whenPlateReady(inst.key));
+    const glide = sameRoom && transition !== "cut" && render.station !== station ? duration : 0;
+    render.set({ room, station, variant: opts.variant ?? "night", glide, frozen: false });
+    if (opts.camera) Object.assign(rig, opts.camera);
+    if (opts.sound !== false) void audio.setPlace(scene.reverb, scene.ambience, scene.sounds, opts.soundFade ?? duration);
+    try {
+      if (glide > 0) await this.wait(glide);
+      else if (dip) await this.track(gsap.to(rig, { exposure, duration: duration * 0.65, ease: "power1.out" }));
+      else if (!sameRoom && !prevRoom && prevPlate && transition !== "cut") {
+        // Fondu enchaîné : la plate précédente (figée) s'efface devant la pièce.
+        const h = plateHandle(prevPlate.key);
+        if (h) await this.track(gsap.to(h.uniforms.uOpacity, { value: 0, duration, ease: "power1.inOut" }));
+      }
+    } finally {
+      useStage.getState().settle(inst.key);
     }
   }
 
   /** Ferme (true) ou ouvre (false) les bandes noires 2,35:1. */
   letterbox(on: boolean): Promise<void> {
     useUi.getState().set({ letterbox: on });
-    return this.wait(0.9);
+    // Souvent lancé sans attendre (`void d.letterbox(true)`) : l'interruption ne doit pas devenir une
+    // promesse rejetée non gérée (ceux qui l'attendent reçoivent toujours le rejet).
+    const p = this.wait(0.9);
+    p.catch(() => undefined);
+    return p;
   }
 
   /** Fondu au noir (1) / depuis le noir (0). */

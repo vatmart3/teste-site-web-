@@ -20,7 +20,8 @@ import { useAudit } from "../audit/state";
 let rectInit = false;
 
 type Variant = "day" | "dusk" | "night";
-const RANK: Record<RoomKind, number> = { "office-intern": 0, "office-associate": 1, "office-senior": 2, "office-partner": 3 };
+type OfficeKind = Extract<RoomKind, `office-${string}`>;
+const RANK: Record<OfficeKind, number> = { "office-intern": 0, "office-associate": 1, "office-senior": 2, "office-partner": 3 };
 
 /** Active ombres portées / reçues sur tous les maillages d'un groupe. */
 function useShadowFlags(ref: React.RefObject<THREE.Object3D | null>, cast = true, receive = true) {
@@ -594,7 +595,7 @@ function RoomLights({ rank, variant }: { rank: number; variant: Variant }) {
 }
 
 // ------------------------------------------------------------------ Pièce complète
-export function OfficeRoom({ kind, variant }: { kind: RoomKind; variant: Variant }) {
+export function OfficeRoom({ kind, variant }: { kind: OfficeKind; variant: Variant }) {
   const rank = RANK[kind];
   const audit = useAudit((s) => s.active);
   return (

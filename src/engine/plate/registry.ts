@@ -24,6 +24,11 @@ export function unregisterPlate(key: number): void {
   handles.delete(key);
 }
 
+/** Poignée d'une plate déjà montée (null si elle n'existe plus). */
+export function plateHandle(key: number): PlateHandle | null {
+  return handles.get(key) ?? null;
+}
+
 export function whenPlateReady(key: number): Promise<PlateHandle> {
   const h = handles.get(key);
   if (h) return Promise.resolve(h);

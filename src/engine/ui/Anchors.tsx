@@ -15,6 +15,10 @@ import { useStage } from "../state/stage";
 import { useHub } from "../hub/state";
 import { useRender } from "../state/render";
 import { propAnchors } from "../props/model";
+import { roomAnchors } from "../room/anchors";
+
+/** Éléments HTML conservés dans les pièces 3D (les autres sont modélisés : voyant du lecteur, horloge). */
+const ROOM_ANCHORED = new Set<AnchorDef["kind"]>(["floor-counter"]);
 
 /** État mutable des éléments accrochés (animé par le directeur). */
 export const anchorState = { floor: 1, reader: "idle" as "idle" | "ok" | "denied" };
@@ -153,6 +157,13 @@ export function Anchors() {
       for (const a of scene.anchors ?? []) {
         const el = refs.current.get(a.id);
         if (!el) continue;
+        const ra = roomAnchors[a.id];
+        if (ra) {
+          el.style.transform = `translate(${ra.x}px, ${ra.y}px) translate(-50%, -50%)`;
+          el.style.fontSize = `${a.size * h * 0.55}px`;
+          el.style.opacity = String(ra.visible ? rig.exposure : 0);
+          continue;
+        }
         let s;
         if (a.locked) {
           const sc = coverScale(w / h, 16 / 9);
@@ -167,11 +178,13 @@ export function Anchors() {
     });
   }, [scene]);
 
-  if (room) return <RoomNotification />;
-  if (!scene?.anchors) return null;
+  if (room?.startsWith("office-")) return <RoomNotification />;
+  // Dans les autres pièces 3D, seuls les éléments accrochés à un point du décor restent (compteur d'étages).
+  const list = room ? (scene?.anchors ?? []).filter((a) => ROOM_ANCHORED.has(a.kind)) : scene?.anchors;
+  if (!list?.length) return null;
   return (
     <div className="pointer-events-none fixed inset-0 z-[15]">
-      {scene.anchors.map((a) => (
+      {list.map((a) => (
         <div
           key={`${current?.key}-${a.id}`}
           ref={(n) => {

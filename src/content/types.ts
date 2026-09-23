@@ -4,7 +4,15 @@ import type { CharacterId } from "./characters";
 export type LightVariant = "day" | "dusk" | "night";
 
 /** Pièces modélisées en 3D (utilisées tant que la vraie plate photo du plan n'est pas fournie). */
-export type RoomKind = "office-intern" | "office-associate" | "office-senior" | "office-partner";
+export type RoomKind =
+  | "office-intern"
+  | "office-associate"
+  | "office-senior"
+  | "office-partner"
+  | "lobby"
+  | "elevator"
+  | "corridor"
+  | "corner-office";
 
 export type ReverbPreset = "none" | "car" | "street" | "marble" | "elevator" | "office" | "openspace" | "court" | "conference";
 
@@ -95,6 +103,8 @@ export interface SceneDef {
   anchors?: AnchorDef[];
   /** Pièce 3D de remplacement (réalisme sans plate générée). */
   room3d?: RoomKind;
+  /** Position de caméra dans la pièce 3D (plusieurs plans peuvent partager une pièce). */
+  station?: string;
   reverb: ReverbPreset;
   ambience: string[];
   sounds?: SpatialSoundDef[];

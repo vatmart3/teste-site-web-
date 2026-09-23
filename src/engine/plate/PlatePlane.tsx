@@ -14,8 +14,7 @@ import { Dust } from "../fx/Dust";
 import { RainStreaks } from "../fx/RainStreaks";
 import { cast, characterMotion, stateOf } from "../characters/performance";
 import { useCharacterVideos } from "./characterVideos";
-import { OfficeRoom } from "../room/OfficeRoom";
-import { useRender } from "../state/render";
+import { useUi } from "../state/ui";
 
 function maxLod(t: THREE.Texture): number {
   const img = t.image as { width?: number; height?: number } | undefined;
@@ -154,15 +153,8 @@ export function PlatePlane({
   }, [tex, scene.layers, shared]);
 
   const charVideos = useCharacterVideos(scene.character?.id ?? null);
-  // Pièce 3D : remplace la plate peinte tant qu'aucune vraie plate photo n'a été fournie.
-  const room = tex?.placeholder && scene.room3d ? scene.room3d : null;
-  useEffect(() => {
-    if (!isCurrent || !tex) return;
-    useRender.getState().set({ room });
-    return () => {
-      if (useRender.getState().room === room) useRender.getState().set({ room: null });
-    };
-  }, [isCurrent, tex, room]);
+  // Pièce 3D : la plate peinte n'est pas dessinée (la pièce est affichée par RoomStage, voir le directeur).
+  const room = tex?.placeholder && scene.room3d && useUi.getState().quality !== "css" ? scene.room3d : null;
   const charFade = useRef<{ shown: THREE.Texture | null; target: THREE.Texture | null }>({ shown: null, target: null });
 
   useEffect(() => {
@@ -250,7 +242,7 @@ export function PlatePlane({
   });
 
   if (!material) return null;
-  if (room) return isCurrent ? <OfficeRoom kind={room} variant={inst.variant ?? "night"} /> : null;
+  if (room) return null;
   const dust = fxOverrides.dust ?? scene.dust ?? 0;
   return (
     <group>
