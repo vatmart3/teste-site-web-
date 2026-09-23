@@ -4,6 +4,7 @@ import { NoToneMapping } from "three";
 import { useStage } from "./state/stage";
 import { PlatePlane } from "./plate/PlatePlane";
 import { Effects } from "./fx/Effects";
+import { Passerby } from "./hub/Passerby";
 import { PropsLayer } from "./props/PropsLayer";
 import { PROP_FOV } from "./props/model";
 
@@ -24,6 +25,7 @@ export function StageCanvas({ quality }: { quality: "high" | "medium" }) {
       {plates.map((p, i) => (
         <PlatePlane key={p.key} inst={p} order={i + 1} isCurrent={p.key === current?.key} quality={quality} />
       ))}
+      <Passerby />
       <PropsLayer />
       <Effects quality={quality} />
     </Canvas>

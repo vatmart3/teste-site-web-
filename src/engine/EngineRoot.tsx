@@ -12,9 +12,11 @@ import { prefersReducedMotion, resolveQuality, type Quality } from "./device";
 import { installLoop } from "./loop";
 import { StageCanvas } from "./StageCanvas";
 import { useSettings } from "./state/settings";
+import { useUi } from "./state/ui";
 import { Anchors } from "./ui/Anchors";
 import { Controls } from "./ui/Controls";
 import { Panels } from "./ui/Panels";
+import { HubOverlay } from "./hub/HubOverlay";
 import { Hotspots } from "./ui/Hotspots";
 import { Letterbox } from "./ui/Letterbox";
 import { Prompt } from "./ui/Prompt";
@@ -75,7 +77,9 @@ export function EngineRoot({ children }: { children?: ReactNode }) {
   }, []);
 
   useEffect(() => {
-    setQuality(resolveQuality(settings.quality));
+    const q = resolveQuality(settings.quality);
+    setQuality(q);
+    useUi.getState().set({ quality: q });
   }, [settings.quality]);
 
   useEffect(() => {
@@ -101,6 +105,7 @@ export function EngineRoot({ children }: { children?: ReactNode }) {
       <Subtitles />
       <Prompt />
       <Panels />
+      <HubOverlay />
       {children}
       <Controls />
     </div>

@@ -5,7 +5,7 @@
  */
 import { ARRIVAL } from "@/content/dialogue/arrival";
 import { audio } from "@/engine/audio/AudioEngine";
-import { resetRig, rig } from "@/engine/camera/rig";
+import { rig } from "@/engine/camera/rig";
 import type { Director, Sequence } from "@/engine/director/director";
 import { fxOverrides } from "@/engine/plate/registry";
 import { readerScreen } from "@/engine/props/Badge";
@@ -307,11 +307,3 @@ async function deskOpening(d: Director) {
   await d.line(ARRIVAL.deskNarration);
   await d.letterbox(false);
 }
-
-/** Le bureau (hub) — interactif en phase 3 ; ici, l'état de fin de l'arrivée. */
-export const deskHub: Sequence = async (d) => {
-  resetRig();
-  await deskOpening(d);
-  d.prompt("Votre bureau — la suite (objets, téléphone, dossiers) arrive en phase 3");
-  await d.hold();
-};

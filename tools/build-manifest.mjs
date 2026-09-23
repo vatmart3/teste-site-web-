@@ -5,7 +5,7 @@ import { readdirSync, statSync, writeFileSync } from "node:fs";
 import { join, relative } from "node:path";
 
 const root = join(import.meta.dirname, "..", "public");
-const dirs = ["scenes", "characters", "audio"];
+const dirs = ["scenes", "characters", "audio", "models"];
 const files = [];
 
 function walk(dir) {

@@ -11,6 +11,10 @@ import { viewParams } from "../plate/view";
 import { useStage } from "../state/stage";
 import { useUi } from "../state/ui";
 import { PROP_LABELS, propAnchors } from "../props/model";
+import { hubBus, useHub, type HubView } from "../hub/state";
+
+/** Zones du décor du bureau → vue ouverte. */
+const REGION_VIEW: Record<string, HubView> = { shelf: "library", board: "board", terminal: "terminal", door: "door" };
 
 /**
  * Points de passage (cercles laiton au sol) et objets cliquables. Ils sont positionnés à chaque frame
@@ -21,7 +25,8 @@ export function Hotspots() {
   const active = useUi((s) => s.activeHotspots);
   const refs = useRef(new Map<string, HTMLButtonElement>());
   const scene = current ? getScene(current.sceneId) : null;
-  const list: HotspotDef[] = scene?.hotspots?.filter((h) => active.includes(h.id)) ?? [];
+  const hubOpen = useHub((s) => s.active && !s.view && !s.moving);
+  const list: HotspotDef[] = scene?.hotspots?.filter((h) => active.includes(h.id) || (hubOpen && h.kind === "region" && REGION_VIEW[h.id])) ?? [];
   // Hotspots accrochés aux accessoires 3D (« prop:folder »…).
   const propList = useMemo(() => active.filter((id) => id.startsWith("prop:")), [active]);
 
@@ -51,6 +56,12 @@ export function Hotspots() {
         const s = imageToScreen(fromAuthoring(hs.at), hs.depth, proj, cover);
         const p = screenToCss(s, w, h);
         el.style.transform = `translate(${p.x}px, ${p.y}px) translate(-50%, -50%)`;
+        if (hs.kind === "region" && hs.size) {
+          const a = screenToCss(imageToScreen(fromAuthoring({ x: hs.at.x - hs.size.x / 2, y: hs.at.y - hs.size.y / 2 }), hs.depth, proj, cover), w, h);
+          const b = screenToCss(imageToScreen(fromAuthoring({ x: hs.at.x + hs.size.x / 2, y: hs.at.y + hs.size.y / 2 }), hs.depth, proj, cover), w, h);
+          el.style.width = `${Math.abs(b.x - a.x)}px`;
+          el.style.height = `${Math.abs(b.y - a.y)}px`;
+        }
       }
     });
   }, [scene]);
@@ -66,13 +77,13 @@ export function Hotspots() {
           }}
           type="button"
           aria-label={hs.label}
-          onClick={() => hotspotBus.emit(hs.id)}
+          onClick={() => (hs.kind === "region" && REGION_VIEW[hs.id] && !active.includes(hs.id) ? hubBus.emit({ type: "open", view: REGION_VIEW[hs.id]! }) : hotspotBus.emit(hs.id))}
           onPointerEnter={() => void audio.sfx("sfx-ui-hover", { volume: 0.5 })}
-          className="hotspot pointer-events-auto absolute left-0 top-0 animate-hotspot-in"
+          className={`${hs.kind === "region" ? "region" : "hotspot animate-hotspot-in"} pointer-events-auto absolute left-0 top-0`}
           data-kind={hs.kind}
         >
-          <span className="hotspot-ring" />
-          <span className="hotspot-label">{hs.label}</span>
+          {hs.kind !== "region" && <span className="hotspot-ring" />}
+          <span className={hs.kind === "region" ? "region-label" : "hotspot-label"}>{hs.label}</span>
         </button>
       ))}
       {propList.map((id) => (

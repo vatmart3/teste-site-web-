@@ -4,9 +4,10 @@ import { mkdirSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { ARRIVAL_LINES } from "../src/content/dialogue/arrival.ts";
+import { HUB_LINES } from "../src/content/dialogue/hub.ts";
 
 const root = join(dirname(fileURLToPath(import.meta.url)), "..");
-const all = [...ARRIVAL_LINES].filter((l) => l.voiced);
+const all = [...ARRIVAL_LINES, ...HUB_LINES].filter((l) => l.voiced);
 const esc = (s: string) => `"${s.replace(/"/g, '""')}"`;
 const rows = ["id,personnage,réplique,émotion,fichier", ...all.map((l) => [l.id, l.speaker, esc(l.text), l.emotion, `public/audio/vo-${l.id}.mp3`].join(","))];
 mkdirSync(join(root, "content"), { recursive: true });

@@ -12,6 +12,7 @@ import { onFrame } from "../loop";
 import { coverScale, fromAuthoring, imageToScreen, screenToCss } from "../plate/projection";
 import { viewParams } from "../plate/view";
 import { useStage } from "../state/stage";
+import { useHub } from "../hub/state";
 
 /** État mutable des éléments accrochés (animé par le directeur). */
 export const anchorState = { floor: 1, reader: "idle" as "idle" | "ok" | "denied" };
@@ -86,6 +87,18 @@ function ReaderLight() {
   return <div ref={ref} className="reader-light h-full w-full rounded-full" data-state="idle" />;
 }
 
+/** Notification du chat interne qui fait « vibrer » l'écran de l'ordinateur. */
+function Notification() {
+  const n = useHub((s) => s.notification);
+  if (!n) return null;
+  return (
+    <div key={n.id} className="notify-bubble pointer-events-none absolute left-1/2 top-0 w-[17em] -translate-x-1/2 rounded-md border border-[#2a4a7a] bg-[#0a1b36]/95 px-[0.8em] py-[0.6em] font-sans text-[0.55em] text-[#cfe0ff] shadow-[0_0_30px_rgba(60,120,255,0.4)]" role="status">
+      <p className="text-[0.85em] uppercase tracking-[0.2em] text-[#7f9fd0]">H&amp;V Chat · {n.from}</p>
+      <p className="mt-[0.3em] leading-snug">{n.text}</p>
+    </div>
+  );
+}
+
 function AnchorView({ a }: { a: AnchorDef }) {
   switch (a.kind) {
     case "floor-counter":
@@ -95,6 +108,8 @@ function AnchorView({ a }: { a: AnchorDef }) {
       return <WallClock />;
     case "reader-light":
       return <ReaderLight />;
+    case "notification":
+      return <Notification />;
   }
 }
 
@@ -137,7 +152,7 @@ export function Anchors() {
             else refs.current.delete(a.id);
           }}
           className="absolute left-0 top-0"
-          style={a.kind === "floor-counter" ? { opacity: 0 } : { width: "1em", height: "1em", opacity: 0 }}
+          style={a.kind === "floor-counter" || a.kind === "notification" ? { opacity: 0 } : { width: "1em", height: "1em", opacity: 0 }}
         >
           <AnchorView a={a} />
         </div>

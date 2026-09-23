@@ -221,6 +221,20 @@ export class Director {
     }
   }
 
+  /** Attend le prochain événement d'un bus (actions du bureau…). */
+  async waitBus<T>(on: (h: (v: T) => void) => () => void): Promise<T> {
+    let off: () => void = () => undefined;
+    try {
+      return await this.guard(
+        new Promise<T>((resolve) => {
+          off = on(resolve);
+        }),
+      );
+    } finally {
+      off();
+    }
+  }
+
   /** Ouvre un panneau d'interaction (identité, choix, geste) et attend la réponse du joueur. */
   async panel<T>(panel: Panel): Promise<T> {
     useUi.getState().set({ panel });

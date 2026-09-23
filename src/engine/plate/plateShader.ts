@@ -18,7 +18,7 @@ void main() {
 }
 `;
 
-const common = /* glsl */ `
+export const plateCommon = /* glsl */ `
 uniform vec2 uScale;
 uniform vec2 uPan;
 uniform float uRoll;
@@ -125,7 +125,7 @@ uniform float uFlicker;
 uniform vec2 uShaftPos;
 uniform float uShaft;
 uniform vec3 uTint;
-${common}
+${plateCommon}
 
 // ---------------------------------------------------------------- Pluie sur la vitre
 // Renvoie (normale.xy, masque). Coordonnées écran corrigées du ratio.
@@ -330,7 +330,7 @@ uniform float uLocked;
 uniform vec2 uLockScale;
 uniform float uMaxLod;
 uniform vec3 uTint;
-${common}
+${plateCommon}
 
 void main() {
   vec2 uv;

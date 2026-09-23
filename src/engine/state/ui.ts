@@ -31,6 +31,8 @@ export interface UiState {
   skippable: boolean;
   /** Fondu au noir de l'interface (utilisé aussi par le fallback CSS). */
   blackout: number;
+  /** Niveau de rendu effectif (le mode CSS n'a pas d'objets 3D). */
+  quality: "high" | "medium" | "css" | null;
   set: (patch: Partial<Omit<UiState, "set">>) => void;
 }
 
@@ -42,5 +44,6 @@ export const useUi = create<UiState>()((set) => ({
   prompt: null,
   skippable: false,
   blackout: 0,
+  quality: null,
   set: (patch) => set(patch),
 }));

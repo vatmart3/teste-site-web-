@@ -18,8 +18,11 @@ export interface SpatialSoundDef {
 
 export interface HotspotDef {
   id: string;
-  kind: "waypoint" | "object";
+  /** waypoint = cercle au sol ; object = petit cercle ; region = zone d'objet du décor (liseré laiton au survol). */
+  kind: "waypoint" | "object" | "region";
   label: string;
+  /** Taille de la zone (fraction de l'image), pour kind = region. */
+  size?: Vec2;
   /** Position authorée (x→, y↓) dans l'image. */
   at: Vec2;
   depth: number;
@@ -43,7 +46,7 @@ export interface SceneCharacterDef {
   radius: number;
 }
 
-export type AnchorKind = "floor-counter" | "wall-clock" | "reader-light" | "desk-clock";
+export type AnchorKind = "floor-counter" | "wall-clock" | "reader-light" | "desk-clock" | "notification";
 
 /** Élément d'interface HTML accroché à un point de la plate (compteur d'étages, horloge…). */
 export interface AnchorDef {

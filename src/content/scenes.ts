@@ -13,6 +13,44 @@ const base = {
   aperture: 0.35,
 } as const;
 
+/**
+ * Disposition commune des bureaux (hub) : étagère, tableau de liège, ordinateur, porte vitrée.
+ * Les objets posés sur le bureau (chemises, téléphone, mallette, café…) sont en 3D (engine/hub).
+ */
+export const DESK_LAYOUT = {
+  shelf: { at: { x: 0.12, y: 0.28 }, size: { x: 0.18, y: 0.44 }, depth: 0.3 },
+  board: { at: { x: 0.36, y: 0.26 }, size: { x: 0.22, y: 0.28 }, depth: 0.25 },
+  terminal: { at: { x: 0.65, y: 0.41 }, size: { x: 0.26, y: 0.3 }, depth: 0.55 },
+  door: { at: { x: 0.915, y: 0.32 }, size: { x: 0.15, y: 0.6 }, depth: 0.35 },
+  /** Vitre de la porte (où passent les collègues) : x0, y0, x1, y1 en coordonnées authorées. */
+  doorGlass: { x0: 0.855, y0: 0.06, x1: 0.975, y1: 0.58 },
+} as const;
+
+function deskScene(id: string, title: string): SceneDef {
+  const L = DESK_LAYOUT;
+  return {
+    id,
+    title,
+    aspect: 16 / 9,
+    pivot: 0.55,
+    parallax: 0.8,
+    focus: 0.55,
+    aperture: 0.25,
+    reverb: "office",
+    ambience: ["amb-office-day"],
+    hotspots: [
+      { id: "shelf", kind: "region", label: "Bibliothèque de leçons", at: L.shelf.at, size: L.shelf.size, depth: L.shelf.depth },
+      { id: "board", kind: "region", label: "Tableau d'enquête", at: L.board.at, size: L.board.size, depth: L.board.depth },
+      { id: "terminal", kind: "region", label: "H&V Terminal", at: L.terminal.at, size: L.terminal.size, depth: L.terminal.depth },
+      { id: "door", kind: "region", label: "Couloir", at: L.door.at, size: L.door.size, depth: L.door.depth },
+    ],
+    anchors: [
+      { id: "clock", kind: "wall-clock", at: { x: 0.36, y: 0.065 }, depth: 0.25, size: 0.085 },
+      { id: "notify", kind: "notification", at: { x: 0.65, y: 0.3 }, depth: 0.55, size: 0.03 },
+    ],
+  };
+}
+
 export const SCENES = {
   // ---------------------------------------------------------------- Plan 1 — Taxi, 6h40, pluie
   "01-taxi-night": {
@@ -190,19 +228,11 @@ export const SCENES = {
     ambience: ["amb-office-day"],
     character: { id: "harlow", at: { x: 0.5, y: 0.34 }, depth: 0.45, radius: 0.22 },
   },
-  // ---------------------------------------------------------------- Plan 8 — Ton bureau (hub)
-  "08-desk-intern-night": {
-    ...base,
-    id: "08-desk-intern-night",
-    title: "Votre bureau",
-    pivot: 0.55,
-    focus: 0.6,
-    aperture: 0.3,
-    flicker: 0.35,
-    reverb: "office",
-    ambience: ["amb-office-night"],
-    anchors: [{ id: "clock", kind: "wall-clock", at: { x: 0.82, y: 0.2 }, depth: 0.3, size: 0.11 }],
-  },
+  // ---------------------------------------------------------------- Plan 8 — Votre bureau (hub), selon le rang
+  "08-desk-intern-night": { ...deskScene("08-desk-intern-night", "Votre bureau — stagiaire"), flicker: 0.35, ambience: ["amb-office-night"] },
+  "08-desk-associate": { ...deskScene("08-desk-associate", "Votre bureau — collaborateur"), variants: ["day", "dusk", "night"] },
+  "08-desk-senior": { ...deskScene("08-desk-senior", "Votre bureau — senior"), variants: ["day", "dusk", "night"] },
+  "08-desk-partner": { ...deskScene("08-desk-partner", "Votre bureau d'angle — associé"), variants: ["day", "dusk", "night"] },
 } satisfies Record<string, SceneDef>;
 
 export type SceneId = keyof typeof SCENES;

@@ -16,10 +16,28 @@ export interface Profile {
   relations: Record<RelationId, number>;
   /** Choix narratifs marquants (id → valeur), relus par les scènes suivantes. */
   flags: Record<string, string>;
+  /** Réputation (débloque les rangs), honoraires facturés ($), intégrité (0..100). */
+  reputation: number;
+  billed: number;
+  integrity: number;
+  /** Rang dont le bureau a déjà été attribué (le déménagement se joue quand le rang dépasse celui-ci). */
+  officeRank: number;
+  /** Atouts à usage unique (id → quantité). */
+  perks: Record<string, number>;
+  /** Messages lus (ids). */
+  readMessages: string[];
+  /** Leçons débloquées (ids). */
+  lessons: string[];
   setIdentity: (firstName: string, lastName: string, avatar: number) => void;
   adjustRelation: (id: RelationId, delta: number) => void;
   setFlag: (key: string, value: string) => void;
   markArrivalSeen: () => void;
+  addCareer: (patch: { reputation?: number; billed?: number; integrity?: number }) => void;
+  setOfficeRank: (rank: number) => void;
+  spendPerk: (id: string) => boolean;
+  addPerk: (id: string, n?: number) => void;
+  markRead: (id: string) => void;
+  unlockLesson: (id: string) => void;
   reset: () => void;
 }
 
@@ -30,6 +48,13 @@ const initial = {
   arrivalSeen: false,
   relations: { harlow: 0, mercer: 0, nora: 0, theo: 0 } as Record<RelationId, number>,
   flags: {} as Record<string, string>,
+  reputation: 0,
+  billed: 0,
+  integrity: 100,
+  officeRank: 0,
+  perks: { "all-nighter": 1, expert: 1 } as Record<string, number>,
+  readMessages: [] as string[],
+  lessons: ["billable-hour"] as string[],
 };
 
 export function clampRelation(v: number): number {
@@ -58,8 +83,41 @@ export const useProfile = create<Profile>()(
       adjustRelation: (id, delta) => set((s) => ({ relations: { ...s.relations, [id]: clampRelation(s.relations[id] + delta) } })),
       setFlag: (key, value) => set((s) => ({ flags: { ...s.flags, [key]: value } })),
       markArrivalSeen: () => set({ arrivalSeen: true }),
-      reset: () => set({ ...initial, relations: { ...initial.relations }, flags: {} }),
+      addCareer: (p) =>
+        set((s) => ({
+          reputation: Math.max(0, s.reputation + (p.reputation ?? 0)),
+          billed: Math.max(0, s.billed + (p.billed ?? 0)),
+          integrity: Math.max(0, Math.min(100, s.integrity + (p.integrity ?? 0))),
+        })),
+      setOfficeRank: (officeRank) => set({ officeRank }),
+      spendPerk: (id) => {
+        let ok = false;
+        set((s) => {
+          const n = s.perks[id] ?? 0;
+          if (n <= 0) return {};
+          ok = true;
+          return { perks: { ...s.perks, [id]: n - 1 } };
+        });
+        return ok;
+      },
+      addPerk: (id, n = 1) => set((s) => ({ perks: { ...s.perks, [id]: (s.perks[id] ?? 0) + n } })),
+      markRead: (id) => set((s) => (s.readMessages.includes(id) ? {} : { readMessages: [...s.readMessages, id] })),
+      unlockLesson: (id) => set((s) => (s.lessons.includes(id) ? {} : { lessons: [...s.lessons, id] })),
+      reset: () =>
+        set({
+          ...initial,
+          relations: { ...initial.relations },
+          flags: {},
+          perks: { ...initial.perks },
+          readMessages: [],
+          lessons: [...initial.lessons],
+        }),
     }),
-    { name: "bh-profile", version: 1 },
+    {
+      name: "bh-profile",
+      version: 2,
+      // v1 → v2 : ajout de la carrière, des atouts, des messages et des leçons.
+      migrate: (old) => ({ ...initial, ...(old as object) }) as Profile,
+    },
   ),
 );

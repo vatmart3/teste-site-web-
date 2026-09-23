@@ -229,51 +229,138 @@ function cornerOffice(): PlaceholderPlate {
   return { color: p.color, depth: p.depth, layers: {} };
 }
 
-// ---------------------------------------------------------------- 08 — Bureau de stagiaire, la nuit
-function internDesk(variant?: LightVariant): PlaceholderPlate {
+// ---------------------------------------------------------------- 08 — Les bureaux (hub), du stagiaire à l'associé
+type DeskRank = "intern" | "associate" | "senior" | "partner";
+
+/**
+ * Même disposition pour les quatre bureaux (voir DESK_LAYOUT) : étagère à gauche, tableau de liège,
+ * ordinateur, porte vitrée à droite. Le rang change les matériaux, la fenêtre et les objets de prestige.
+ * Le plateau du bureau reste dégagé : chemises, téléphone, mallette et café sont des objets 3D.
+ */
+function hubDesk(rank: DeskRank, variant?: LightVariant): PlaceholderPlate {
   const p = new Painter(W, H);
-  const r = rng(801);
-  const night = variant !== "day";
-  // Mur sans fenêtre, lumière de néon froide.
-  p.shape((c) => c.rect(0, 0, W, H), (c) => p.linear(c, 0, 0, 0, H * 0.6, [[0, night ? "#2b3136" : "#8a9296"], [1, night ? "#1a1e22" : "#6b7378"]]), 0.12);
-  p.shape((c) => c.rect(W * 0.2, 0, W * 0.6, H * 0.04), "#e8f2ff", 0.2);
-  p.glow(W * 0.5, H * 0.02, W * 0.4, "rgba(210,235,255,0.5)", 0.9);
-  // Tableau de liège.
-  p.shape((c) => c.rect(W * 0.08, H * 0.1, W * 0.28, H * 0.3), (c) => p.linear(c, 0, H * 0.1, 0, H * 0.4, [[0, "#9a6d3e"], [1, "#7c5530"]]), 0.18);
-  p.shape((c) => c.rect(W * 0.08, H * 0.1, W * 0.28, 8), "#3b2a18", 0.19);
-  for (let i = 0; i < 7; i++) {
-    const x = W * (0.1 + r() * 0.22);
-    const y = H * (0.13 + r() * 0.2);
-    p.shape((c) => c.rect(x, y, W * 0.05, H * 0.07), r() < 0.5 ? "#f1ecdf" : "#f3e27a", 0.19);
-    p.glow(x + W * 0.025, y + 4, 5, "rgba(220,40,40,1)", 1, "source-over");
+  const r = rng(801 + rank.length);
+  const v = variant ?? (rank === "intern" ? "night" : "day");
+  const sky = v === "night" ? ["#070b18", "#141c33", "#2a3350"] : v === "dusk" ? ["#2a1a3a", "#a4504a", "#f0a060"] : ["#7d9cc0", "#b9cde0", "#e8dcc6"];
+  const wall = { intern: ["#2b3136", "#1a1e22"], associate: ["#4a4038", "#2e2822"], senior: ["#3a2c22", "#231a13"], partner: ["#1e1a18", "#120f0d"] }[rank];
+  const deskTop = { intern: ["#5a5046", "#2a241e"], associate: ["#6a4a2e", "#2c1d10"], senior: ["#5a3418", "#24130a"], partner: ["#3a1a10", "#170a05"] }[rank];
+
+  p.shape((c) => c.rect(0, 0, W, H), (c) => p.linear(c, 0, 0, 0, H * 0.6, [[0, wall[0]!], [1, wall[1]!]]), 0.12);
+  if (rank === "senior" || rank === "partner") {
+    // Boiseries.
+    for (let i = 0; i < 12; i++) p.shape((c) => c.rect(W * (0.02 + i * 0.08), H * 0.02, W * 0.07, H * 0.56), `rgba(255,220,170,${0.02 + r() * 0.03})`, null);
   }
-  // Plante en plastique.
-  p.shape((c) => c.rect(W * 0.86, H * 0.42, W * 0.06, H * 0.12), "#d8d2c6", 0.55);
-  for (let i = 0; i < 14; i++) {
-    const a = -Math.PI / 2 + (r() - 0.5) * 2;
-    p.shape((c) => c.ellipse(W * 0.89 + Math.cos(a) * 40, H * 0.4 + Math.sin(a) * 50, 26, 10, a, 0, Math.PI * 2), "#3f7a3a", 0.55);
+
+  // Fenêtre (sauf stagiaire) : de la petite fenêtre sur cour au panorama.
+  const win = { intern: null, associate: [0.52, 0.03, 0.78, 0.2], senior: [0.49, 0.02, 0.81, 0.25], partner: [0.47, 0.0, 0.83, 0.28] }[rank];
+  if (win) {
+    const [x0, y0, x1, y1] = win.map((k, i) => k * (i % 2 ? H : W)) as [number, number, number, number];
+    p.shape((c) => c.rect(x0, y0, x1 - x0, y1 - y0), (c) => p.linear(c, 0, y0, 0, y1, [[0, sky[0]!], [0.7, sky[1]!], [1, sky[2]!]]), 0.02);
+    if (rank === "associate") {
+      // Mur de briques de la cour.
+      for (let y = y0 + 10; y < y1; y += 14) {
+        for (let x = x0 + ((y / 14) % 2) * 12; x < x1; x += 26) {
+          p.c.fillStyle = `rgba(90,50,40,${0.5 + r() * 0.3})`;
+          p.c.fillRect(x, y, 22, 10);
+        }
+      }
+    } else {
+      let x = x0;
+      while (x < x1) {
+        const bw = 12 + r() * 40;
+        const bh = (y1 - y0) * (0.2 + r() * 0.6);
+        p.shape((c) => c.rect(x, y1 - bh, bw, bh), v === "night" ? "#0b0f1a" : "rgba(60,70,90,0.85)", 0.04);
+        for (let wy = y1 - bh + 4; wy < y1; wy += 7) {
+          for (let wx = x + 2; wx < x + bw - 2; wx += 6) {
+            if (r() < (v === "night" ? 0.3 : 0.08)) {
+              p.c.fillStyle = "rgba(255,210,140,0.8)";
+              p.c.fillRect(wx, wy, 2, 3);
+            }
+          }
+        }
+        x += bw + 2;
+      }
+    }
+    p.shape((c) => c.rect(x0, y0, x1 - x0, 6), "#15161a", 0.1);
+    p.shape((c) => c.rect(x0, y1 - 6, x1 - x0, 6), "#15161a", 0.1);
+    if (v !== "night") p.glow((x0 + x1) / 2, y1, (x1 - x0) * 0.8, v === "dusk" ? "rgba(255,160,90,0.35)" : "rgba(255,245,225,0.3)", 0.9);
   }
-  // Écran d'ordinateur.
-  p.shape((c) => c.roundRect(W * 0.5, H * 0.24, W * 0.3, H * 0.3, 8), "#0d0f13", 0.55);
-  p.shape((c) => c.rect(W * 0.51, H * 0.26, W * 0.28, H * 0.26), (c) => p.linear(c, 0, H * 0.26, 0, H * 0.52, [[0, "#12325a"], [1, "#0a1a30"]]), 0.56);
+
+  // Éclairage : néon froid (stagiaire) ou lampes chaudes.
+  if (rank === "intern") {
+    p.shape((c) => c.rect(W * 0.2, 0, W * 0.6, H * 0.03), "#e8f2ff", 0.2);
+    p.glow(W * 0.5, H * 0.02, W * 0.4, "rgba(210,235,255,0.5)", 0.9);
+  } else {
+    p.glow(W * 0.12, H * 0.02, W * 0.25, "rgba(255,210,150,0.35)", 0.8);
+  }
+
+  // Étagère (bibliothèque de leçons) : reliures cuir, titres dorés.
+  p.shape((c) => c.rect(W * 0.03, H * 0.06, W * 0.18, H * 0.44), rank === "intern" ? "#3a3530" : "#2a180e", 0.3);
+  for (let row = 0; row < 3; row++) {
+    const sy = H * (0.06 + row * 0.147);
+    p.shape((c) => c.rect(W * 0.03, sy + H * 0.13, W * 0.18, H * 0.017), rank === "intern" ? "#4a443c" : "#3a2414", 0.31);
+    let bx = W * 0.04;
+    while (bx < W * 0.2) {
+      const bw = W * (0.008 + r() * 0.01);
+      const bh = H * (0.08 + r() * 0.045);
+      const cols = ["#5a1e1e", "#1e3a5a", "#2a4a2a", "#4a3a1e", "#3a1e3a"];
+      p.shape((c) => c.rect(bx, sy + H * 0.13 - bh, bw, bh), cols[Math.floor(r() * cols.length)]!, 0.32);
+      p.c.fillStyle = "rgba(220,180,90,0.7)";
+      p.c.fillRect(bx + 2, sy + H * 0.13 - bh + 8, bw - 4, 2);
+      bx += bw + 1;
+    }
+  }
+  if (rank === "partner") {
+    // Carafe de whisky sur l'étagère du bas.
+    p.shape((c) => c.roundRect(W * 0.16, H * 0.4, W * 0.03, H * 0.06, 6), "rgba(170,100,40,0.8)", 0.33);
+    p.glow(W * 0.175, H * 0.42, 20, "rgba(255,190,110,0.8)", 0.8);
+  }
+
+  // Tableau de liège (encadré de bois pour les rangs supérieurs).
+  const frame = rank === "intern" ? "#3b2a18" : "#1c120a";
+  p.shape((c) => c.rect(W * 0.25 - 8, H * 0.12 - 8, W * 0.22 + 16, H * 0.28 + 16), frame, 0.24);
+  p.shape((c) => c.rect(W * 0.25, H * 0.12, W * 0.22, H * 0.28), (c) => p.linear(c, 0, H * 0.12, 0, H * 0.4, [[0, "#9a6d3e"], [1, "#7c5530"]]), 0.25);
+  for (let i = 0; i < 180; i++) {
+    p.c.fillStyle = `rgba(60,35,15,${r() * 0.25})`;
+    p.c.fillRect(W * (0.25 + r() * 0.22), H * (0.12 + r() * 0.28), 2, 2);
+  }
+
+  if (rank === "senior" || rank === "partner") {
+    // Diplômes encadrés sous le tableau.
+    for (let i = 0; i < 2; i++) {
+      p.shape((c) => c.rect(W * (0.27 + i * 0.1), H * 0.44, W * 0.07, H * 0.1), "#1a1510", 0.26);
+      p.shape((c) => c.rect(W * (0.275 + i * 0.1), H * 0.45, W * 0.06, H * 0.08), "#efe6d2", 0.265);
+    }
+  }
+
+  // Porte vitrée (dépolie) à droite.
+  p.shape((c) => c.rect(W * 0.84, H * 0.02, W * 0.15, H * 0.6), "#15161a", 0.34);
+  p.shape((c) => c.rect(W * 0.855, H * 0.06, W * 0.12, H * 0.52), (c) => p.linear(c, W * 0.855, 0, W * 0.975, 0, [[0, "rgba(170,185,200,0.55)"], [1, "rgba(120,135,150,0.55)"]]), 0.3);
+  p.glow(W * 0.915, H * 0.3, W * 0.08, "rgba(230,240,255,0.25)", 0.8);
+  p.shape((c) => c.roundRect(W * 0.86, H * 0.3, W * 0.008, H * 0.1, 4), "#c9a24a", 0.36);
+
+  // Ordinateur.
+  p.shape((c) => c.roundRect(W * 0.52, H * 0.26, W * 0.26, H * 0.28, 8), "#0d0f13", 0.55);
+  p.shape((c) => c.rect(W * 0.53, H * 0.275, W * 0.24, H * 0.245), (c) => p.linear(c, 0, H * 0.275, 0, H * 0.52, [[0, "#12325a"], [1, "#0a1a30"]]), 0.56);
   p.c.fillStyle = "rgba(201,162,74,0.9)";
   p.c.font = `600 ${H * 0.022}px Georgia, serif`;
-  p.c.fillText("H&V Terminal", W * 0.53, H * 0.3);
-  p.glow(W * 0.65, H * 0.4, W * 0.2, "rgba(80,150,255,0.25)", 0.8);
-  p.shape((c) => c.rect(W * 0.63, H * 0.54, W * 0.04, H * 0.08), "#15171c", 0.57);
-  // Plateau du bureau.
-  p.shape((c) => { c.moveTo(0, H * 0.6); c.lineTo(W, H * 0.6); c.lineTo(W, H); c.lineTo(0, H); }, (c) => p.linear(c, 0, H * 0.6, 0, H, [[0, "#4a3726"], [1, "#1d140c"]]), p.depthLinear(0, H * 0.6, 0, H, 0.55, 1));
-  // Pile de chemises.
-  for (let i = 0; i < 6; i++) p.shape((c) => c.rect(W * 0.08 + i * 3, H * (0.66 - i * 0.018), W * 0.22, H * 0.03), i % 2 ? "#d9b77a" : "#c9a466", 0.72);
-  // Lampe de banquier verte.
-  p.shape((c) => c.ellipse(W * 0.4, H * 0.5, W * 0.07, H * 0.04, 0, Math.PI, Math.PI * 2), "#0f5a36", 0.65);
-  p.shape((c) => c.rect(W * 0.395, H * 0.5, W * 0.01, H * 0.12), BRASS, 0.64);
-  p.glow(W * 0.4, H * 0.58, W * 0.18, "rgba(255,220,150,0.7)", 1);
-  // Téléphone de bureau + voyant.
-  p.shape((c) => c.roundRect(W * 0.78, H * 0.68, W * 0.12, H * 0.09, 10), "#15161a", 0.78);
-  p.glow(W * 0.885, H * 0.695, 10, "rgba(255,40,40,0.9)", 1);
-  // Gobelet de café.
-  p.shape((c) => { c.moveTo(W * 0.62, H * 0.7); c.lineTo(W * 0.66, H * 0.7); c.lineTo(W * 0.655, H * 0.8); c.lineTo(W * 0.625, H * 0.8); c.closePath(); }, "#efe7da", 0.8);
+  p.c.fillText("H&V Terminal", W * 0.55, H * 0.315);
+  p.glow(W * 0.65, H * 0.4, W * 0.2, "rgba(80,150,255,0.22)", 0.8);
+  p.shape((c) => c.rect(W * 0.63, H * 0.54, W * 0.04, H * 0.07), "#15171c", 0.57);
+
+  // Lampe (néon pour le stagiaire → lampe de banquier verte, laiton pour les autres).
+  const lampX = W * 0.46;
+  p.shape((c) => c.ellipse(lampX, H * 0.47, W * 0.05, H * 0.03, 0, Math.PI, Math.PI * 2), rank === "intern" ? "#0f5a36" : "#6b4e1d", 0.6);
+  p.shape((c) => c.rect(lampX - 3, H * 0.47, 6, H * 0.14), "#c9a24a", 0.6);
+  p.glow(lampX, H * 0.56, W * 0.14, "rgba(255,220,150,0.6)", 1);
+
+  // Plateau du bureau (dégagé).
+  p.shape((c) => { c.moveTo(0, H * 0.6); c.lineTo(W, H * 0.6); c.lineTo(W, H); c.lineTo(0, H); }, (c) => p.linear(c, 0, H * 0.6, 0, H, [[0, deskTop[0]!], [1, deskTop[1]!]]), p.depthLinear(0, H * 0.6, 0, H, 0.55, 1));
+  if (rank !== "intern") {
+    // Sous-main en cuir.
+    p.shape((c) => { c.moveTo(W * 0.3, H * 0.66); c.lineTo(W * 0.7, H * 0.66); c.lineTo(W * 0.76, H * 0.9); c.lineTo(W * 0.24, H * 0.9); }, "rgba(20,30,25,0.75)", null);
+  }
+  p.shape((c) => c.rect(0, H * 0.6, W, 4), "rgba(255,230,190,0.25)", 0.56);
   p.finish(81);
   return { color: p.color, depth: p.depth, layers: {} };
 }
@@ -291,7 +378,13 @@ export function arrivalPlate(sceneId: string, variant?: LightVariant): Placehold
     case "07-corner-office":
       return cornerOffice();
     case "08-desk-intern-night":
-      return internDesk(variant);
+      return hubDesk("intern", variant);
+    case "08-desk-associate":
+      return hubDesk("associate", variant);
+    case "08-desk-senior":
+      return hubDesk("senior", variant);
+    case "08-desk-partner":
+      return hubDesk("partner", variant);
     default:
       return null;
   }

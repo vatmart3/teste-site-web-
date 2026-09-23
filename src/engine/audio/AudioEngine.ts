@@ -296,6 +296,25 @@ class AudioEngine {
     return buf.duration / (opts.rate ?? 1);
   }
 
+  private loops = new Map<string, Playing>();
+
+  /** Boucle d'ambiance ponctuelle (ventilateur de l'ordinateur…), arrêtée avec stopLoop. */
+  async startLoop(id: string, name: string, volume = 0.4, fade = 0.6): Promise<void> {
+    if (!this.ctx || this.loops.has(id)) return;
+    const buf = await this.load(name);
+    if (!buf || this.loops.has(id)) return;
+    const p = this.startSource(buf, this.buses.amb, { loop: true, volume: 0 });
+    p.gain.gain.linearRampToValueAtTime(volume, this.ctx.currentTime + fade);
+    this.loops.set(id, p);
+  }
+
+  stopLoop(id: string, fade = 0.6): void {
+    const p = this.loops.get(id);
+    if (!p) return;
+    this.fadeOutAndStop(p, fade);
+    this.loops.delete(id);
+  }
+
   /** Réplique doublée. Résout à la fin de la lecture ; `null` si le fichier n'existe pas (pas de synthèse de voix). */
   async voice(name: string, signal?: AbortSignal): Promise<null | void> {
     if (!this.ctx) return null;

@@ -18,3 +18,8 @@ harlow-message,harlow,"Vous avez écouté mon message. Bien.",grave,public/audio
 harlow-briefing,harlow,"Meridian publie ses comptes dans trois jours. Si la fraude existe, elle est dans ces pages.",grave,public/audio/vo-harlow-briefing.mp3
 harlow-folder,harlow,"États financiers, annexes, contrats. Tout ce qu'ils ont bien voulu nous donner.",grave,public/audio/vo-harlow-folder.mp3
 harlow-deadline,harlow,"Vous avez jusqu'à demain matin. Huit heures. Pas une minute de plus.",froid,public/audio/vo-harlow-deadline.mp3
+theo-voicemail-welcome-1,theo,"Salut, c'est Theo, l'assistant du pôle contentieux. Si vous avez besoin de photocopies à trois heures du matin, je suis votre homme.",chaleureux,public/audio/vo-theo-voicemail-welcome-1.mp3
+theo-voicemail-welcome-2,theo,"Enfin… traitez-moi bien, et je suis votre homme.",amusé,public/audio/vo-theo-voicemail-welcome-2.mp3
+harlow-voicemail-desk,harlow,"Le dossier Meridian est sur votre bureau. Huit heures, demain matin. Je ne rappellerai pas.",froid,public/audio/vo-harlow-voicemail-desk.mp3
+harlow-visit,harlow,"Vous n'avez pas un dossier à lire ?",froid,public/audio/vo-harlow-visit.mp3
+harlow-visit-late,harlow,"Il est tard. Soit vous avez trouvé quelque chose, soit vous perdez mon temps.",froid,public/audio/vo-harlow-visit-late.mp3

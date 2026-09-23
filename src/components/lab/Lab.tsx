@@ -14,6 +14,9 @@ import { fxOverrides } from "@/engine/plate/registry";
 import { useUi } from "@/engine/state/ui";
 import type { CharacterState } from "@/content/characters";
 import { setCharacterState, cast } from "@/engine/characters/performance";
+import { grantReputation, hubSequence } from "@/content/sequences/hub";
+import { useProfile } from "@/engine/state/profile";
+import { rankFor } from "@/engine/career/ranks";
 
 type RigKey = "focus" | "aperture" | "dolly" | "panX" | "panY" | "roll" | "exposure" | "lift";
 const RIG_SLIDERS: { key: RigKey; label: string; min: number; max: number }[] = [
@@ -166,6 +169,9 @@ export default function Lab() {
           </label>
         ))}
 
+        <h2 className="mt-4 text-[0.65rem] uppercase tracking-[0.25em] text-brass/80">Bureau (hub)</h2>
+        <HubControls />
+
         <h2 className="mt-4 text-[0.65rem] uppercase tracking-[0.25em] text-brass/80">Son</h2>
         <button className="mt-1 w-full rounded border border-brass/40 px-2 py-1" onClick={() => void audio.unlock().then(() => audio.startMusic())}>
           Activer le son + musique
@@ -202,5 +208,27 @@ export default function Lab() {
         </div>
       </details>
     </EngineRoot>
+  );
+}
+
+function HubControls() {
+  const rep = useProfile((s) => s.reputation);
+  return (
+    <div className="mt-1 space-y-1">
+      <p className="text-ivory/70">
+        Réputation {rep} · {rankFor(rep).title}
+      </p>
+      <div className="flex flex-wrap gap-1">
+        <button className="rounded border border-brass/40 px-2 py-1" onClick={() => void audio.unlock().then(() => runSequence(hubSequence))}>
+          Ouvrir le bureau
+        </button>
+        <button className="rounded border border-brass/40 px-2 py-1" onClick={() => grantReputation(100)}>
+          +100 réputation
+        </button>
+        <button className="rounded border border-brass/40 px-2 py-1" onClick={() => useProfile.getState().reset()}>
+          Réinitialiser le profil
+        </button>
+      </div>
+    </div>
   );
 }

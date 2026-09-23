@@ -1,14 +1,16 @@
 "use client";
 import { useCallback, useEffect, useState } from "react";
-import { arrival, deskHub, resetArrivalState } from "@/content/sequences/arrival";
+import { arrival, resetArrivalState } from "@/content/sequences/arrival";
+import { grantReputation, hubSequence } from "@/content/sequences/hub";
 import { audio } from "@/engine/audio/AudioEngine";
 import { runSequence } from "@/engine/director/director";
 import { EngineRoot, requestGyro } from "@/engine/EngineRoot";
 import { isMobileViewport } from "@/engine/device";
 import { useProfile } from "@/engine/state/profile";
 import { useSettings } from "@/engine/state/settings";
-import { useProps } from "@/engine/props/model";
+import { propAnchors, useProps } from "@/engine/props/model";
 import { useStage } from "@/engine/state/stage";
+import { hubBus, useHub } from "@/engine/hub/state";
 import { TitleScreen, type TitleChoice } from "./TitleScreen";
 
 export default function Game() {
@@ -17,7 +19,7 @@ export default function Game() {
   // Accès de débogage (tests automatisés) : /?debug
   useEffect(() => {
     if (new URLSearchParams(window.location.search).has("debug")) {
-      (window as unknown as { __game: unknown }).__game = { useProps, useProfile, useStage };
+      (window as unknown as { __game: unknown }).__game = { useProps, useProfile, useStage, useHub, hubBus, grantReputation, propAnchors };
     }
   }, []);
 
@@ -31,7 +33,7 @@ export default function Game() {
       const r = await runSequence(arrival, { skippable: useProfile.getState().arrivalSeen, onSkip: resetArrivalState });
       if (r === "aborted") return;
     }
-    await runSequence(deskHub);
+    await runSequence(hubSequence);
   }, []);
 
   return (

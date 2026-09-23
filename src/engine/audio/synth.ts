@@ -207,6 +207,71 @@ const sfx: Record<string, Gen> = {
         d[i] = (motor + steps) * Math.min(1, t * 8) * Math.min(1, (2.2 - t) * 6);
       }
     }),
+  "sfx-desk-knock": (ctx) =>
+    make(ctx, 0.25, 1, (_c, d, sr) => {
+      const r = rng(85);
+      for (let i = 0; i < d.length; i++) {
+        const t = i / sr;
+        d[i] = (Math.sin(tau * 260 * t) * 0.5 + Math.sin(tau * 590 * t) * 0.25 + (r() * 2 - 1) * 0.25 * Math.exp(-t * 200)) * Math.exp(-t * 28);
+      }
+    }),
+  "sfx-ball-bounce": (ctx) =>
+    make(ctx, 0.18, 1, (_c, d, sr) => {
+      for (let i = 0; i < d.length; i++) {
+        const t = i / sr;
+        d[i] = Math.sin(tau * (140 - t * 200) * t) * Math.exp(-t * 30) * 0.6;
+      }
+    }),
+  "sfx-notification": (ctx) =>
+    make(ctx, 0.5, 1, (_c, d, sr) => {
+      for (let i = 0; i < d.length; i++) {
+        const t = i / sr;
+        const f = t < 0.09 ? 988 : 1319;
+        d[i] = Math.sin(tau * f * t) * 0.14 * Math.exp(-(t < 0.09 ? t : t - 0.09) * 10);
+      }
+    }),
+  "sfx-briefcase-open": (ctx) =>
+    make(ctx, 0.9, 1, (_c, d, sr) => {
+      const r = rng(84);
+      for (const at of [0.02, 0.12]) {
+        const s0 = Math.floor(at * sr);
+        for (let i = 0; i < sr * 0.05 && s0 + i < d.length; i++) {
+          const t = i / sr;
+          d[s0 + i] = ((r() * 2 - 1) * 0.5 + Math.sin(tau * 1800 * t) * 0.4) * Math.exp(-t * 90);
+        }
+      }
+      for (let i = Math.floor(0.25 * sr); i < d.length; i++) {
+        const t = i / sr - 0.25;
+        d[i]! += (r() * 2 - 1) * 0.05 * Math.sin(Math.PI * Math.min(1, t / 0.6));
+      }
+    }),
+  "sfx-screw": (ctx) =>
+    make(ctx, 0.6, 1, (_c, d, sr) => {
+      const r = rng(83);
+      for (let i = 0; i < d.length; i++) {
+        const t = i / sr;
+        const ratchet = Math.sin(tau * 22 * t) > 0.6 ? 1 : 0;
+        d[i] = (r() * 2 - 1) * 0.18 * ratchet * Math.exp(-t * 2) + Math.sin(tau * 3200 * t) * 0.02 * ratchet;
+      }
+    }),
+  "sfx-boxes": (ctx) =>
+    make(ctx, 1.4, 1, (_c, d, sr) => {
+      const r = rng(82);
+      for (const at of [0.05, 0.55, 0.95]) {
+        const s0 = Math.floor(at * sr);
+        for (let i = 0; i < sr * 0.2 && s0 + i < d.length; i++) {
+          const t = i / sr;
+          d[s0 + i] = (Math.sin(tau * 90 * t) * 0.6 + (r() * 2 - 1) * 0.3) * Math.exp(-t * 18);
+        }
+      }
+    }),
+  "amb-computer-fan": (ctx) =>
+    make(ctx, 4, 2, (c, d, sr) => {
+      const r = rng(81 + c);
+      pinkNoise(d, r, 0.25, 0.3);
+      for (let i = 0; i < d.length; i++) d[i]! += Math.sin((tau * 180 * i) / sr) * 0.006;
+      loopFade(d, sr);
+    }),
   "sfx-footsteps": (ctx) =>
     make(ctx, 1.6, 1, (_c, d, sr) => {
       const r = rng(87);

@@ -59,7 +59,7 @@ export function Subtitles() {
 
   if (!sub || !enabled) return null;
   return (
-    <div className="pointer-events-none fixed inset-x-0 bottom-[max(7vh,calc((100dvh-100vw/2.35)/2+2vh))] z-40 flex justify-center px-4">
+    <div className="pointer-events-none fixed inset-x-0 bottom-[max(7vh,calc((100dvh-100vw/2.35)/2+2vh))] z-[55] flex justify-center px-4">
       <button
         type="button"
         onClick={advance}

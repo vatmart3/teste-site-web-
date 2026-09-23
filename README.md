@@ -14,6 +14,40 @@ npm run build
 npm run voices:csv   # liste des répliques à doubler → content/voices.csv
 ```
 
+## Phase 3 — Le bureau (hub) (livrée)
+
+**Jouable** : à la fin de l'arrivée (ou via « Continuer » sur l'écran-titre), on s'assoit à son bureau.
+Vue à la première personne, parallaxe à la souris / au gyroscope, profondeur de champ.
+
+| Objet | Rendu | Ce qu'il ouvre |
+|---|---|---|
+| Pile de chemises (6 onglets colorés) | 3D | les affaires se déploient **en éventail 3D** ; tampons « OUVERT / À VENIR », **scellés de cire** pour les affaires premium ; fiche de l'affaire |
+| Téléphone de bureau | 3D, LCD à l'heure de New York, **voyant rouge qui clignote** s'il y a du nouveau | messagerie : vocaux (sous-titrés, doublables) et SMS ; le SMS de Mercer dépend de votre réponse à l'arrivée |
+| Mallette | 3D, le couvercle s'ouvre (fermoirs, feutre rouge) | les **5 atouts** en cartes (quantités) |
+| Écran d'ordinateur | zone du décor | **H&V Terminal** (OS fictif, ventilateur) : rang et progression, honoraires, **intégrité**, relations |
+| Tableau de liège | zone du décor | ce que l'on sait de Meridian, notes punaisées, fil rouge |
+| Étagère | zone du décor | **bibliothèque de leçons** : reliures cuir aux titres dorés, leçon sur papier à en-tête |
+| Porte vitrée | zone du décor | le couloir : bureau de Harlow (visite, réplique selon l'heure), autres lieux fermés pour l'instant |
+| Tampon, stylo, balle anti-stress | 3D **avec physique (Rapier)** | on les attrape, on les lance, ils rebondissent sur le bureau et les objets (sons d'impact) |
+
+- **Survol** : l'objet se soulève de 2 cm, son ombre s'élargit, un **liseré laiton** l'entoure, petit son. Les zones
+  du décor ont un liseré laiton et une étiquette. **Clavier** : Tab atteint chaque objet (boutons invisibles à la
+  souris, visibles au focus), Échap ferme une vue.
+- **Le bureau vit** : café qui fume, néon qui grésille, **silhouette d'un collègue qui passe derrière la vitre
+  dépolie** (pas spatialisés), notifications du chat interne qui font vibrer l'écran, horloge murale à l'heure de
+  New York ; lumière jour / crépuscule / nuit selon l'heure réelle de New York (bureaux à fenêtre).
+- **Carrière** : réputation → rangs (Stagiaire 0, Collaborateur 100, Senior 300, Associé 700, Associé-gérant 1500),
+  honoraires, intégrité, atouts, messages lus, leçons ; sauvegarde locale migrée automatiquement.
+- **4 bureaux** (stagiaire sans fenêtre → petite fenêtre sur cour → boiseries et vue sur la ville → bureau d'angle
+  avec carafe de whisky) et **cinématique de déménagement** : cartons qui tombent sur le bureau, plaque en laiton
+  gravée à votre nom qu'on visse (4 vis), puis le nouveau décor. Testable dans `/lab` (« +100 réputation »).
+- Rendu léger sans WebGL : les objets 3D deviennent des boutons visibles.
+
+**Honnêteté des écrans** : les affaires, le classement, le Dossier du jour et l'export PDF affichent clairement
+« à venir » avec la livraison prévue ; aucun chiffre de joueurs n'est inventé.
+
+**Ce qui manque** : le contenu jouable des affaires (phase 4), le tableau d'enquête interactif (phase 5).
+
 ## Phase 2 — Séquence d'arrivée (livrée)
 
 **Jouable** : `/` → « Entrer » → l'arrivée complète, en première personne, le joueur agit à chaque plan :
@@ -137,9 +171,30 @@ La liste exacte (19 répliques : id, personnage, texte, émotion, nom de fichier
 **`content/voices.csv`** (`npm run voices:csv`). Le message vocal de l'ascenseur est découpé en 5 fichiers
 (`vo-harlow-voicemail-1` … `-5`, ~40 s au total) pour caler les sous-titres.
 
-## Assets pour la phase 3 (le bureau hub)
-- Plates : `08-desk-intern-night.png` (+ `-dusk`, `-day`) ; les 3 autres bureaux de rang : `08-desk-associate.png`
-  (petite fenêtre sur cour), `08-desk-senior.png`, `08-desk-partner.png`.
-- Objets 3D (glTF/GLB, CC0, Poly Haven ou Sketchfab CC0) → `public/models/` : `desk-phone.glb`, `briefcase.glb`,
-  `coffee-cup.glb`, `folder.glb` (optionnel, le moteur a une chemise procédurale), `stamp.glb`.
-- Sons : `sfx-desk-phone-ring`, `sfx-briefcase-open`, `sfx-paper-flip`, `sfx-stamp`, `amb-office-night`.
+## Assets du bureau (phase 3)
+
+### Plates → `assets-src/scenes/` — **même disposition pour les 4 bureaux**
+Première personne assise, bureau vide au premier plan (**le plateau doit être dégagé** : chemises, téléphone,
+mallette et café sont en 3D). Repères à respecter (fractions de l'image, depuis le haut à gauche) :
+étagère de livres x 3–21 %, tableau de liège x 25–47 % / y 12–40 %, écran d'ordinateur centré x 65 % / y 41 %,
+porte vitrée dépolie x 84–99 %, **bord arrière du plateau à y ≈ 60 %**, horloge murale au-dessus du tableau
+(x 36 %, y 6 %) — le moteur y affiche la vraie horloge de New York, laissez le mur libre.
+
+| Fichier | Prompt (ajouter le bloc de style) |
+|---|---|
+| `08-desk-intern-night.png` | First-person view seated at a small windowless junior lawyer desk at night, empty desk surface in the foreground, bookshelf on the left, cork board on the wall, a computer monitor on the right, frosted glass office door on the far right, flickering fluorescent tube, green banker's lamp |
+| `08-desk-associate.png` (+ `-dusk`, `-night`) | Same layout, modest associate office, small window onto a brick courtyard above the monitor, walnut desk, leather desk pad |
+| `08-desk-senior.png` (+ `-dusk`, `-night`) | Same layout, senior lawyer office with wood paneling, framed diplomas, larger window over the city |
+| `08-desk-partner.png` (+ `-dusk`, `-night`) | Same layout, partner's corner office, panoramic Manhattan window, whisky decanter on the shelf, abstract painting, leather armchair |
+
+### Objets 3D (optionnels) → `public/models/` (GLB, CC0, échelle réelle en mètres, origine au centre de la base)
+`desk-phone.glb`, `briefcase.glb` (sans animation : le moteur ouvre la sienne ; un modèle remplace la mallette
+procédurale), `coffee-cup.glb`. Sans eux, les objets procéduraux restent.
+
+### Sons → `public/audio/`
+`sfx-desk-phone-ring`, `sfx-briefcase-open`, `sfx-paper-flip`, `sfx-stamp`, `amb-office-night`,
+`amb-office-day`, `amb-computer-fan`, `sfx-notification`, `sfx-desk-knock`, `sfx-ball-bounce`, `sfx-screw`,
+`sfx-boxes`.
+
+### Voix
+`content/voices.csv` contient maintenant 24 répliques (messagerie de Theo et Harlow, visites chez Harlow).
