@@ -13,6 +13,9 @@ import { useSettings } from "@/engine/state/settings";
 import { propAnchors, useProps } from "@/engine/props/model";
 import { useStage } from "@/engine/state/stage";
 import { useRender } from "@/engine/state/render";
+import { boardBus, useBoard } from "@/engine/board/state";
+import { courtBus, useCourt } from "@/engine/court/state";
+import { useUi } from "@/engine/state/ui";
 import { roomAnchors } from "@/engine/room/anchors";
 import { hubBus, useHub } from "@/engine/hub/state";
 import { auditBus, useAudit } from "@/engine/audit/state";
@@ -25,7 +28,7 @@ export default function Game() {
   // Accès de débogage (tests automatisés) : /?debug
   useEffect(() => {
     if (new URLSearchParams(window.location.search).has("debug")) {
-      (window as unknown as { __game: unknown }).__game = { useProps, useProfile, useStage, useHub, hubBus, grantReputation, propAnchors, useAudit, auditBus, useDebrief, useRender, roomAnchors, rig, show: (id: SceneId, opts: ShowOptions = {}) => runSequence(async (d) => { await d.show(id, opts); await d.hold(); }) };
+      (window as unknown as { __game: unknown }).__game = { useProps, useProfile, useStage, useHub, hubBus, grantReputation, propAnchors, useAudit, auditBus, useDebrief, useRender, roomAnchors, rig, useBoard, boardBus, useCourt, courtBus, useUi, show: (id: SceneId, opts: ShowOptions = {}) => runSequence(async (d) => { await d.show(id, opts); await d.hold(); }) };
     }
   }, []);
 

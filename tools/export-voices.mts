@@ -6,6 +6,7 @@ import { fileURLToPath } from "node:url";
 import { ARRIVAL_LINES } from "../src/content/dialogue/arrival.ts";
 import { HUB_LINES } from "../src/content/dialogue/hub.ts";
 import { AUDIT_LINES, harlowOnAnomaly } from "../src/content/dialogue/audit.ts";
+import { COURT_LINES } from "../src/content/dialogue/court.ts";
 
 // Explications de Harlow au débrief de l'affaire 1 (texte identique à src/content/cases/midnightAudit.ts).
 const EXPLANATIONS: Record<string, string> = {
@@ -17,7 +18,7 @@ const EXPLANATIONS: Record<string, string> = {
 const DEBRIEF_LINES = Object.entries(EXPLANATIONS).flatMap(([id, text]) => [harlowOnAnomaly(id, text, true), harlowOnAnomaly(id, text, false)]);
 
 const root = join(dirname(fileURLToPath(import.meta.url)), "..");
-const all = [...ARRIVAL_LINES, ...HUB_LINES, ...AUDIT_LINES, ...DEBRIEF_LINES].filter((l) => l.voiced);
+const all = [...ARRIVAL_LINES, ...HUB_LINES, ...AUDIT_LINES, ...DEBRIEF_LINES, ...COURT_LINES].filter((l) => l.voiced);
 const esc = (s: string) => `"${s.replace(/"/g, '""')}"`;
 const rows = ["id,personnage,réplique,émotion,fichier", ...all.map((l) => [l.id, l.speaker, esc(l.text), l.emotion, `public/audio/vo-${l.id}.mp3`].join(","))];
 mkdirSync(join(root, "content"), { recursive: true });

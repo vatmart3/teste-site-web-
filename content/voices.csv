@@ -39,3 +39,51 @@ harlow-audit-found-depreciation,harlow,"Bien vu. Allonger la durée d'amortissem
 harlow-audit-missed-depreciation,harlow,"Et vous avez raté ceci : Allonger la durée d'amortissement de 5 à 9 ans sans étude technique, c'est fabriquer 71 millions de bénéfice d'un trait de plume. La flotte grossit, la dotation baisse : ça ne tient pas.",froid,public/audio/vo-harlow-audit-missed-depreciation.mp3
 harlow-audit-found-inventory,harlow,"Bien vu. Des pièces pour des camions retirés du service, gardées au prix d'achat. Les stocks gonflent trois fois plus vite que l'activité.",grave,public/audio/vo-harlow-audit-found-inventory.mp3
 harlow-audit-missed-inventory,harlow,"Et vous avez raté ceci : Des pièces pour des camions retirés du service, gardées au prix d'achat. Les stocks gonflent trois fois plus vite que l'activité.",froid,public/audio/vo-harlow-audit-missed-inventory.mp3
+board-intro,harlow,"L'audience est demain, neuf heures. Rourke va jurer que tout est propre. Mettez vos pièces au mur et reliez ce qui ne colle pas. Il me faut au moins deux contradictions solides.",grave,public/audio/vo-board-intro.mp3
+board-short,harlow,"Deux contradictions, pas moins. Retournez au tableau.",froid,public/audio/vo-board-short.mp3
+board-ready,harlow,"Bien. Dormez. Demain, vous le regardez dans les yeux.",grave,public/audio/vo-board-ready.mp3
+court-all-rise,huissier,"Veuillez vous lever. La cour, présidée par l'honorable Alma Whitford.",neutre,public/audio/vo-court-all-rise.mp3
+court-judge-open,whitford,"Asseyez-vous. Fonds de pension des chauffeurs contre Meridian Logistics. Maître Brandt, votre témoin.",froid,public/audio/vo-court-judge-open.mp3
+court-sustained,whitford,"Retenue. Maître Brandt, reformulez ou passez à autre chose.",froid,public/audio/vo-court-sustained.mp3
+court-brandt-withdraw,brandt,"Je retire la question.",froid,public/audio/vo-court-brandt-withdraw.mp3
+court-overruled-ground,whitford,"Rejetée. Ce n'est pas le bon motif, maître. Le témoin peut répondre.",froid,public/audio/vo-court-overruled-ground.mp3
+court-overruled,whitford,"Rejetée. La question est parfaitement régulière. Ne me faites pas perdre mon temps.",froid,public/audio/vo-court-overruled.mp3
+court-judge-cross,whitford,"Contre-interrogatoire. Maître, le témoin est à vous.",neutre,public/audio/vo-court-judge-cross.mp3
+court-brandt-objects,brandt,"Objection ! Le conseil harcèle le témoin.",froid,public/audio/vo-court-brandt-objects.mp3
+court-sustained-against,whitford,"Retenue. Posez des questions, maître, pas des accusations.",froid,public/audio/vo-court-sustained-against.mp3
+court-wrong-piece,whitford,"Maître, où voulez-vous en venir avec cette pièce ? Avancez.",froid,public/audio/vo-court-wrong-piece.mp3
+court-patience-low,whitford,"Dernier avertissement, maître. Ma patience a des limites.",froid,public/audio/vo-court-patience-low.mp3
+court-patience-out,whitford,"Ça suffit. Le contre-interrogatoire est terminé. Asseyez-vous.",froid,public/audio/vo-court-patience-out.mp3
+court-rourke-break-1,rourke,"… Arrêtez. Arrêtez.",tendu,public/audio/vo-court-rourke-break-1.mp3
+court-rourke-break-2,rourke,"Orca, c'est Linda. Les factures de décembre, c'était pour tenir les objectifs. On m'a dit que personne ne regarderait jamais les dates.",tendu,public/audio/vo-court-rourke-break-2.mp3
+court-judge-silence,whitford,"Silence ! Silence dans la salle.",froid,public/audio/vo-court-judge-silence.mp3
+court-judge-recess,whitford,"La séance est suspendue. Maître Brandt, dans mon cabinet. Maintenant.",froid,public/audio/vo-court-judge-recess.mp3
+court-judge-end,whitford,"Le témoin peut se retirer. La séance est suspendue jusqu'à quatorze heures.",neutre,public/audio/vo-court-judge-end.mp3
+harlow-court-ask,harlow,"J'étais au fond de la salle. Asseyez-vous.",grave,public/audio/vo-harlow-court-ask.mp3
+harlow-court-s,harlow,"Il a craqué devant le jury. Vingt-cinq ans que je fais ce métier : ce genre d'audience, on la raconte encore dix ans après.",grave,public/audio/vo-harlow-court-s.mp3
+harlow-court-a,harlow,"Du bon travail. Rourke est sorti de la salle plus petit qu'il n'y est entré.",grave,public/audio/vo-harlow-court-a.mp3
+harlow-court-b,harlow,"Vous l'avez fait transpirer. Il faudra le faire tomber, la prochaine fois.",froid,public/audio/vo-harlow-court-b.mp3
+harlow-court-c,harlow,"Brandt vous a promené. Relisez vos pièces, et revenez quand vous saurez ce qu'elles prouvent.",froid,public/audio/vo-harlow-court-c.mp3
+harlow-court-objections,harlow,"Et à l'interrogatoire principal, Brandt a soufflé les réponses à son témoin. Une objection bien placée vaut dix plaidoiries.",froid,public/audio/vo-harlow-court-objections.mp3
+harlow-court-dismiss,harlow,"Brandt va vouloir négocier. Préparez-vous : elle ne lâche jamais rien sans qu'on le lui arrache.",grave,public/audio/vo-harlow-court-dismiss.mp3
+court-d-tenure,brandt,"Monsieur Rourke, depuis combien de temps êtes-vous directeur financier de Meridian Logistics ?",froid,public/audio/vo-court-d-tenure.mp3
+court-d-tenure-a,rourke,"Onze ans. J'ai signé chacun de nos rapports annuels depuis 2014.",tendu,public/audio/vo-court-d-tenure-a.mp3
+court-d-honest,brandt,"Vous êtes un homme intègre, qui n'a jamais maquillé le moindre chiffre de sa carrière, n'est-ce pas ?",froid,public/audio/vo-court-d-honest.mp3
+court-d-honest-a,rourke,"Jamais. Pas une seule fois.",tendu,public/audio/vo-court-d-honest-a.mp3
+court-d-auditor,brandt,"Et votre commissaire aux comptes vous a personnellement assuré que tout était conforme, je crois ?",froid,public/audio/vo-court-d-auditor.mp3
+court-d-auditor-a,rourke,"Il me l'a dit, oui. Mot pour mot.",tendu,public/audio/vo-court-d-auditor-a.mp3
+court-d-drivers,brandt,"Selon vous, que pensaient les chauffeurs du fonds de pension quand ils ont investi chez nous ?",froid,public/audio/vo-court-d-drivers.mp3
+court-d-drivers-a,rourke,"Qu'ils faisaient le meilleur placement de leur vie. Et ils avaient raison.",tendu,public/audio/vo-court-d-drivers-a.mp3
+court-d-fleet,brandt,"Combien de camions compte aujourd'hui la flotte de Meridian ?",froid,public/audio/vo-court-d-fleet.mp3
+court-d-fleet-a,rourke,"Un peu plus de quatre mille tracteurs routiers.",tendu,public/audio/vo-court-d-fleet-a.mp3
+court-d-end,brandt,"Merci. Plus de questions, Votre Honneur. Le témoin est à vous, maître.",froid,public/audio/vo-court-d-end.mp3
+court-t-revenue-claim,rourke,"Fin décembre. Le contrat était signé, la facture émise, le revenu acquis : tout a été comptabilisé dans l'exercice, en règle.",tendu,public/audio/vo-court-t-revenue-claim.mp3
+court-t-revenue-rebuttal,rourke,"Le 3 janvier ? C'est… c'est la date de la contresignature norvégienne. L'accord de principe datait de décembre.",tendu,public/audio/vo-court-t-revenue-rebuttal.mp3
+court-t-orca-claim,rourke,"Aucun. Orca est un cabinet indépendant, choisi sur appel d'offres. Je n'ai aucun lien personnel avec eux.",tendu,public/audio/vo-court-t-orca-claim.mp3
+court-t-orca-rebuttal,rourke,"Linda… Ma femme gère beaucoup de sociétés. Je ne suis pas au courant de toutes.",tendu,public/audio/vo-court-t-orca-rebuttal.mp3
+court-t-fleet-claim,rourke,"Neuf ans. Nos tracteurs roulent neuf ans, c'est notre expérience du terrain : j'ai simplement aligné les comptes sur la réalité.",tendu,public/audio/vo-court-t-fleet-claim.mp3
+court-t-fleet-rebuttal,rourke,"Cinq ans… Ce rapport ne tient pas compte des… des révisions lourdes. Je… je ne l'avais pas lu.",tendu,public/audio/vo-court-t-fleet-rebuttal.mp3
+court-t-bond-claim,rourke,"À acheter quatre cents tracteurs neufs. C'est dans le prospectus, et les camions sont dans nos dépôts.",tendu,public/audio/vo-court-t-bond-claim.mp3
+court-t-bond-rebuttal,rourke,"Je viens de vous le dire, maître : les factures des tracteurs sont au dossier.",tendu,public/audio/vo-court-t-bond-rebuttal.mp3
+court-t-stocks-claim,rourke,"Évidemment. Tout est à Newark, rangé et inventorié. Nous avons anticipé la hausse d'activité.",tendu,public/audio/vo-court-t-stocks-claim.mp3
+court-t-stocks-rebuttal,rourke,"Aucune entrée… C'est peut-être une erreur de saisie de l'entrepôt. Je… je vérifierai.",tendu,public/audio/vo-court-t-stocks-rebuttal.mp3

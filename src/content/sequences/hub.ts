@@ -20,6 +20,9 @@ import { useStage } from "@/engine/state/stage";
 import type { Transition } from "@/engine/state/stage";
 import { resetArrivalState } from "./arrival";
 import { playMidnightAudit } from "./audit";
+import { runBoard } from "./board";
+import { playCrossExamination, resetCourt } from "./court";
+import { MERIDIAN_BOARD } from "@/content/cases/meridianBoard";
 import { officeFor } from "@/engine/career/office";
 import { harlowTurn, roomClock, roomState } from "@/engine/room/roomState";
 
@@ -44,6 +47,13 @@ async function enterOffice(d: Director, transition: Transition = "cut") {
 
 async function openView(d: Director, view: HubView) {
   if (hub().view) await closeView(d);
+  if (view === "board") {
+    // Tableau d'enquête : on se lève et on s'approche du liège (il se joue en 3D).
+    hub().set({ active: false, view: null, hovered: null });
+    await runBoard(d, MERIDIAN_BOARD);
+    hub().set({ active: true });
+    return;
+  }
   hub().set({ view, hovered: null });
   // Le décor recule : flou et assombri, l'objet choisi occupe le premier plan.
   d.camAsync({ focus: 0.98, aperture: 0.9, exposure: 0.55 }, 0.5, "power2.out");
@@ -198,12 +208,17 @@ export const hubSequence: Sequence = async (d) => {
             await closeView(d);
             await playMidnightAudit(d);
             await enterOffice(d, "cut");
+          } else if (a.id === "cross-examination") {
+            await closeView(d);
+            await playCrossExamination(d);
+            await enterOffice(d, "cut");
           }
           break;
       }
     }
   } finally {
     actions.off();
+    resetCourt();
     hub().set({ active: false, view: null, moving: false });
     propCamera.pitch = 0;
     audio.stopLoop("fan");

@@ -94,4 +94,4 @@ export function caseStatus(meta: CaseMeta, progress: CaseProgress | undefined, o
 }
 
 /** Livraison actuelle du jeu (sert à afficher « bientôt » honnêtement). */
-export const CURRENT_PHASE = 4;
+export const CURRENT_PHASE = 5;

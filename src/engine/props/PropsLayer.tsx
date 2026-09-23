@@ -12,6 +12,8 @@ import { writeRoomAnchors } from "../room/RoomStage";
 import type { RoomKind } from "@/content/types";
 import { SceneEnvironment } from "../three/environment";
 import { useAudit } from "../audit/state";
+import { useBoard } from "../board/state";
+import { Board3D } from "../board/Board3D";
 import { AuditDesk, AuditReading } from "../audit/AuditDesk";
 import { useHub } from "../hub/state";
 import { HubDesk } from "../hub/HubDesk";
@@ -26,6 +28,8 @@ import { Phone } from "./Phone";
  * HDRI, et la caméra devient une vraie tête (translation + rotation), avec un champ plus large.
  */
 const EULER = new THREE.Euler(0, 0, 0, "YXZ");
+/** Amplitude du regard par défaut (bureau : petite parallaxe de tête). */
+const LOOK_DEFAULT = 0.045;
 const DIR = new THREE.Vector3();
 const RIGHT = new THREE.Vector3();
 const UP = new THREE.Vector3();
@@ -36,6 +40,7 @@ function copyBase(to: BaseCamera, from: BaseCamera): void {
   to.pitch = from.pitch;
   to.fov = from.fov;
   to.dollyMeters = from.dollyMeters;
+  to.look = from.look;
 }
 
 function mixBase(to: BaseCamera, a: BaseCamera, b: BaseCamera, k: number): void {
@@ -45,6 +50,7 @@ function mixBase(to: BaseCamera, a: BaseCamera, b: BaseCamera, k: number): void 
   to.pitch = m(a.pitch, b.pitch);
   to.fov = m(a.fov, b.fov);
   to.dollyMeters = m(a.dollyMeters, b.dollyMeters);
+  to.look = m(a.look ?? LOOK_DEFAULT, b.look ?? LOOK_DEFAULT);
 }
 
 /** Glissement de caméra entre deux stations d'une pièce 3D (état hors React). */
@@ -69,6 +75,7 @@ export function PropsLayer() {
   const officeRank = useProfile((s) => s.officeRank);
   const room = useRender((s) => s.room);
   const auditActive = useAudit((s) => s.active);
+  const boardActive = useBoard((s) => s.active);
 
   useFrame(({ camera, size }, dt) => {
     const cam = camera as THREE.PerspectiveCamera;
@@ -146,7 +153,9 @@ export function PropsLayer() {
     RIGHT.set(1, 0, 0).applyEuler(EULER);
     UP.set(0, 1, 0).applyEuler(EULER);
     cam.position.set(px + RIGHT.x * lx * 0.03 + UP.x * ly * 0.02, py + RIGHT.y * lx * 0.03 + UP.y * ly * 0.02, pz + RIGHT.z * lx * 0.03 + UP.z * ly * 0.02);
-    cam.rotation.set(c.pitch + ly * 0.03 + rig.panY * 0.5, c.yaw - lx * 0.045 - rig.panX * 0.5, (-rig.roll * Math.PI) / 180, "YXZ");
+    // Regard libre : la souris (ou le doigt, le gyroscope) tourne la tête, plus ou moins selon la station.
+    const lookAmp = c.look ?? LOOK_DEFAULT;
+    cam.rotation.set(c.pitch + ly * Math.max(0.03, lookAmp * 0.45) + rig.panY * 0.5, c.yaw - lx * lookAmp - rig.panX * 0.5, (-rig.roll * Math.PI) / 180, "YXZ");
     writeRoomAnchors(cam, size.width, size.height);
     // Le repère « vue » suit la caméra de base : les objets tenus devant soi restent face à l'objectif.
     // (Bureau d'angle : repère horizontal, la chemise glisse à plat sur le bureau en verre.)
@@ -173,6 +182,7 @@ export function PropsLayer() {
       )}
       {hubActive && <HubDesk />}
       {auditActive && <AuditDesk />}
+      {boardActive && <Board3D />}
       <group ref={view}>
         {phone && <Phone />}
         {badge && <Badge />}

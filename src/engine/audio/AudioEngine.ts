@@ -339,6 +339,14 @@ class AudioEngine {
     this.applyVolumes();
   }
 
+  /** Baisse musique et ambiance pendant une voix de synthèse (qui ne passe pas par Web Audio). */
+  duck(on: boolean): void {
+    if (!this.ctx) return;
+    const t = this.ctx.currentTime;
+    this.buses.music.gain.setTargetAtTime(this.volumes.music * (on ? 0.45 : 1), t, 0.15);
+    this.buses.amb.gain.setTargetAtTime(this.volumes.sfx * (on ? 0.5 : 0.8), t, 0.15);
+  }
+
   /** Une voix doublée est-elle en cours ? */
   get voiceActive(): boolean {
     return this.voicesPlaying > 0;

@@ -67,6 +67,10 @@ export function Controls() {
             </select>
           </label>
           <label className="flex items-center justify-between text-sm">
+            <span className="text-ivory/80">Voix de synthèse</span>
+            <input type="checkbox" checked={s.tts} onChange={(e) => s.set({ tts: e.target.checked })} className="accent-brass" />
+          </label>
+          <label className="flex items-center justify-between text-sm">
             <span className="text-ivory/80">Sans chrono</span>
             <input type="checkbox" checked={s.noTimer} onChange={(e) => s.set({ noTimer: e.target.checked })} className="accent-brass" />
           </label>

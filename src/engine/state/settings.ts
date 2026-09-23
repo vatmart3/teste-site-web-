@@ -19,6 +19,8 @@ export interface Settings {
   gyro: boolean;
   /** Option d'accessibilité : pas de pression du temps pendant les épreuves. */
   noTimer: boolean;
+  /** Voix de synthèse françaises pour les répliques sans enregistrement. */
+  tts: boolean;
   set: (patch: Partial<Omit<Settings, "set">>) => void;
 }
 
@@ -36,6 +38,7 @@ export const useSettings = create<Settings>()(
       quality: "auto",
       gyro: false,
       noTimer: false,
+      tts: true,
       set: (patch) => set(patch),
     }),
     { name: "bh-settings", version: 1 },

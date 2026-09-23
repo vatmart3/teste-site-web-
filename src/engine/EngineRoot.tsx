@@ -18,6 +18,8 @@ import { Controls } from "./ui/Controls";
 import { Panels } from "./ui/Panels";
 import { HubOverlay } from "./hub/HubOverlay";
 import { AuditOverlay } from "./audit/AuditOverlay";
+import { BoardOverlay } from "./board/BoardOverlay";
+import { CourtOverlay } from "./court/CourtOverlay";
 import { DebriefOverlay } from "./audit/DebriefOverlay";
 import { Hotspots } from "./ui/Hotspots";
 import { Letterbox } from "./ui/Letterbox";
@@ -109,6 +111,8 @@ export function EngineRoot({ children }: { children?: ReactNode }) {
       <Panels />
       <HubOverlay />
       <AuditOverlay />
+      <BoardOverlay />
+      <CourtOverlay />
       <DebriefOverlay />
       {children}
       <Controls />

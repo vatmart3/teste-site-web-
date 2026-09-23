@@ -38,6 +38,8 @@ export interface Profile {
   lessons: string[];
   /** Progression par affaire. */
   cases: Record<string, CaseRecord>;
+  /** Tableaux d'enquête : connexions établies et fils tirés à tort. */
+  boards: Record<string, { found: string[]; wrong: number }>;
   setIdentity: (firstName: string, lastName: string, avatar: number) => void;
   adjustRelation: (id: RelationId, delta: number) => void;
   setFlag: (key: string, value: string) => void;
@@ -50,6 +52,7 @@ export interface Profile {
   unlockLesson: (id: string) => void;
   recordCase: (id: string, grade: "S" | "A" | "B" | "C", score: number) => void;
   startCase: (id: string) => number;
+  setBoard: (id: string, found: string[], wrong: number) => void;
   reset: () => void;
 }
 
@@ -68,6 +71,7 @@ const initial = {
   readMessages: [] as string[],
   lessons: ["billable-hour"] as string[],
   cases: {} as Record<string, CaseRecord>,
+  boards: {} as Record<string, { found: string[]; wrong: number }>,
 };
 
 const GRADE_RANK = { S: 4, A: 3, B: 2, C: 1 } as const;
@@ -133,6 +137,7 @@ export const useProfile = create<Profile>()(
         });
         return attempt;
       },
+      setBoard: (id, found, wrong) => set((s) => ({ boards: { ...s.boards, [id]: { found: [...found], wrong } } })),
       recordCase: (id, grade, score) =>
         set((s) => {
           const prev = s.cases[id] ?? { completed: false, grade: null, bestScore: 0, attempts: 1 };

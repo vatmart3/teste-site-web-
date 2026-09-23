@@ -16,6 +16,8 @@ export interface DebriefState {
   reputation: number;
   found: number;
   total: number;
+  /** Ce qui est compté (« anomalies », « contradictions »). */
+  unit: string;
   set: (patch: Partial<Omit<DebriefState, "set">>) => void;
 }
 
@@ -28,6 +30,7 @@ export const useDebrief = create<DebriefState>()((set) => ({
   reputation: 0,
   found: 0,
   total: 0,
+  unit: "anomalies",
   set: (patch) => set(patch),
 }));
 
@@ -74,7 +77,7 @@ export function DebriefOverlay() {
           <RollingCounter value={d.fees} />
         </div>
         <p className="mt-3 text-sm text-ivory/80">
-          Note <span className="font-serif text-xl text-brass-light">{d.grade}</span> · {d.found}/{d.total} anomalies · Réputation{" "}
+          Note <span className="font-serif text-xl text-brass-light">{d.grade}</span> · {d.found}/{d.total} {d.unit} · Réputation{" "}
           <span className="text-brass-light">+{d.reputation}</span>
         </p>
       </div>

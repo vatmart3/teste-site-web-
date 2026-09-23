@@ -9,11 +9,17 @@ export interface AssetManifest {
   files: Set<string>;
 }
 
+/**
+ * Préfixe des URL d'assets : « / » par défaut ; « ./ » pour un export statique servi dans un
+ * sous-dossier (NEXT_PUBLIC_ASSET_BASE=./ au build).
+ */
+export const ASSET_BASE = process.env.NEXT_PUBLIC_ASSET_BASE ?? "/";
+
 let manifestPromise: Promise<AssetManifest> | null = null;
 
 export function loadManifest(): Promise<AssetManifest> {
   if (!manifestPromise) {
-    manifestPromise = fetch("/assets-manifest.json", { cache: "no-cache" })
+    manifestPromise = fetch(`${ASSET_BASE}assets-manifest.json`, { cache: "no-cache" })
       .then((r) => (r.ok ? (r.json() as Promise<{ files?: string[] }>) : { files: [] }))
       .then((j) => ({ files: new Set(j.files ?? []) }))
       .catch(() => ({ files: new Set<string>() }));
@@ -28,7 +34,7 @@ export function manifestFrom(files: string[]): AssetManifest {
 const IMAGE_EXT = ["avif", "webp", "jpg", "png"] as const;
 
 function firstExisting(m: AssetManifest, candidates: string[]): string | null {
-  for (const c of candidates) if (m.files.has(c)) return "/" + c;
+  for (const c of candidates) if (m.files.has(c)) return ASSET_BASE + c;
   return null;
 }
 

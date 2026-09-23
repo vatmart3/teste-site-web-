@@ -13,6 +13,8 @@ export interface CityLook {
   night: number;
   /** 0..1 : lueur du soleil levant/couchant à l'horizon. */
   sunGlow: number;
+  /** 0..1 : ciel couvert (gris uniforme, brume plus dense). */
+  overcast?: number;
 }
 
 function rng(seed: number) {
@@ -162,10 +164,10 @@ export function City({
         side: THREE.BackSide,
         depthWrite: false,
         fog: false,
-        uniforms: { uNight: uniforms.uNight, uGlow: { value: look.sunGlow }, uSunDir: { value: new THREE.Vector3(...sunDir).normalize() } },
+        uniforms: { uNight: uniforms.uNight, uGlow: { value: look.sunGlow }, uOvercast: { value: look.overcast ?? 0 }, uSunDir: { value: new THREE.Vector3(...sunDir).normalize() } },
         vertexShader: /* glsl */ `varying vec3 vDir; void main(){ vDir = normalize(position); gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }`,
         fragmentShader: /* glsl */ `
-          uniform float uNight; uniform float uGlow; uniform vec3 uSunDir; varying vec3 vDir;
+          uniform float uNight; uniform float uGlow; uniform float uOvercast; uniform vec3 uSunDir; varying vec3 vDir;
           void main(){
             float h = clamp(vDir.y, -0.2, 1.0);
             vec3 dayZen = vec3(0.32, 0.5, 0.78), dayHor = vec3(0.78, 0.84, 0.9);
@@ -175,6 +177,10 @@ export function City({
             float sun = max(dot(normalize(vDir), uSunDir), 0.0);
             vec3 glow = vec3(1.0, 0.55, 0.25) * (pow(sun, 6.0) * 0.9 + pow(sun, 60.0) * 3.0) * uGlow * (1.0 - smoothstep(0.0, 0.5, h));
             c += glow + vec3(0.9, 0.45, 0.35) * uGlow * 0.35 * (1.0 - smoothstep(0.0, 0.25, h));
+            // Ciel couvert : nappe grise, un peu plus claire à l'horizon, légère texture de nuages.
+            float cl = 0.5 + 0.5 * sin(vDir.x * 9.0 + sin(vDir.z * 7.0) * 2.0) * sin(vDir.z * 6.0 + vDir.y * 11.0);
+            vec3 grey = mix(vec3(0.74, 0.76, 0.78), vec3(0.6, 0.63, 0.67), smoothstep(0.0, 0.6, h)) * (0.92 + 0.08 * cl);
+            c = mix(c, grey, uOvercast);
             gl_FragColor = vec4(c, 1.0);
             #include <colorspace_fragment>
           }`,
@@ -186,10 +192,15 @@ export function City({
   useFrame(() => {
     uniforms.uNight.value = look.night;
     sky.uniforms.uGlow!.value = look.sunGlow;
+    sky.uniforms.uOvercast!.value = look.overcast ?? 0;
     // Brume de distance accordée à l'horizon (perspective atmosphérique).
     const f = fogColor.current;
     f.setRGB(0.78, 0.84, 0.9).lerp(new THREE.Color(0.07, 0.09, 0.15), look.night).lerp(new THREE.Color(0.95, 0.6, 0.45), look.sunGlow * 0.35);
-    if (scene.fog instanceof THREE.FogExp2) scene.fog.color.copy(f);
+    f.lerp(new THREE.Color(0.72, 0.74, 0.76), look.overcast ?? 0);
+    if (scene.fog instanceof THREE.FogExp2) {
+      scene.fog.color.copy(f);
+      scene.fog.density = 0.00085 + (look.overcast ?? 0) * 0.0012;
+    }
   });
 
   useEffect(() => {

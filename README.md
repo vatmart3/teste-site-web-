@@ -14,6 +14,57 @@ npm run build
 npm run voices:csv   # liste des répliques à doubler → content/voices.csv
 ```
 
+## Phase 5 — Tableau d'enquête + Tribunal (livrée)
+
+**Jouable** : depuis le bureau, pile de chemises → *Le contre-interrogatoire* (ou le tableau de liège à tout
+moment).
+
+1. **Tableau d'enquête en 3D** : on se lève face au liège ; dix pièces punaisées (facture, contrat, interview,
+   registre du Delaware, notes, photo d'entrepôt…). On **tire le fil rouge à la souris** (corde physique de
+   Verlet qui pend et se balance) d'une punaise à l'autre : connexion juste → le fil se tend, éclair, son de
+   révélation, zoom, fiche bristol épinglée ; fausse → le fil retombe. Quatre contradictions, deux fausses
+   pistes, deux connexions minimum pour aller à l'audience. Relier au clavier possible.
+2. **Les marches du tribunal fédéral** (3D, matin gris, colonnes, photographes et flashs) → on monte.
+3. **Salle d'audience 3D** (boiseries, hautes fenêtres, poussière dans la lumière, juge au banc, jury de douze,
+   public). Montage alterné plans larges / gros plans (témoin, juge, avocate, jury).
+   - **Interrogatoire principal** par Celia Brandt : bouton **OBJECTION !** (touche O) qui pulse pendant qu'elle
+     parle ; au clic, la réplique est coupée, le son claque, la caméra saute sur la juge, puis on choisit le
+     motif (question suggestive, ouï-dire, spéculation, tendancieuse) en 8 s (option « sans chrono »).
+     Retenue / rejetée, marteau, tampon.
+   - **Contre-interrogatoire** : on se lève et on s'approche de la barre ; on choisit le sujet puis la question
+     (précise, ouverte, agressive — Brandt objecte aux agressives). Rourke affirme ; on **fait glisser une pièce
+     de l'éventail vers lui** : bonne pièce → ralenti, musique coupée, tampon « CONTRADICTION », murmure de la
+     salle ; mauvaise → la juge perd patience. Les pièces non établies au tableau sont **grisées**.
+   - Jauges : pression sur le témoin (la caméra se rapproche), patience de la juge, jury. **Micro-signes** de
+     Rourke = indices : il déglutit (35), son regard fuit (50), il desserre sa cravate (60), il transpire ;
+     Brandt tapote son stylo quand elle perd pied. À forte pression, Rourke **craque** et avoue.
+4. **Débrief** chez Harlow : note tamponnée, honoraires, leçons (contre-interrogatoire, objections).
+
+Moteurs testés (Vitest) : `src/engine/board/logic.ts` (connexions, note, physique du fil),
+`src/engine/court/rules.ts` (jauges, micro-signes, fenêtre d'objection, note, honoraires).
+
+**Personnages 3D expressifs** (`src/engine/room/Actor.tsx`) : visage sculpté, yeux qui clignent et suivent,
+sourcils et bouche expressifs, bouche animée par la voix, coiffures, barbe, lunettes, robe de juge, gestes
+(parler, cravate, stylo, bras croisés, tête dans les mains). Style « figurine » réaliste : les vraies vidéos de
+personnages (annexe B) restent la cible pour les gros plans.
+
+**Son** : banque de 56 sons générés hors ligne (`tools/make-sounds.py` → `public/audio/*.mp3`, ~11 Mo) :
+ambiances stéréo en boucle (salle d'audience, marches, hall en marbre, open space, pluie, ascenseur…) avec
+brouhaha à formants, pluie de Minnaert, voitures en Doppler, réverbérations à convolution ; bruitages (marteau,
+objection, fil tendu, révélation, murmure et souffle de la salle, battements, tic-tac, flashs…) ; musique en
+couches synchronisées (jazz lounge : piano électrique FM, contrebasse, balais ; basse et percussions de
+tension). Un vrai enregistrement déposé en `.webm`/`.ogg` remplace le fichier généré.
+**Voix** : sans fichier doublé, chaque réplique est dite par la meilleure voix française du système (Web Speech)
+avec un timbre par personnage ; la bouche suit les mots. Désactivable (Réglages → Voix de synthèse).
+
+**Regard libre** : dans les lieux 3D, la souris / le doigt / le gyroscope tournent la tête (jusqu'à ±20°).
+
+### Assets attendus (phase 5)
+- Plates facultatives (remplacent les lieux 3D) : `10-courthouse-steps.png`, `11-courtroom.png`.
+- Personnages (annexe B) : `rourke-*`, `brandt-*`, `whitford-*` (`idle`, `talk`, `pleased`, `tense`, `break`).
+- Voix : `content/voices.csv` (88 répliques, dont celles de Rourke, Brandt, la juge et l'huissier).
+- Sons : tous générés ; à remplacer au besoin par des enregistrements (mêmes noms, annexe C).
+
 ## Phase 4 — Affaire 1 « L'audit de minuit » + rendu réaliste (livrée)
 
 **Jouable** : depuis le bureau, pile de chemises → *Meridian Logistics* → « Ouvrir le dossier ». Il est

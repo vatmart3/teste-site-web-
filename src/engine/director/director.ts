@@ -8,6 +8,8 @@ import gsap from "gsap";
 import { getScene, type SceneId } from "@/content/scenes";
 import type { LightVariant, RoomKind } from "@/content/types";
 import { audio } from "../audio/AudioEngine";
+import { speak, VOICE_PROFILES } from "../audio/tts";
+import { useSettings } from "../state/settings";
 import { rig, resetRig, type CameraRig } from "../camera/rig";
 import { preloadPlate, loadPlateTextures } from "../plate/textures";
 import { plateHandle, whenPlateReady } from "../plate/registry";
@@ -45,6 +47,8 @@ export interface ShowOptions {
 export interface SayOptions {
   /** Fichier de voix (annexe D), sans extension. */
   voice?: string;
+  /** Qui parle (personnage, narrateur, joueur) : timbre de la voix de synthèse si le fichier manque. */
+  who?: string;
   /** Durée minimale d'affichage en secondes (sinon calculée d'après la longueur du texte). */
   hold?: number;
 }
@@ -242,7 +246,20 @@ export class Director {
     useUi.getState().set({ subtitle: { id, speaker, text } });
     const ctrl = new AbortController();
     const voice = opts.voice ? audio.voice(opts.voice, ctrl.signal) : Promise.resolve(null);
-    const timed = voice.then((r) => (r === null ? this.wait(opts.hold ?? readingTime(text)) : undefined));
+    // Pas de fichier doublé : voix de synthèse française au timbre du personnage (si activée).
+    const spoken = voice.then(async (r) => {
+      if (r !== null) return true;
+      const who = opts.who;
+      const st = useSettings.getState();
+      if (!who || who === "sms" || !st.tts || st.muted || !(who in VOICE_PROFILES)) return false;
+      audio.duck(true);
+      try {
+        return await speak(text, who as keyof typeof VOICE_PROFILES, st.voice * st.master, ctrl.signal);
+      } finally {
+        audio.duck(false);
+      }
+    });
+    const timed = spoken.then((ok) => (ok ? undefined : this.wait(opts.hold ?? readingTime(text))));
     let off: () => void = () => undefined;
     const advanced = new Promise<void>((resolve) => {
       off = advanceBus.on(() => resolve());
@@ -282,7 +299,7 @@ export class Director {
       setCharacterState(id, opts.state ?? "talk");
     }
     try {
-      await this.say(speakerLabel(l.speaker), fillTemplate(l.text), { voice: voiceFile(l), hold: opts.hold });
+      await this.say(speakerLabel(l.speaker), fillTemplate(l.text), { voice: voiceFile(l), hold: opts.hold, who: l.speaker });
     } finally {
       if (id) {
         setCharacterState(id, opts.after ?? (before === "talk" ? "idle" : before));
@@ -360,6 +377,7 @@ export function speakerLabel(speaker: string): string | undefined {
   if (speaker === "narrator") return undefined;
   if (speaker === "sms") return "SMS — R. Harlow";
   if (speaker === "player") return displayName(useProfile.getState()) || "Vous";
+  if (speaker === "huissier") return "L'huissier";
   return CHARACTERS[speaker as CharacterId]?.name ?? speaker;
 }
 

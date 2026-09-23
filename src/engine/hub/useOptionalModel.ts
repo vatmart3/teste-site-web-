@@ -1,4 +1,5 @@
 "use client";
+import { ASSET_BASE } from "../assets/manifest";
 /**
  * Modèle glTF optionnel : si `public/models/<nom>.glb` existe (manifeste), il remplace l'objet procédural.
  * Les modèles doivent être à l'échelle réelle (mètres), origine au centre de la base.
@@ -17,7 +18,7 @@ function load(name: string): Promise<THREE.Object3D | null> {
       const file = [`models/${name}.glb`, `models/${name}.gltf`].find((f) => m.files.has(f));
       if (!file) return null;
       try {
-        const gltf = await new GLTFLoader().loadAsync("/" + file);
+        const gltf = await new GLTFLoader().loadAsync(ASSET_BASE + file);
         gltf.scene.traverse((o) => {
           o.castShadow = true;
         });

@@ -203,7 +203,7 @@ async function debrief(d: Director, def: AuditCaseDef, r: AuditResult) {
   await d.tween(folder, { stamp: 1 }, 0.5, "power2.out");
 
   // Compteur d'honoraires.
-  useDebrief.getState().set({ visible: true, grade: r.grade, score: r.score, fees: r.fees, hours: r.billedHours, reputation: r.reputation, found: r.found.length, total: def.anomalies.length });
+  useDebrief.getState().set({ visible: true, grade: r.grade, score: r.score, fees: r.fees, hours: r.billedHours, reputation: r.reputation, found: r.found.length, total: def.anomalies.length, unit: "anomalies" });
   d.sfx("sfx-coins-counter", { volume: 0.8 });
   await d.wait(3.2);
   await d.line(AUDIT.harlowDismiss);

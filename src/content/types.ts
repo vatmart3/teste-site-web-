@@ -12,7 +12,9 @@ export type RoomKind =
   | "lobby"
   | "elevator"
   | "corridor"
-  | "corner-office";
+  | "corner-office"
+  | "courthouse-steps"
+  | "courtroom";
 
 export type ReverbPreset = "none" | "car" | "street" | "marble" | "elevator" | "office" | "openspace" | "court" | "conference";
 

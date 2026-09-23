@@ -86,4 +86,28 @@ export const LESSONS: Lesson[] = [
     ],
     takeaway: "Des stocks qui courent plus vite que les ventes cachent souvent une perte qu'on n'a pas voulu voir.",
   },
+  {
+    id: "cross-examination",
+    title: "Le contre-interrogatoire",
+    category: "Droit",
+    binding: "#2a2a4a",
+    paragraphs: [
+      "Au contre-interrogatoire, on ne cherche pas à apprendre quelque chose : on fait confirmer au témoin, question après question, ce que l'on sait déjà. Les questions sont courtes, fermées, précises : une date, un nom, un chiffre.",
+      "On laisse le témoin s'engager sur une affirmation nette, puis on lui oppose la pièce qui la contredit. Une contradiction ne se plaide pas : elle se montre. Le jury fait le reste.",
+      "Les questions agressives (« avouez que vous mentez ! ») font objecter la partie adverse et agacent le juge. La pression vient des faits, pas du ton.",
+    ],
+    takeaway: "Ne posez jamais une question dont vous ne connaissez pas la réponse — et gardez la pièce pour après la réponse.",
+  },
+  {
+    id: "objections",
+    title: "Les objections",
+    category: "Droit",
+    binding: "#4a1e2a",
+    paragraphs: [
+      "Une objection s'élève au moment où la question est posée, avant que le témoin ne réponde : une fois la réponse entendue par le jury, le mal est fait.",
+      "Question suggestive : à l'interrogatoire principal, l'avocat ne peut pas souffler la réponse à son propre témoin (« vous êtes honnête, n'est-ce pas ? »). Ouï-dire : le témoin rapporte les paroles d'un tiers absent pour prouver qu'elles sont vraies. Spéculation : on demande au témoin ce que d'autres pensaient ou ce qui se serait passé.",
+      "Objecter sans motif agace le juge : une objection se mérite, elle ne se lance pas au hasard.",
+    ],
+    takeaway: "Le bon motif, au bon moment : une objection tardive ou mal fondée coûte plus qu'elle ne rapporte.",
+  },
 ];

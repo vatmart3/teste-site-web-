@@ -7,7 +7,6 @@ import { propAnchors } from "../props/model";
 import { useUi } from "../state/ui";
 import { useRender } from "../state/render";
 import { HUB_OBJECTS, hubBus, useHub, type HubView } from "./state";
-import { BoardView } from "./views/BoardView";
 import { BriefcaseView } from "./views/BriefcaseView";
 import { CasesView } from "./views/CasesView";
 import { DoorView } from "./views/DoorView";
@@ -105,7 +104,6 @@ export function HubOverlay() {
       {view === "cases" && <CasesView />}
       {view === "phone" && <PhoneView />}
       {view === "terminal" && <TerminalView />}
-      {view === "board" && <BoardView />}
       {view === "briefcase" && <BriefcaseView />}
       {view === "library" && <LibraryView />}
       {view === "door" && <DoorView />}
