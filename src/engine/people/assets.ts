@@ -9,6 +9,9 @@ import { MeshoptDecoder } from "three/examples/jsm/libs/meshopt_decoder.module.j
 import { clone as cloneSkinned } from "three/examples/jsm/utils/SkeletonUtils.js";
 import { ASSET_BASE } from "../assets/manifest";
 
+/** Extension des modèles : « glb » ; « gltf.json » pour les hébergeurs qui ne servent pas le binaire. */
+const EXT = process.env.NEXT_PUBLIC_MODEL_EXT ?? "glb";
+
 export interface ClipInfo {
   duration: number;
   loop: boolean;
@@ -95,7 +98,7 @@ export function loadPerson(id: string): Promise<THREE.Object3D> {
   let p = templates.get(id);
   if (!p) {
     p = gltfLoader()
-      .loadAsync(`${ASSET_BASE}models/people/${id}.glb`)
+      .loadAsync(`${ASSET_BASE}models/people/${id}.${EXT}`)
       .then((g) => {
         const root = g.scene;
         root.traverse((o) => {
@@ -127,7 +130,7 @@ let animsPromise: Promise<{ clips: Map<string, THREE.AnimationClip>; info: Recor
 
 export function loadAnims() {
   animsPromise ??= Promise.all([
-    gltfLoader().loadAsync(`${ASSET_BASE}models/people/anims.glb`),
+    gltfLoader().loadAsync(`${ASSET_BASE}models/people/anims.${EXT}`),
     fetch(`${ASSET_BASE}models/people/anims.json`).then((r) => r.json() as Promise<Record<string, ClipInfo | number>>),
   ]).then(([g, meta]) => {
     const clips = new Map<string, THREE.AnimationClip>();
