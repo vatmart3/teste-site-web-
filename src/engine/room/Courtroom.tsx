@@ -13,7 +13,7 @@ import * as THREE from "three";
 import { PBR, useMat } from "../three/pbr";
 import { SceneEnvironment } from "../three/environment";
 import { useCourt } from "../court/state";
-import { Actor, randomLook } from "./Actor";
+import { RealPerson } from "../people/RealPerson";
 import { Mannequin } from "./Mannequin";
 import { useTextGeometry } from "./useBrassText";
 
@@ -26,8 +26,8 @@ export const LECTERN = { x: 0, z: -3.6 } as const;
 export const DEFENSE_SEAT = { x: 2.05, z: -0.85 } as const;
 
 /** Tête de Rourke (monde), pour la caméra et le regard des autres. */
-export const ROURKE_HEAD: [number, number, number] = [WITNESS.x, F + WITNESS.platform + 0.12 + 1.18, WITNESS.z];
-export const JUDGE_HEAD: [number, number, number] = [JUDGE.x, JUDGE.y + 1.09, JUDGE.z];
+export const ROURKE_HEAD: [number, number, number] = [WITNESS.x, F + WITNESS.platform + 1.43, WITNESS.z];
+export const JUDGE_HEAD: [number, number, number] = [JUDGE.x, JUDGE.y + 1.22, JUDGE.z];
 
 function rng(seed: number) {
   let a = seed >>> 0;
@@ -483,7 +483,7 @@ function Furniture() {
       </group>
       <Mannequin pose="sit" suit="#3d3a44" skin="#e0b48f" hair="#8a6a3a" tie={null} position={[1.9, F, -7.85]} rotationY={Math.PI - 0.6} seed={32} />
       {/* Huissier près de la porte du jury */}
-      <Mannequin pose="stand" suit="#1a2233" shirt="#c9ccd6" tie="#0c1020" skin="#6b4630" hair="#111" build={1.15} position={[6.6, F, -10.5]} rotationY={-2.2} seed={33} />
+      <Mannequin pose="stand" model="guard" position={[6.6, F, -10.5]} rotationY={-2.2} seed={33} lookAt={ROURKE_HEAD} />
       {/* Balustrade */}
       <primitive object={balusters} />
       {[-1, 1].map((side) => (
@@ -503,7 +503,7 @@ function Gallery() {
     for (const z of [1.6, 2.8, 4.0, 5.2]) {
       for (const side of [-1, 1]) {
         for (let k = 0; k < 7; k++) {
-          if (r() < 0.45) continue;
+          if (r() < 0.62) continue;
           out.push({
             x: side * (1.5 + k * 0.78 + (r() - 0.5) * 0.15),
             z,
@@ -532,7 +532,7 @@ function Gallery() {
         )),
       )}
       {people.map((p, i) => (
-        <Mannequin key={i} pose="sit" suit={p.suit} skin={p.skin} hair={p.hair} tie={i % 3 ? null : "#3a1418"} position={[p.x, F, p.z]} rotationY={Math.PI} seed={p.seed} />
+        <Mannequin key={i} pose="sit" position={[p.x, F, p.z]} rotationY={Math.PI} seed={p.seed} lookAt={ROURKE_HEAD} />
       ))}
     </group>
   );
@@ -572,7 +572,7 @@ function JuryBox() {
         <boxGeometry args={[0.18, 0.06, 6.5]} />
       </mesh>
       {jurors.map((j, i) => (
-        <Actor key={i} id="guard" extra look={randomLook(j.seed)} pose="sit" position={[j.x, j.y, j.z]} rotationY={j.rot} lookAt={ROURKE_HEAD} legs={false} />
+        <Mannequin key={i} pose="sit" position={[j.x, j.y - 0.05, j.z]} rotationY={j.rot} seed={j.seed} lookAt={ROURKE_HEAD} />
       ))}
     </group>
   );
@@ -633,12 +633,12 @@ export function Courtroom() {
       <Lamps />
       <CameraFill />
       {/* Acteurs */}
-      <Actor id="rourke" pose="witness" position={[WITNESS.x, F + WITNESS.platform + 0.12, WITNESS.z]} rotationY={WITNESS.rot} legs={false} />
-      <Actor id="whitford" pose="bench" position={[JUDGE.x, JUDGE.y, JUDGE.z]} rotationY={0} legs={false} lookAt={ROURKE_HEAD} />
+      <RealPerson model="rourke" who="rourke" pose="sit" position={[WITNESS.x, F + WITNESS.platform + 0.02, WITNESS.z]} rotationY={WITNESS.rot} />
+      <RealPerson model="whitford" who="whitford" pose="sit" position={[JUDGE.x, JUDGE.y - 0.02, JUDGE.z]} lookAt={ROURKE_HEAD} />
       {cross ? (
-        <Actor id="brandt" pose="sit" position={[DEFENSE_SEAT.x, F, DEFENSE_SEAT.z]} rotationY={Math.PI} legs={false} lookAt={ROURKE_HEAD} />
+        <RealPerson key="brandt-seat" model="brandt" who="brandt" pose="sit" position={[DEFENSE_SEAT.x, F, DEFENSE_SEAT.z]} rotationY={Math.PI} lookAt={ROURKE_HEAD} />
       ) : (
-        <Actor id="brandt" pose="stand" position={[LECTERN.x + 0.05, F, LECTERN.z - 0.45]} rotationY={-2.55} lookAt={ROURKE_HEAD} />
+        <RealPerson key="brandt-lectern" model="brandt" who="brandt" pose="stand" anim="explain" position={[LECTERN.x + 0.05, F, LECTERN.z - 0.45]} rotationY={-2.55} lookAt={ROURKE_HEAD} />
       )}
       {/* Lumière du matin par les fenêtres (ombres des meneaux), appoint chaud des suspensions */}
       <directionalLight

@@ -130,7 +130,7 @@ function Desk() {
       <mesh material={screen} position={[-0.8, y0 + 1.3, z - 0.3]} rotation={[0, 0.3, 0]}>
         <planeGeometry args={[0.45, 0.28]} />
       </mesh>
-      <Mannequin pose="stand" suit="#18223a" shirt="#c9ccd6" tie="#0c1020" skin="#a8785a" hair="#8a8a8a" build={1.12} position={[0.25, y0, z - 0.75]} seed={3} />
+      <Mannequin pose="stand" model="guard" who="guard" position={[0.25, y0, z - 0.75]} seed={3} />
     </group>
   );
 }

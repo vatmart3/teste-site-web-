@@ -3,6 +3,8 @@ import { useState } from "react";
 import { skipBus } from "../director/events";
 import { useSettings, type MotionSetting, type QualitySetting } from "../state/settings";
 import { useUi } from "../state/ui";
+import { useProfile } from "../state/profile";
+import { setPlayerLook } from "../world/system";
 
 function Slider({ label, value, onChange }: { label: string; value: number; onChange: (v: number) => void }) {
   return (
@@ -10,6 +12,23 @@ function Slider({ label, value, onChange }: { label: string; value: number; onCh
       <span className="text-ivory/80">{label}</span>
       <input type="range" min={0} max={1} step={0.01} value={value} onChange={(e) => onChange(Number(e.target.value))} className="w-36 accent-brass" />
     </label>
+  );
+}
+
+/** Apparence du joueur dans l'étage (monde ouvert). */
+function LookPicker() {
+  const look = useProfile((p) => p.look);
+  return (
+    <div className="flex items-center justify-between gap-4 text-sm">
+      <span className="text-ivory/80">Votre personnage</span>
+      <div className="flex gap-1">
+        {(["m", "f"] as const).map((l) => (
+          <button key={l} type="button" onClick={() => setPlayerLook(l)} className={`rounded-full px-3 py-1 text-xs ${look === l ? "bg-brass text-ink" : "border border-ivory/25 text-ivory/80"}`}>
+            {l === "m" ? "Homme" : "Femme"}
+          </button>
+        ))}
+      </div>
+    </div>
   );
 }
 
@@ -37,6 +56,7 @@ export function Controls() {
       {open && (
         <div role="dialog" aria-label="Réglages" className="fixed right-4 top-16 z-50 w-80 space-y-3 rounded-md border border-brass/30 bg-navy/90 p-5 font-sans text-ivory shadow-2xl backdrop-blur">
           <h2 className="font-serif text-lg text-brass">Réglages</h2>
+          <LookPicker />
           <Slider label="Général" value={s.master} onChange={(v) => s.set({ master: v })} />
           <Slider label="Musique" value={s.music} onChange={(v) => s.set({ music: v })} />
           <Slider label="Voix" value={s.voice} onChange={(v) => s.set({ voice: v })} />

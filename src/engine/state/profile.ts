@@ -45,7 +45,6 @@ export interface Profile {
   /** Mobilier du bureau (null = aménagement par défaut) et dépenses de décoration ($). */
   decor: { id: string; type: string; x: number; z: number; rot: number; v?: number }[] | null;
   spent: number;
-  /** Bonus : le prochain dossier commence avec un café (concentration). */
   setLook: (look: "m" | "f") => void;
   setDecor: (decor: Profile["decor"], cost: number) => void;
   setIdentity: (firstName: string, lastName: string, avatar: number) => void;

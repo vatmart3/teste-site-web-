@@ -14,6 +14,60 @@ npm run build
 npm run voices:csv   # liste des répliques à doubler → content/voices.csv
 ```
 
+## Phase 6 — L'étage en monde ouvert, humains réalistes (livrée)
+
+On quitte l'ascenseur et on **marche** : tout le 48e étage de Harlow & Vance est jouable à la 3e personne.
+
+- **Commandes** : ZQSD / WASD / flèches pour marcher, Maj pour courir, souris (glisser) pour regarder, molette
+  pour zoomer, V vue subjective, **E** parler / utiliser, **B** aménager son bureau, H aide. Sur écran tactile :
+  joystick + bouton E.
+- **L'étage** (`src/engine/world/layout.ts`) : bureaux vitrés sur la ville (Harlow, conférence, Mercer, le vôtre,
+  Vance), postes des assistants, open space, salon, cafétéria, archives, courrier, accueil et ascenseurs.
+  Collisions, portes vitrées automatiques, chemins A* (`nav.ts`, testés).
+- **Les gens vivent** (`npcs.ts`, `content/world/people.ts`) : chacun a son poste et sa routine (taper, téléphoner,
+  café, discussions au salon, archives) ; ils vous regardent quand vous passez.
+- **Ils vous servent** (`content/sequences/world.ts`) : Theo va chercher un café à la machine et vous l'apporte
+  (bonus de concentration), ou descend aux archives et pose le prochain dossier sur votre bureau ; Priya vous
+  trouve une jurisprudence (atout « Expert ») ; Marcus vous apporte le courrier ; Vivian vous obtient cinq
+  minutes avec Harlow ; Nora vous donne vos messages ; Mercer vous chambre.
+- **Votre bureau** : asseyez-vous (E) pour retrouver le bureau classique (affaires, messages, tableau
+  d'enquête) ; la porte « Retourner à l'étage » vous relève. **Aménagement** (B) : catalogue de 30 meubles et
+  objets (bureaux, fauteuils, Chesterfield, tapis persan, toiles, platine vinyle, bar, aquarium…), placement sur
+  grille, rotation, revente ; budget = prime de 6 000 $ + 20 % des honoraires (`decor.ts`, testé).
+- **Humains réalistes partout** : l'étage, le tribunal (témoin, juge, avocate, 12 jurés, public), le hall, le
+  bureau d'angle. Corps et visages générés à partir de MakeHuman (CC0), animations issues de captures de
+  mouvement (base CMU, libre d'usage), regard, clignements, lèvres synchronisées sur la voix, expressions,
+  nervosité du témoin (sourcils, regard fuyant, déglutition).
+- Réglages : choix du personnage joueur (homme / femme).
+- Débogage : `/?debug&world` entre directement dans l'étage ; `&lite` (sans ombres ni post-traitement),
+  `&npcs=theo,vivian` (population réduite).
+
+### Fabriquer les personnages (`tools/people/`)
+
+```bash
+pip install numpy scipy pillow
+git clone --depth 1 https://github.com/makehumancommunity/makehuman     # données CC0 (MH_DATA)
+git clone --depth 1 https://github.com/makehumancommunity/mpfb2         # squelettes, poids (MPFB_DATA)
+git clone --depth 1 --filter=blob:none https://github.com/una-dinosauria/cmu-mocap   # captures (CMU_DIR)
+python3 tools/people/build.py            # public/models/people/<id>.glb (distribution : cast.py)
+python3 tools/people/retarget.py         # public/models/people/anims.glb + anims.json (clips : CLIPS)
+npx gltfpack -i X.glb -o X.glb -cc -kn -km -ke        # compression (foule : -si 0.35 → crowd-n.glb)
+```
+
+`tools/people/preview.html` (servi depuis la racine) affiche un personnage : `?m=harlow&anim=walk&t=0.5&view=face`.
+
+### Licences
+
+- Corps, cibles, squelettes, poids, yeux : MakeHuman / MPFB — **CC0**.
+- Captures de mouvement : CMU Graphics Lab Motion Capture Database (conversion BVH cgspeed) — libres d'usage,
+  y compris commercial.
+- Vêtements, cheveux, textures, lunettes : générés par nos scripts (propriété du projet).
+
+### Assets attendus (phase 6)
+
+Aucun obligatoire : tout est généré. Facultatif : voix enregistrées des nouveaux personnages
+(`vivian`, `sam`, `lena`, `priya`, `marcus`) dans `public/audio/vo-<id>.mp3` ; sinon voix de synthèse.
+
 ## Phase 5 — Tableau d'enquête + Tribunal (livrée)
 
 **Jouable** : depuis le bureau, pile de chemises → *Le contre-interrogatoire* (ou le tableau de liège à tout

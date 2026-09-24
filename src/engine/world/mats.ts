@@ -32,7 +32,7 @@ export const MAT = {
   lampShade: () => get("lampShade", () => std({ color: "#efe6d4", roughness: 0.9, emissive: new THREE.Color("#ffcf90"), emissiveIntensity: 0.9 })),
   lightPanel: () => get("lightPanel", () => std({ color: "#ffffff", emissive: new THREE.Color("#fff4e2"), emissiveIntensity: 2.2 })),
   glass: () => get("glass", () => PBR.glass({ opacity: 0.12 })),
-  frosted: () => get("frosted", () => phys({ color: "#eef3f6", roughness: 0.6, transparent: true, opacity: 0.55, depthWrite: false })),
+  frosted: () => get("frosted", () => phys({ color: "#f4f6f8", roughness: 0.7, transparent: true, opacity: 0.32, depthWrite: false })),
   windowGlass: () => get("windowGlass", () => PBR.glass({ opacity: 0.06, color: "#dfe9f0" })),
   mullion: () => get("mullion", () => std({ color: "#2a2d33", roughness: 0.4, metalness: 0.8 })),
   chrome: () => get("chrome", () => std({ color: "#dfe3e8", roughness: 0.12, metalness: 1 })),

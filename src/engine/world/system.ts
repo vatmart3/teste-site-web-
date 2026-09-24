@@ -69,6 +69,20 @@ export function buildWorld(): Promise<unknown> {
   return worldSys.loading;
 }
 
+/** Change l'apparence du joueur (homme / femme) sans quitter l'étage. */
+export function setPlayerLook(look: "m" | "f") {
+  useProfile.getState().setLook(look);
+  const old = worldSys.player;
+  if (!old || !worldSys.ctrl) return;
+  const id = look === "f" ? "player-f" : "player-m";
+  if (old.id === id) return;
+  const p = new Person(id);
+  worldSys.group.remove(old.root);
+  worldSys.group.add(p.root);
+  worldSys.player = p;
+  worldSys.ctrl.person = p;
+}
+
 /** Objets et personnes avec lesquels on peut interagir. */
 export function interactables(): Interactable[] {
   const out: Interactable[] = [];
@@ -92,10 +106,13 @@ export function inPlayerOffice(x = worldRuntime.player.x, z = worldRuntime.playe
 }
 
 let lastRoom = "";
+const FR = new THREE.Frustum();
+const PM = new THREE.Matrix4();
+const SPH = new THREE.Sphere(new THREE.Vector3(), 1.3);
 let promptId = "";
 
 /** Une image du monde : joueur, PNJ, invite d'interaction, lieu. */
-export function stepWorld(dt: number, camera: THREE.PerspectiveCamera) {
+export function stepWorld(dt: number, camera: THREE.PerspectiveCamera, view: THREE.Camera = camera) {
   const ctrl = worldSys.ctrl;
   if (!ctrl) return;
   const others = [...worldSys.npcs.values()];
@@ -103,11 +120,15 @@ export function stepWorld(dt: number, camera: THREE.PerspectiveCamera) {
   ctrl.person.update(dt);
   // Personnages : mise à jour complète près du joueur, allégée au loin.
   const p = worldRuntime.player;
+  view.updateMatrixWorld();
+  PM.multiplyMatrices(view.projectionMatrix, view.matrixWorldInverse);
+  FR.setFromProjectionMatrix(PM);
   for (const n of others) {
     const far = Math.hypot(n.x - p.x, n.z - p.z) > 16;
     n.person.talk = (cast.speaker as string | null) === n.def.id ? Math.max(0.25, cast.level) : 0;
     n.update(dt);
-    n.person.root.visible = !far || Math.hypot(n.x - camera.position.x, n.z - camera.position.z) < 26;
+    SPH.center.set(n.x, 0.9, n.z);
+    n.person.root.visible = FR.intersectsSphere(SPH) && (!far || Math.hypot(n.x - view.position.x, n.z - view.position.z) < 26);
   }
   const ui = useWorld.getState();
   // Lieu courant.

@@ -95,6 +95,7 @@ function Office({ side, z, seed }: { side: -1 | 1; z: number; seed: number }) {
       {conf.person && (
         <Mannequin
           pose={conf.pose}
+          anim={conf.pose === "sit" ? "type" : undefined}
           suit={conf.suit}
           hair={conf.hair}
           skin={conf.skin}

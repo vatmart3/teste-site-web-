@@ -303,7 +303,7 @@ function EditPanel() {
   };
   const cats: (CatalogItem["cat"] | "mine")[] = ["Bureaux", "Sièges", "Rangement", "Déco", "Prestige", "mine"];
   return (
-    <div className="pointer-events-auto absolute inset-y-4 right-4 flex w-[min(22rem,92vw)] flex-col rounded-sm border border-brass/35 bg-[#0a0d13]/92 p-4 text-ivory shadow-2xl">
+    <div className="pointer-events-auto absolute bottom-4 right-4 top-16 flex w-[min(22rem,92vw)] flex-col rounded-sm border border-brass/35 bg-[#0a0d13]/92 p-4 text-ivory shadow-2xl">
       <div className="flex items-baseline justify-between">
         <h2 className="font-serif text-lg text-brass">Aménager votre bureau</h2>
         <button type="button" className="text-xs uppercase tracking-[0.25em] text-ivory/70 hover:text-ivory" onClick={() => toggleEdit(false)}>

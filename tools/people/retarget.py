@@ -40,7 +40,8 @@ CLIPS = {
     "phone": ("079/79_36", 1.0, 4.2, False, True),
     "type": ("079/79_85", 1.2, 8.4, True, True),
     "sitDown": ("113/113_15", 0.9, 2.7, False, False),
-    "sitIdle": ("113/113_15", 2.7, 4.9, True, False),
+    "sitIdle": ("086/86_15", 19.0, 33.0, True, False, "restHands"),
+    "sitTalk": ("018/18_12", 1.6, 9.0, True, False),
     "standUp": ("113/113_15", 4.9, 6.9, False, False),
     "coffee": ("137/137_26", 2.5, 12.5, False, True),
     "give": ("080/80_06", 1.2, 6.8, False, True),
@@ -87,8 +88,67 @@ def reference():
     return order, parent, {b: w(head[b]) for b in order}, {b: w(tail[b]) for b in order}
 
 
+def fk(order, parent, head, Gt, hips):
+    """Positions globales (par image) des têtes d'os à partir des rotations globales cibles."""
+    P = {}
+    for bn in order:
+        p = parent[bn]
+        if not p:
+            P[bn] = hips.copy()
+        else:
+            P[bn] = P[p] + Gt[p].apply(head[bn] - head[p])
+    return P
+
+
+def rest_hands(order, parent, head, tail, Gt, hips):
+    """Dos redressé, puis IK à deux os : les mains se posent sur le haut des cuisses (coude vers l'extérieur)."""
+    loc = {bn: (Gt[bn] if not parent[bn] else Gt[parent[bn]].inv() * Gt[bn]) for bn in order}
+    for bn in ("LowerBack", "Spine", "Spine1", "Neck", "Neck1", "Head"):
+        loc[bn] = R.from_rotvec(loc[bn].as_rotvec() * 0.35)
+    for bn in order:
+        Gt[bn] = loc[bn] if not parent[bn] else Gt[parent[bn]] * loc[bn]
+    P = fk(order, parent, head, Gt, hips)
+    for side, sg in (("Left", 1), ("Right", -1)):
+        S = P[f"{side}Arm"]
+        E = P[f"{side}ForeArm"]
+        W = P[f"{side}Hand"]
+        a = np.linalg.norm(head[f"{side}ForeArm"] - head[f"{side}Arm"])
+        b = np.linalg.norm(head[f"{side}Hand"] - head[f"{side}ForeArm"])
+        hipj = P[f"{side}UpLeg"]
+        knee = P[f"{side}Leg"]
+        T = hipj + (knee - hipj) * 0.62 + np.array([sg * 0.02, 0.09, 0.0])
+        d = T - S
+        dl = np.linalg.norm(d, axis=1, keepdims=True)
+        dl_c = np.clip(dl, 1e-4, (a + b) * 0.999)
+        dn = d / dl
+        # Direction du coude : vers l'extérieur et l'arrière.
+        pole = np.tile(np.array([sg * 1.0, 0.0, -0.6]), (len(S), 1))
+        pole = pole - dn * np.sum(pole * dn, axis=1, keepdims=True)
+        pole /= np.linalg.norm(pole, axis=1, keepdims=True)
+        cosA = np.clip((a * a + dl_c[:, 0] ** 2 - b * b) / (2 * a * dl_c[:, 0]), -1, 1)
+        sinA = np.sqrt(1 - cosA ** 2)
+        Enew = S + (dn * cosA[:, None] + pole * sinA[:, None]) * a
+        Wnew = S + dn * dl_c
+        # Rotations globales : on tourne les os pour aligner leurs directions actuelles sur les nouvelles.
+        for bn, A0, B0, A1, B1 in ((f"{side}Arm", S, E, S, Enew), (f"{side}ForeArm", E, W, Enew, Wnew)):
+            cur = B0 - A0
+            new = B1 - A1
+            rots = [shortest_arc(c, n_) for c, n_ in zip(cur, new)]
+            dq = R.from_quat(np.array([r.as_quat() for r in rots]))
+            # L'os et tous ses descendants suivent.
+            desc = [bn]
+            for x in order:
+                if parent[x] in desc:
+                    desc.append(x)
+            for x in desc:
+                Gt[x] = dq * Gt[x]
+        P = fk(order, parent, head, Gt, hips)
+    return Gt
+
+
 def retarget(name, spec, order, parent, head, tail):
-    path, t0, t1, loop, inplace = spec
+    path, t0, t1, loop, inplace = spec[:5]
+    post = spec[5] if len(spec) > 5 else None
     b = Bvh(find(path))
     rots, rp = b.local()
     G, P = b.globals(rots, rp)
@@ -163,12 +223,7 @@ def retarget(name, spec, order, parent, head, tail):
             Gt[bn] = Ry * G[idx[bn]][frames] * corr[bn].inv()
         else:
             Gt[bn] = Gt[parent[bn]] if parent[bn] else R.identity(len(frames))
-    local = {}
-    for bn in order:
-        p = parent[bn]
-        local[bn] = Gt[bn] if not p else Gt[p].inv() * Gt[bn]
-
-    # Translation des hanches.
+    # Translation des hanches (calculée ici pour l'IK éventuelle).
     rp2 = Ry.apply(rootp - rootp[0] * [1, 0, 1])
     if inplace:
         rp2[:, 0] = 0
@@ -177,6 +232,12 @@ def retarget(name, spec, order, parent, head, tail):
     hips[:, 1] = head["Hips"][1] + (rootp[:, 1] - rest_hip_src) * scale
     hips[:, 0] += rp2[:, 0] * scale
     hips[:, 2] += rp2[:, 2] * scale
+    if post == "restHands":
+        Gt = rest_hands(order, parent, head, tail, Gt, hips)
+    local = {}
+    for bn in order:
+        p = parent[bn]
+        local[bn] = Gt[bn] if not p else Gt[p].inv() * Gt[bn]
 
     # Recouture de la boucle : l'écart fin/début réparti sur la durée.
     if loop:
@@ -232,6 +293,10 @@ def main():
         print(f"{name:10s} {info}")
     meta["_hips"] = float(head["Hips"][1])
     os.makedirs(OUT, exist_ok=True)
+    if only:
+        g.save("/tmp/anims-partial.glb")
+        print("partiel : /tmp/anims-partial.glb (anims.glb inchangé)")
+        return
     g.save(os.path.join(OUT, "anims.glb"))
     json.dump(meta, open(os.path.join(OUT, "anims.json"), "w"), indent=1)
     print("anims.glb", os.path.getsize(os.path.join(OUT, "anims.glb")) / 1e6, "Mo")

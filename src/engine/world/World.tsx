@@ -18,6 +18,8 @@ import { buildWorld, decorNow, stepWorld, worldSys } from "./system";
 
 const DT_MAX = typeof window !== "undefined" && window.location.search.includes("lite") ? 0.3 : 0.05;
 
+const DUMMY = new THREE.PerspectiveCamera();
+
 /** Aperçu de placement (mode décoration), partagé avec l'interface. */
 export const editGhost = { item: null as Placed | null, ok: false, reason: "" };
 
@@ -131,7 +133,7 @@ function Runner() {
     const d = Math.min(dt, DT_MAX);
     if (edit) {
       worldRuntime.frozen = true;
-      stepWorld(d, new THREE.PerspectiveCamera());
+      stepWorld(d, DUMMY, cam);
       cam.position.lerp(editPos, Math.min(1, dt * 4));
       cam.lookAt(6.5, 0, -9.6);
       return;

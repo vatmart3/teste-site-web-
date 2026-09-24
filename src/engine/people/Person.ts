@@ -112,6 +112,9 @@ export class Person {
     for (const [k, c] of anims.clips) this.clips.set(k, c);
     model.traverse((o) => {
       if ((o as THREE.Bone).isBone) this.bones[o.name] = o as THREE.Bone;
+      // Maillages animés : pas de découpage par maillage (bornes de repos peu fiables) ; le monde découpe
+      // chaque personne entière (sphère autour du corps).
+      if ((o as THREE.Mesh).isMesh) o.frustumCulled = false;
       const m = o as THREE.Mesh;
       if (m.isMesh && m.morphTargetDictionary && "blinkL" in m.morphTargetDictionary) this.faces.push(m);
     });
@@ -280,7 +283,7 @@ export class Person {
     let target = this.lookAt;
     let weight = this.lookWeight;
     const handsBusy = this.layer && /type|pickup|phone|give|coffee|handshake/.test(this.layer.name);
-    if (!target && !handsBusy && !this.sitting) {
+    if (!target && !handsBusy) {
       this.root.updateWorldMatrix(true, false);
       target = AUTO.set(0, this.height * 0.92, 4).applyMatrix4(this.root.matrixWorld);
       weight = 0.7;

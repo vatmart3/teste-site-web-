@@ -144,7 +144,7 @@ export function CornerOffice() {
       <Shell />
       <Windows />
       <Furniture />
-      <Mannequin pose="stand" suit="#18213a" shirt="#dfe3ea" tie="#3a0f14" skin="#c49a7c" hair="#cfcfcf" build={1.05} height={1.82} position={[0.35, CORNER.floorY, -4.5]} rotationY={Math.PI} turn={harlowTurnProxy} seed={9} />
+      <Mannequin pose="stand" model="harlow" who="harlow" position={[0.35, CORNER.floorY, -4.5]} rotationY={Math.PI} turn={harlowTurnProxy} seed={9} />
       {/* Soleil levant : lumière rasante et chaude qui découpe la silhouette */}
       <directionalLight position={[-40, 18, -120]} intensity={3.4} color="#ffb070" castShadow shadow-mapSize-width={2048} shadow-mapSize-height={2048} shadow-camera-left={-6} shadow-camera-right={6} shadow-camera-top={6} shadow-camera-bottom={-6} shadow-camera-far={200} shadow-bias={-0.0004} />
       <hemisphereLight args={["#ffd8b0", "#2a2018", 0.35]} />

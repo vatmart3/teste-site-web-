@@ -50,7 +50,12 @@
   "speed": 0.0
  },
  "sitIdle": {
-  "duration": 1.9666666666666666,
+  "duration": 14.366666666666667,
+  "loop": true,
+  "speed": 0.0
+ },
+ "sitTalk": {
+  "duration": 7.566666666666666,
   "loop": true,
   "speed": 0.0
  },

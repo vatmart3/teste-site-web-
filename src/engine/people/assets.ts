@@ -103,7 +103,6 @@ export function loadPerson(id: string): Promise<THREE.Object3D> {
           if (!mesh.isMesh) return;
           mesh.castShadow = !/Lashes|Eyes|Mouth/.test(mesh.name);
           mesh.receiveShadow = true;
-          mesh.frustumCulled = false;
           mesh.material = Array.isArray(mesh.material) ? mesh.material.map(upgradeMaterial) : upgradeMaterial(mesh.material);
         });
         // Métadonnées de la silhouette (taille, hanches) posées par le générateur sur le nœud racine.
