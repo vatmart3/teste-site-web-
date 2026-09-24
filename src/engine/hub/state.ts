@@ -9,7 +9,9 @@ export type HubAction =
   | { type: "close" }
   | { type: "play"; messageId: string }
   | { type: "visit"; place: "harlow" }
-  | { type: "case"; id: string };
+  | { type: "case"; id: string }
+  /** Se lever du bureau (retour à l'étage, monde ouvert). */
+  | { type: "stand" };
 
 export interface HubState {
   /** Le bureau est affiché et interactif. */

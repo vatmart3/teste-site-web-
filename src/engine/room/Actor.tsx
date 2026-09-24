@@ -47,6 +47,11 @@ export const LOOKS: Record<CharacterId, ActorLook> = {
   brandt: { gender: "f", skin: "#e2bba0", hair: "#0d0c0c", hairStyle: "bob", iris: "#2e2a26", suit: "#111114", shirt: "#f1f1ef", tie: null, lips: "#9a1522", height: 1.72, build: 0.88 },
   whitford: { gender: "f", skin: "#dcb8a0", hair: "#ecebe8", hairStyle: "short", iris: "#5a6a70", suit: "#0c0c0f", shirt: "#e8e8e8", tie: null, lips: "#a0605a", height: 1.66, build: 0.9, glasses: "reading", robe: true },
   guard: { gender: "m", skin: "#a8785a", hair: "#8a8a8a", hairStyle: "crew", iris: "#3a2a1c", suit: "#18223a", shirt: "#c9ccd6", tie: "#0c1020", height: 1.82, build: 1.14, jaw: 1.15 },
+  vivian: { gender: "f", skin: "#e8c4a8", hair: "#7a2e1a", hairStyle: "bob", iris: "#3f6b4a", suit: "#6b1f2a", shirt: "#f2e8e0", tie: null, lips: "#9c2a33", height: 1.7, build: 0.86 },
+  sam: { gender: "m", skin: "#6e4631", hair: "#140e0b", hairStyle: "crew", iris: "#2a1a10", suit: "#3b4250", shirt: "#f2f2f0", tie: "#1d4a3a", height: 1.82, build: 1.02 },
+  lena: { gender: "f", skin: "#efcdb4", hair: "#c9a66b", hairStyle: "bun", iris: "#4d6c86", suit: "#2e3440", shirt: "#f4f4f6", tie: null, height: 1.7, build: 0.86 },
+  priya: { gender: "f", skin: "#a67555", hair: "#120c09", hairStyle: "bob", iris: "#2a1a10", suit: "#394a5c", shirt: "#f0ece4", tie: null, height: 1.62, build: 0.86 },
+  marcus: { gender: "m", skin: "#9a6a4c", hair: "#3a3430", hairStyle: "receding", iris: "#2a1a10", suit: "#c9d4e2", shirt: "#c9d4e2", tie: null, height: 1.74, build: 1.2 },
 };
 
 export type ActorPose = "stand" | "sit" | "witness" | "bench";

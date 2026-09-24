@@ -174,21 +174,26 @@ function actionQueue() {
   };
 }
 
-export const hubSequence: Sequence = async (d) => {
+/**
+ * Séance au bureau : le joueur est assis, il choisit librement un objet (affaires, messages, tableau...).
+ * Se termine quand il se lève (retour à l'étage).
+ */
+export async function deskSession(d: Director, opts: { start?: HubView } = {}): Promise<void> {
   const actions = actionQueue();
-  resetArrivalState();
   resetRig();
   await enterOffice(d);
   if (!profile().flags.hubIntro) {
     profile().setFlag("hubIntro", "1");
-    d.prompt("Votre bureau · survolez les objets, cliquez pour les ouvrir");
+    d.prompt("Votre bureau · survolez les objets, cliquez pour les ouvrir · la porte pour vous lever");
     window.setTimeout(() => d.prompt(null), 7000);
   }
+  if (opts.start) await openView(d, opts.start);
   try {
     for (;;) {
       const target = rankIndexFor(profile().reputation);
       if (target > profile().officeRank) await promotion(d, target);
       const a = await actions.next(d);
+      if (a.type === "stand") break;
       switch (a.type) {
         case "open":
           await openView(d, a.view);
@@ -216,6 +221,8 @@ export const hubSequence: Sequence = async (d) => {
           break;
       }
     }
+    await closeView(d);
+    await d.fadeBlack(1, 0.5);
   } finally {
     actions.off();
     resetCourt();
@@ -225,6 +232,12 @@ export const hubSequence: Sequence = async (d) => {
     caseFan.t = 0;
     briefcaseState.open = 0;
   }
+}
+
+/** Ancien point d'entrée (bureau seul, sans l'étage) : le bureau en boucle. */
+export const hubSequence: Sequence = async (d) => {
+  resetArrivalState();
+  for (;;) await deskSession(d);
 };
 
 /** Pour les tests et le labo : ajoute de la réputation et déclenche la promotion au prochain passage. */

@@ -3,6 +3,7 @@ import { hubBus } from "../state";
 import { Shell } from "./Shell";
 
 const PLACES = [
+  { id: "floor", title: "Retourner à l'étage", note: "Vous lever, marcher, parler à l'équipe.", open: true },
   { id: "harlow", title: "Bureau de Robert Harlow", note: "Dernier bureau au fond du couloir.", open: true },
   { id: "conference", title: "Salle de conférence", note: "Négociations — affaire 3.", open: false },
   { id: "archives", title: "Salle des archives", note: "Sous-sol. Les dossiers que personne ne relit.", open: false },
@@ -19,7 +20,7 @@ export function DoorView() {
             <button
               type="button"
               disabled={!p.open}
-              onClick={() => p.open && hubBus.emit({ type: "visit", place: "harlow" })}
+              onClick={() => p.open && hubBus.emit(p.id === "floor" ? { type: "stand" } : { type: "visit", place: "harlow" })}
               className="hub-panel w-full rounded-md p-4 text-left transition enabled:hover:border-brass disabled:cursor-not-allowed disabled:text-ivory/45 focus-visible:border-brass focus-visible:outline-none"
             >
               <span className="block font-serif text-lg">{p.title}</span>

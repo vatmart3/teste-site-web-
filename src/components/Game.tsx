@@ -1,7 +1,10 @@
 "use client";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { arrival, resetArrivalState } from "@/content/sequences/arrival";
-import { grantReputation, hubSequence } from "@/content/sequences/hub";
+import { grantReputation } from "@/content/sequences/hub";
+import { worldSequence } from "@/content/sequences/world";
+import { useWorld, worldBus, worldRuntime } from "@/engine/world/runtime";
+import { worldSys } from "@/engine/world/system";
 import { audio } from "@/engine/audio/AudioEngine";
 import { runSequence, type ShowOptions } from "@/engine/director/director";
 import type { SceneId } from "@/content/scenes";
@@ -28,7 +31,7 @@ export default function Game() {
   // Accès de débogage (tests automatisés) : /?debug
   useEffect(() => {
     if (new URLSearchParams(window.location.search).has("debug")) {
-      (window as unknown as { __game: unknown }).__game = { useProps, useProfile, useStage, useHub, hubBus, grantReputation, propAnchors, useAudit, auditBus, useDebrief, useRender, roomAnchors, rig, useBoard, boardBus, useCourt, courtBus, useUi, show: (id: SceneId, opts: ShowOptions = {}) => runSequence(async (d) => { await d.show(id, opts); await d.hold(); }) };
+      (window as unknown as { __game: unknown }).__game = { useProps, useProfile, useStage, useHub, hubBus, grantReputation, propAnchors, useAudit, auditBus, useDebrief, useRender, roomAnchors, rig, useBoard, boardBus, useCourt, courtBus, useUi, useSettings, useWorld, worldRuntime, worldSys, worldBus, show: (id: SceneId, opts: ShowOptions = {}) => runSequence(async (d) => { await d.show(id, opts); await d.hold(); }) };
     }
   }, []);
 
@@ -42,8 +45,17 @@ export default function Game() {
       const r = await runSequence(arrival, { skippable: useProfile.getState().arrivalSeen, onSkip: resetArrivalState });
       if (r === "aborted") return;
     }
-    await runSequence(hubSequence);
+    await runSequence(worldSequence);
   }, []);
+
+  // Débogage : /?debug&world entre directement dans l'étage (une seule fois, même en mode strict).
+  const autostart = useRef(false);
+  useEffect(() => {
+    const q = new URLSearchParams(window.location.search);
+    if (autostart.current || !q.has("debug") || !q.has("world")) return;
+    autostart.current = true;
+    void start("continue");
+  }, [start]);
 
   return (
     <EngineRoot>

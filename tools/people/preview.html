@@ -1,0 +1,36 @@
+<!doctype html><html><head><meta charset="utf-8"><style>html,body{margin:0;background:#222;overflow:hidden}</style>
+<script type="importmap">{"imports":{"three":"/node_modules/three/build/three.module.js","three/addons/":"/node_modules/three/examples/jsm/"}}</script></head><body>
+<script type="module">
+import * as THREE from 'three';
+import {GLTFLoader} from 'three/addons/loaders/GLTFLoader.js';
+import {RoomEnvironment} from 'three/addons/environments/RoomEnvironment.js';
+import {MeshoptDecoder} from 'three/addons/libs/meshopt_decoder.module.js';
+const q=new URLSearchParams(location.search);
+const W=+(q.get('w')||900),H=+(q.get('h')||900);
+const r=new THREE.WebGLRenderer({antialias:true});r.setSize(W,H);r.toneMapping=THREE.ACESFilmicToneMapping;r.outputColorSpace=THREE.SRGBColorSpace;r.shadowMap.enabled=true;
+document.body.appendChild(r.domElement);
+const s=new THREE.Scene();s.background=new THREE.Color('#3a3d44');
+const pm=new THREE.PMREMGenerator(r);s.environment=pm.fromScene(new RoomEnvironment(),0.04).texture;s.environmentIntensity=0.6;
+const key=new THREE.DirectionalLight('#fff1e0',2.2);key.position.set(2,3,3);key.castShadow=true;s.add(key);
+const rim=new THREE.DirectionalLight('#b0c8ff',1.2);rim.position.set(-2,2,-3);s.add(rim);
+const floor=new THREE.Mesh(new THREE.PlaneGeometry(20,20),new THREE.MeshStandardMaterial({color:'#555'}));floor.rotation.x=-Math.PI/2;floor.receiveShadow=true;s.add(floor);
+const cam=new THREE.PerspectiveCamera(+(q.get('fov')||30),W/H,0.01,100);
+const ld=new GLTFLoader();ld.setMeshoptDecoder(MeshoptDecoder);
+const files=(q.get('m')||'test-m').split(',');
+let i=0;window.ready=false;
+for(const f of files){
+ const g=await ld.loadAsync('/public/models/people/'+f+'.glb');
+ const o=g.scene;o.position.x=(i-(files.length-1)/2)*0.75;i++;
+ o.traverse(m=>{if(m.isMesh){m.castShadow=true;m.frustumCulled=false;}});
+ if(q.get('rot'))o.rotation.y=+q.get('rot');
+ if(q.get('hide')){const hs=q.get('hide').split(';');o.traverse(m=>{if(hs.includes(m.name))m.visible=false;});}
+ s.add(o);
+ if(q.get('anim')){const a=await ld.loadAsync('/public/models/people/anims.glb');const clip=a.animations.find(c=>c.name===q.get('anim'));const mx=new THREE.AnimationMixer(o);const act=mx.clipAction(clip);act.play();mx.setTime(+(q.get('t')||0));}
+ if(q.get('morph')){o.traverse(m=>{if(m.morphTargetDictionary){for(const kv of q.get('morph').split(';')){const[k,v]=kv.split(':');if(k in m.morphTargetDictionary)m.morphTargetInfluences[m.morphTargetDictionary[k]]=+v;}}});}
+}
+const view=q.get('view')||'full';
+const ty=view==='face'?1.66:view==='bust'?1.45:0.95, d=view==='face'?0.75:view==='bust'?1.6:4.2*Math.max(1,files.length*0.55);
+const az=+(q.get('az')||0.35);
+cam.position.set(Math.sin(az)*d,ty+ (view==='full'?0.2:0.03),Math.cos(az)*d);cam.lookAt(0,ty,0);
+r.render(s,cam);window.ready=true;
+</script></body></html>

@@ -10,6 +10,7 @@ import { Exposure } from "./ExposureEffect";
 import { useAudit } from "../audit/state";
 import { roomBaseCamera } from "../room/registry";
 import { propCamera } from "../props/model";
+import { useWorld } from "../world/runtime";
 
 /** Distance de la feuille tenue en main (null si aucune) : la mise au point s'y cale. */
 function heldSheetDistance(): number | null {
@@ -53,9 +54,10 @@ function RoomDepthOfField() {
  */
 export function Effects({ quality }: { quality: "high" | "medium" }) {
   const ca = useMemo(() => new Vector2(0.0007, 0.0005), []);
-  const room = useRender((s) => s.room);
+  const world = useWorld((s) => s.active);
+  const room = useRender((s) => s.room) || world;
   // Débogage visuel : ?nodof désactive la profondeur de champ 3D.
-  const dof = room && !(typeof window !== "undefined" && window.location.search.includes("nodof"));
+  const dof = room && !world && !(typeof window !== "undefined" && window.location.search.includes("nodof"));
   if (quality === "medium") {
     return (
       <EffectComposer multisampling={0} enableNormalPass={false}>

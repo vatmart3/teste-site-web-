@@ -2,7 +2,7 @@
  * Casting original (annexe B). Aucun lien avec une série ou un acteur réel.
  * `name` = nom affiché dans les sous-titres ; les vidéos d'états sont `characters/<id>-<état>.webm|mp4`.
  */
-export type CharacterId = "harlow" | "nora" | "mercer" | "theo" | "rourke" | "brandt" | "whitford" | "guard";
+export type CharacterId = "harlow" | "nora" | "mercer" | "theo" | "rourke" | "brandt" | "whitford" | "guard" | "vivian" | "sam" | "lena" | "priya" | "marcus";
 export type CharacterState = "idle" | "talk" | "pleased" | "tense" | "break";
 
 export interface CharacterDef {
@@ -70,5 +70,40 @@ export const CHARACTERS: Record<CharacterId, CharacterDef> = {
     role: "Sécurité du hall",
     prompt: "Security guard around 55, broad shoulders, grey crew cut, dark navy uniform with a brass badge, tired kind eyes",
     voice: "bourru, bienveillant",
+  },
+  vivian: {
+    id: "vivian",
+    name: "Vivian Cole",
+    role: "Assistante de R. Harlow",
+    prompt: "Woman around 40, auburn bob, burgundy skirt suit, knowing half-smile, sees everything",
+    voice: "vive, ironique, sûre d'elle",
+  },
+  sam: {
+    id: "sam",
+    name: "Sam Okafor",
+    role: "Collaborateur",
+    prompt: "Man around 30, close-cropped hair, checked grey suit, green tie, easy grin",
+    voice: "chaleureux, rapide",
+  },
+  lena: {
+    id: "lena",
+    name: "Lena Fischer",
+    role: "Collaboratrice",
+    prompt: "Woman around 30, blonde ponytail, navy trouser suit, focused",
+    voice: "posée, précise",
+  },
+  priya: {
+    id: "priya",
+    name: "Priya Nair",
+    role: "Collaboratrice, recherche",
+    prompt: "Woman around 28, long dark hair, slate skirt suit, bright eyes",
+    voice: "curieuse, enjouée",
+  },
+  marcus: {
+    id: "marcus",
+    name: "Marcus Bell",
+    role: "Courrier et reprographie",
+    prompt: "Man around 45, heavyset, light-blue shirt, friendly",
+    voice: "jovial",
   },
 };

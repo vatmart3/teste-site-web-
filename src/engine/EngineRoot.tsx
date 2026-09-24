@@ -21,6 +21,7 @@ import { AuditOverlay } from "./audit/AuditOverlay";
 import { BoardOverlay } from "./board/BoardOverlay";
 import { CourtOverlay } from "./court/CourtOverlay";
 import { DebriefOverlay } from "./audit/DebriefOverlay";
+import { WorldOverlay } from "./world/WorldOverlay";
 import { Hotspots } from "./ui/Hotspots";
 import { Letterbox } from "./ui/Letterbox";
 import { Prompt } from "./ui/Prompt";
@@ -109,6 +110,7 @@ export function EngineRoot({ children }: { children?: ReactNode }) {
       <Subtitles />
       <Prompt />
       <Panels />
+      <WorldOverlay />
       <HubOverlay />
       <AuditOverlay />
       <BoardOverlay />

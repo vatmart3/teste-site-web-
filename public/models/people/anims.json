@@ -1,0 +1,103 @@
+{
+ "idle": {
+  "duration": 6.966666666666667,
+  "loop": true,
+  "speed": 0.003
+ },
+ "idleWait": {
+  "duration": 13.366666666666667,
+  "loop": true,
+  "speed": 0.006
+ },
+ "walk": {
+  "duration": 2.3666666666666667,
+  "loop": true,
+  "speed": 1.082
+ },
+ "walkSlow": {
+  "duration": 8.366666666666667,
+  "loop": true,
+  "speed": 0.421
+ },
+ "jog": {
+  "duration": 0.8,
+  "loop": true,
+  "speed": 2.747
+ },
+ "talk": {
+  "duration": 14.7,
+  "loop": true,
+  "speed": 0.013
+ },
+ "argue": {
+  "duration": 8.2,
+  "loop": true,
+  "speed": 0.003
+ },
+ "phone": {
+  "duration": 3.1666666666666665,
+  "loop": false,
+  "speed": 0.004
+ },
+ "type": {
+  "duration": 6.366666666666666,
+  "loop": true,
+  "speed": 0.004
+ },
+ "sitDown": {
+  "duration": 1.7666666666666666,
+  "loop": false,
+  "speed": 0.0
+ },
+ "sitIdle": {
+  "duration": 1.9666666666666666,
+  "loop": true,
+  "speed": 0.0
+ },
+ "standUp": {
+  "duration": 1.9666666666666666,
+  "loop": false,
+  "speed": 0.0
+ },
+ "coffee": {
+  "duration": 9.966666666666667,
+  "loop": false,
+  "speed": 0.326
+ },
+ "give": {
+  "duration": 5.566666666666666,
+  "loop": false,
+  "speed": 0.004
+ },
+ "handshake": {
+  "duration": 5.666666666666667,
+  "loop": false,
+  "speed": 0.007
+ },
+ "shrug": {
+  "duration": 1.9666666666666666,
+  "loop": false,
+  "speed": 0.005
+ },
+ "wave": {
+  "duration": 2.3333333333333335,
+  "loop": false,
+  "speed": 0.01
+ },
+ "think": {
+  "duration": 11.166666666666666,
+  "loop": true,
+  "speed": 0.0
+ },
+ "pickup": {
+  "duration": 6.966666666666667,
+  "loop": false,
+  "speed": 0.35
+ },
+ "explain": {
+  "duration": 4.866666666666666,
+  "loop": false,
+  "speed": 0.157
+ },
+ "_hips": 0.9234555000000001
+}

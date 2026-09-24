@@ -24,6 +24,11 @@ export const VOICE_PROFILES: Record<CharacterId | "narrator" | "player" | "huiss
   brandt: { gender: "f", pitch: 0.92, rate: 1.0 }, // froide, précise
   whitford: { gender: "f", pitch: 0.82, rate: 0.93 }, // sèche
   guard: { gender: "m", pitch: 0.72, rate: 0.95 }, // bourru
+  vivian: { gender: "f", pitch: 1.0, rate: 1.06 },
+  sam: { gender: "m", pitch: 0.98, rate: 1.1 },
+  lena: { gender: "f", pitch: 1.04, rate: 1.0 },
+  priya: { gender: "f", pitch: 1.12, rate: 1.08 },
+  marcus: { gender: "m", pitch: 0.86, rate: 1.0 },
   narrator: { gender: "m", pitch: 0.95, rate: 0.98 },
   player: { gender: "m", pitch: 1.0, rate: 1.02 },
 };

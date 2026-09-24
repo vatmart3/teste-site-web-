@@ -40,6 +40,14 @@ export interface Profile {
   cases: Record<string, CaseRecord>;
   /** Tableaux d'enquête : connexions établies et fils tirés à tort. */
   boards: Record<string, { found: string[]; wrong: number }>;
+  /** Apparence du joueur dans le monde ouvert (« m » / « f »). */
+  look: "m" | "f";
+  /** Mobilier du bureau (null = aménagement par défaut) et dépenses de décoration ($). */
+  decor: { id: string; type: string; x: number; z: number; rot: number; v?: number }[] | null;
+  spent: number;
+  /** Bonus : le prochain dossier commence avec un café (concentration). */
+  setLook: (look: "m" | "f") => void;
+  setDecor: (decor: Profile["decor"], cost: number) => void;
   setIdentity: (firstName: string, lastName: string, avatar: number) => void;
   adjustRelation: (id: RelationId, delta: number) => void;
   setFlag: (key: string, value: string) => void;
@@ -72,6 +80,9 @@ const initial = {
   lessons: ["billable-hour"] as string[],
   cases: {} as Record<string, CaseRecord>,
   boards: {} as Record<string, { found: string[]; wrong: number }>,
+  look: "m" as "m" | "f",
+  decor: null as Profile["decor"],
+  spent: 0,
 };
 
 const GRADE_RANK = { S: 4, A: 3, B: 2, C: 1 } as const;
@@ -137,6 +148,8 @@ export const useProfile = create<Profile>()(
         });
         return attempt;
       },
+      setLook: (look) => set({ look }),
+      setDecor: (decor, cost) => set((s) => ({ decor, spent: Math.max(0, s.spent + cost) })),
       setBoard: (id, found, wrong) => set((s) => ({ boards: { ...s.boards, [id]: { found: [...found], wrong } } })),
       recordCase: (id, grade, score) =>
         set((s) => {
@@ -156,7 +169,7 @@ export const useProfile = create<Profile>()(
     }),
     {
       name: "bh-profile",
-      version: 3,
+      version: 4,
       // v1 → v2 : carrière, atouts, messages, leçons ; v2 → v3 : progression des affaires.
       migrate: (old) => ({ ...initial, ...(old as object) }) as Profile,
     },
