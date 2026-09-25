@@ -9,9 +9,9 @@ import { cast } from "../characters/performance";
 import { Person } from "../people/Person";
 import { preloadPeople } from "../people/assets";
 import { useProfile } from "../state/profile";
-import { defaultDecor, playerChair } from "./decor";
-import { FURNITURE, PLAYER_BOARD, PLAYER_OFFICE, roomAt, spot, staticBoxes, type Placed } from "./layout";
-import { Collider, buildGraph, type NavGraph } from "./nav";
+import { defaultDecor, playerChair, playerDesk } from "./decor";
+import { FOOTPRINT, FURNITURE, PLAYER_BOARD, PLAYER_OFFICE, roomAt, spot, staticBoxes, type Placed } from "./layout";
+import { Collider, buildGraph, nearestOnBox, type NavGraph } from "./nav";
 import { Npc } from "./npcs";
 import { PlayerController } from "./player";
 import { useWorld, worldRuntime } from "./runtime";
@@ -22,6 +22,13 @@ export interface Interactable {
   x: number;
   z: number;
   r?: number;
+  /** Emprise (meuble) : la distance se mesure au bord le plus proche, de n'importe quel côté. */
+  box?: { x: number; z: number; w: number; d: number; rot: number };
+}
+
+/** Point de l'objet le plus proche de (px, pz) : centre, ou bord de son emprise. */
+export function nearestPoint(it: Interactable, px: number, pz: number): [number, number] {
+  return it.box ? nearestOnBox(it.box, px, pz) : [it.x, it.z];
 }
 
 export const worldSys = {
@@ -87,13 +94,24 @@ export function setPlayerLook(look: "m" | "f") {
 export function interactables(): Interactable[] {
   const out: Interactable[] = [];
   for (const n of worldSys.npcs.values()) out.push({ id: `npc:${n.def.id}`, label: `Parler à ${n.def.name}`, x: n.x, z: n.z, r: 1.7 });
-  const chair = playerChair(decorNow());
-  if (chair) out.push({ id: "desk", label: "Vous asseoir à votre bureau", x: chair.x, z: chair.z, r: 1.3 });
-  out.push({ id: "board", label: "Tableau d'enquête", x: PLAYER_BOARD.x - 0.6, z: PLAYER_BOARD.z, r: 1.3 });
+  const decor = decorNow();
+  const desk = playerDesk(decor);
+  const chair = playerChair(decor);
+  // Le bureau se sélectionne de n'importe quel côté (devant, derrière, sur le flanc), ou depuis le fauteuil.
+  if (desk) {
+    const [w, dd] = FOOTPRINT[desk.type];
+    out.push({ id: "desk", label: "Vous asseoir à votre bureau", x: desk.x, z: desk.z, r: 1.0, box: { x: desk.x, z: desk.z, w, d: dd, rot: desk.rot } });
+  }
+  if (chair) out.push({ id: "desk", label: "Vous asseoir à votre bureau", x: chair.x, z: chair.z, r: 1.1 });
+  out.push({ id: "board", label: "Tableau d'enquête", x: PLAYER_BOARD.x, z: PLAYER_BOARD.z, r: 1.6 });
   const coffee = spot("coffee");
   out.push({ id: "coffee", label: "Vous servir un espresso", x: coffee.x, z: coffee.z, r: 1.2 });
   out.push({ id: "elevator", label: "Prendre l'ascenseur", x: 0, z: 11.2, r: 1.4 });
-  out.push({ id: "mail", label: "Votre casier", x: 16, z: 10.9, r: 1.2 });
+  const slots = FURNITURE.find((f) => f.type === "mail-slots");
+  if (slots) {
+    const [w, dd] = FOOTPRINT[slots.type];
+    out.push({ id: "mail", label: "Votre casier", x: slots.x, z: slots.z, r: 0.9, box: { x: slots.x, z: slots.z, w, d: dd, rot: slots.rot } });
+  }
   const shelf = spot("archive");
   out.push({ id: "archives", label: "Consulter les archives", x: shelf.x, z: shelf.z, r: 1.4 });
   out.push({ id: "vance", label: "Le bureau de M. Vance", x: 15, z: -8.6, r: 1.6 });
@@ -109,7 +127,6 @@ let lastRoom = "";
 const FR = new THREE.Frustum();
 const PM = new THREE.Matrix4();
 const SPH = new THREE.Sphere(new THREE.Vector3(), 1.3);
-let promptId = "";
 
 /** Une image du monde : joueur, PNJ, invite d'interaction, lieu. */
 export function stepWorld(dt: number, camera: THREE.PerspectiveCamera, view: THREE.Camera = camera) {
@@ -145,22 +162,25 @@ export function stepWorld(dt: number, camera: THREE.PerspectiveCamera, view: THR
     const fx = Math.sin(p.rot);
     const fz = Math.cos(p.rot);
     for (const it of interactables()) {
-      const dx = it.x - p.x;
-      const dz = it.z - p.z;
+      const [ix, iz] = nearestPoint(it, p.x, p.z);
+      const dx = ix - p.x;
+      const dz = iz - p.z;
       const d = Math.hypot(dx, dz);
       if (d > (it.r ?? 1.5)) continue;
-      const facing = d < 0.6 ? 1 : (dx * fx + dz * fz) / d;
-      if (facing < 0.1) continue;
-      const score = d - facing * 0.5;
+      // Tout près, l'orientation importe peu ; plus loin, il faut à peu près faire face.
+      const facing = d < 0.35 ? 1 : (dx * fx + dz * fz) / d;
+      if (facing < -0.2) continue;
+      // Ce que l'on regarde d'abord ; à égalité, les personnes passent avant les objets voisins.
+      const score = d - facing * 1.1 - (it.id.startsWith("npc:") ? 0.2 : 0);
       if (score < bd) {
         bd = score;
         best = it;
       }
     }
   }
+  // Comparé à l'état affiché (et non à un cache) : l'invite revient après chaque interaction.
   const id = best?.id ?? "";
-  if (id !== promptId) {
-    promptId = id;
+  if (id !== (ui.prompt?.id ?? "") || (best && ui.prompt?.label !== best.label)) {
     ui.set({ prompt: best ? { id: best.id, label: best.label, key: "E" } : null });
   }
 }

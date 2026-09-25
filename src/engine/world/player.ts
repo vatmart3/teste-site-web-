@@ -102,7 +102,7 @@ export class PlayerController {
     public col: Collider,
   ) {}
 
-  update(dt: number, camera: THREE.PerspectiveCamera, others: Iterable<{ x: number; z: number }>) {
+  update(dt: number, camera: THREE.PerspectiveCamera, others: Iterable<{ x: number; z: number; ghost?: boolean }>) {
     const p = worldRuntime.player;
     const c = worldRuntime.cam;
     const frozen = worldRuntime.frozen;
@@ -126,6 +126,7 @@ export class PlayerController {
     let nz = p.z + this.vel.y * dt;
     // Autres personnages : cercles.
     for (const o of others) {
+      if (o.ghost) continue;
       const dx = nx - o.x;
       const dz = nz - o.z;
       const d = Math.hypot(dx, dz);

@@ -119,9 +119,11 @@ function Runner() {
   const { camera } = useThree();
   const edit = useWorld((s) => s.edit);
   const cam = camera as THREE.PerspectiveCamera;
-  const editPos = useMemo(() => new THREE.Vector3(6.5, 6.6, -4.2), []);
+  // Vue plongeante sur le bureau du joueur, décalée pour qu'il reste à gauche du panneau du catalogue.
+  const editPos = useMemo(() => new THREE.Vector3(0, 0, 0), []);
+  const editLook = useMemo(() => new THREE.Vector3(0, 0, 0), []);
   useEffect(() => installPlayerInput(), []);
-  useFrame((_, dt) => {
+  useFrame(({ size }, dt) => {
     if (!useWorld.getState().active) return;
     if (cam.fov !== 55 || cam.far !== 3000 || cam.near !== 0.05) {
       cam.fov = 55;
@@ -134,8 +136,16 @@ function Runner() {
     if (edit) {
       worldRuntime.frozen = true;
       stepWorld(d, DUMMY, cam);
+      const o = PLAYER_OFFICE;
+      const cx = (o.x0 + o.x1) / 2;
+      const cz = (o.z0 + o.z1) / 2;
+      // Écran étroit (téléphone) : le panneau occupe le bas, pas la droite.
+      const narrow = size.width < 640;
+      const shift = narrow ? 0 : (o.x1 - o.x0) * 0.42;
+      editPos.set(cx + shift, narrow ? 11 : 8.2, cz + (narrow ? 5.2 : 3.6));
+      editLook.set(cx + shift, 0, cz + (narrow ? 1.6 : 0.2));
       cam.position.lerp(editPos, Math.min(1, dt * 4));
-      cam.lookAt(6.5, 0, -9.6);
+      cam.lookAt(editLook);
       return;
     }
     stepWorld(d, cam);

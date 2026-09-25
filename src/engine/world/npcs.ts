@@ -49,6 +49,13 @@ export class Npc {
   private timer = 0;
   private started = false;
   private resolveCur: (() => void) | null = null;
+  /** Temps passé sans avancer (suivi du joueur). */
+  private stall = 0;
+  /** Temps passé arrêté par le joueur. */
+  private blockT = 0;
+  /** Se faufile à travers le joueur (ni l'un ni l'autre n'est repoussé). */
+  ghost = false;
+  private replans = 0;
   busy = false;
   /** Personne regardée (le joueur pendant une conversation). */
   attention: THREE.Vector3 | null = null;
@@ -123,6 +130,23 @@ export class Npc {
     });
     this.exitTo = free ?? cands[0]!;
     this.seatedAt = null;
+  }
+
+  /** Un personnage ne bouscule jamais le joueur : c'est lui qui s'écarte. */
+  private keepOffPlayer(r: number) {
+    const pl = worldRuntime.player;
+    const dx = this.x - pl.x;
+    const dz = this.z - pl.z;
+    const d = Math.hypot(dx, dz);
+    // Bloqué depuis un moment (le joueur barre la seule sortie) : il se faufile, sans bousculer.
+    if (this.blockT > 1.6 || (this.ghost && d < 1.0)) {
+      this.ghost = true;
+      return;
+    }
+    this.ghost = false;
+    if (d >= r || d < 1e-4) return;
+    this.x = pl.x + (dx / d) * r;
+    this.z = pl.z + (dz / d) * r;
   }
 
   private finish(interrupt = false) {
@@ -202,6 +226,8 @@ export class Npc {
             this.started = true;
             if (p.sitting) this.leaveSeat();
             if (p.current) p.stop();
+            this.stall = 0;
+            this.replans = 0;
             this.path = findPath(this.g, this.col, [this.x, this.z], t.to);
           }
           const nxt = this.path[0];
@@ -219,14 +245,38 @@ export class Npc {
           // Le joueur est devant : on attend (politesse).
           const pl = worldRuntime.player;
           const ahead = (pl.x - this.x) * dx + (pl.z - this.z) * dz;
-          const block = Math.hypot(pl.x - this.x, pl.z - this.z) < 0.9 && ahead > 0;
-          const want = Math.atan2(dx, dz);
+          const block = !this.ghost && Math.hypot(pl.x - this.x, pl.z - this.z) < 0.9 && ahead > 0;
+          this.blockT = block ? this.blockT + dt : 0;
+          // Un temps d'arrêt poli, puis on contourne le joueur du côté opposé.
+          let ux = dx / d;
+          let uz = dz / d;
+          if (block && this.blockT > 0.7) {
+            const side = (pl.x - this.x) * uz - (pl.z - this.z) * ux > 0 ? -1 : 1;
+            const px = -uz * side;
+            const pz = ux * side;
+            const l = Math.hypot(ux * 0.4 + px, uz * 0.4 + pz);
+            ux = (ux * 0.4 + px) / l;
+            uz = (uz * 0.4 + pz) / l;
+          }
+          const want = Math.atan2(ux, uz);
           const aligned = this.turnTo(want, dt, 7);
-          const v = block ? 0 : (t.slow ? 0.75 : 1.2) * (aligned ? 1 : 0.45);
+          const v = block ? (this.blockT > 0.7 ? 0.7 : 0) : (t.slow ? 0.75 : 1.2) * (aligned ? 1 : 0.45);
           const step = Math.min(d, v * dt);
-          this.x += (dx / d) * step;
-          this.z += (dz / d) * step;
+          const ox = this.x;
+          const oz = this.z;
+          this.x += ux * step;
+          this.z += uz * step;
+          this.keepOffPlayer(0.62);
           [this.x, this.z] = this.col.resolve(this.x, this.z, 0.22);
+          // Coincé contre un meuble (pas contre le joueur) : on renonce à ce point de passage.
+          const moved = Math.hypot(this.x - ox, this.z - oz);
+          this.stall = step > 1e-4 && moved < step * 0.3 ? this.stall + dt : 0;
+          if (this.stall > 1.5) {
+            // Nouvel itinéraire depuis ici ; si ça bloque encore, on saute ce point de passage.
+            this.stall = 0;
+            this.path = findPath(this.g, this.col, [this.x, this.z], t.to);
+            if (++this.replans > 2) this.path.shift();
+          }
           speed = v;
           p.gait = t.slow ? "walkSlow" : "walk";
           break;
@@ -237,16 +287,18 @@ export class Npc {
           if (!this.started || (this.timer -= dt) <= 0) {
             if (!this.started && p.sitting) this.leaveSeat();
             if (!this.started && p.current) p.stop();
+            if (!this.started) this.stall = 0;
             this.started = true;
             this.timer = 0.8;
             this.path = findPath(this.g, this.col, [this.x, this.z], [pl.x, pl.z]);
           }
-          if (dd <= t.dist) {
+          // Assez près : à portée de bras, ou bloqué tout près (mobilier entre nous) depuis un moment.
+          if (dd <= t.dist || (dd < 2.1 && this.stall > 1.2)) {
             if (this.turnTo(Math.atan2(pl.x - this.x, pl.z - this.z), dt, 8)) this.finish();
             break;
           }
-          const nxt = this.path[0];
-          if (!nxt) break;
+          // Pas de chemin (joueur coincé contre un meuble) : en ligne droite.
+          const nxt = this.path[0] ?? [pl.x, pl.z];
           const dx = nxt[0] - this.x;
           const dz = nxt[1] - this.z;
           const d = Math.hypot(dx, dz);
@@ -257,10 +309,15 @@ export class Npc {
           const aligned = this.turnTo(Math.atan2(dx, dz), dt, 7);
           const v = (dd > 4 ? 1.9 : 1.25) * (aligned ? 1 : 0.45);
           const st = Math.min(d, v * dt, Math.max(0, dd - t.dist + 0.05));
+          const ox = this.x;
+          const oz = this.z;
           this.x += (dx / d) * st;
           this.z += (dz / d) * st;
+          this.keepOffPlayer(0.62);
           [this.x, this.z] = this.col.resolve(this.x, this.z, 0.22);
-          speed = st / Math.max(dt, 1e-4);
+          const moved = Math.hypot(this.x - ox, this.z - oz);
+          this.stall = moved < st * 0.3 || moved < 0.002 ? this.stall + dt : 0;
+          speed = moved / Math.max(dt, 1e-4);
           p.gait = "walk";
           break;
         }

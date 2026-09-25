@@ -178,7 +178,7 @@ function actionQueue() {
  * Séance au bureau : le joueur est assis, il choisit librement un objet (affaires, messages, tableau...).
  * Se termine quand il se lève (retour à l'étage).
  */
-export async function deskSession(d: Director, opts: { start?: HubView } = {}): Promise<void> {
+export async function deskSession(d: Director, opts: { start?: HubView; quick?: boolean } = {}): Promise<void> {
   const actions = actionQueue();
   resetRig();
   await enterOffice(d);
@@ -188,8 +188,10 @@ export async function deskSession(d: Director, opts: { start?: HubView } = {}): 
     window.setTimeout(() => d.prompt(null), 7000);
   }
   if (opts.start) await openView(d, opts.start);
+  // Raccourci depuis l'étage (tableau, casier) : une fois l'objet refermé, on retourne directement à l'étage.
+  let quickDone = !!opts.quick && opts.start === "board";
   try {
-    for (;;) {
+    while (!quickDone) {
       const target = rankIndexFor(profile().reputation);
       if (target > profile().officeRank) await promotion(d, target);
       const a = await actions.next(d);
@@ -200,6 +202,7 @@ export async function deskSession(d: Director, opts: { start?: HubView } = {}): 
           break;
         case "close":
           await closeView(d);
+          if (opts.quick) quickDone = true;
           break;
         case "play":
           await playVoicemail(d, a.messageId);

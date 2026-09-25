@@ -221,3 +221,15 @@ export function connected(g: NavGraph): string[] {
   }
   return ids.filter((id) => !seen.has(id));
 }
+
+/** Point d'un rectangle orienté (meuble) le plus proche de (px, pz). */
+export function nearestOnBox(b: { x: number; z: number; w: number; d: number; rot: number }, px: number, pz: number): [number, number] {
+  const c = Math.cos(b.rot);
+  const s = Math.sin(b.rot);
+  // Repère local du meuble (x le long de la largeur, z de la profondeur).
+  const dx = px - b.x;
+  const dz = pz - b.z;
+  const lx = Math.max(-b.w / 2, Math.min(b.w / 2, dx * c - dz * s));
+  const lz = Math.max(-b.d / 2, Math.min(b.d / 2, dx * s + dz * c));
+  return [b.x + lx * c + lz * s, b.z - lx * s + lz * c];
+}

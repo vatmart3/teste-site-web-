@@ -14,11 +14,11 @@ import { useHub } from "@/engine/hub/state";
 import { useProfile } from "@/engine/state/profile";
 import { useRender } from "@/engine/state/render";
 import { useSettings } from "@/engine/state/settings";
-import { spot } from "@/engine/world/layout";
+import { FOOTPRINT, spot } from "@/engine/world/layout";
 import { coffeeCup, envelope, folder } from "@/engine/world/props";
 import { toast, useWorld, worldBus, worldRuntime, type MenuOption, type WorldAction } from "@/engine/world/runtime";
 import { buildWorld, decorNow, worldSys } from "@/engine/world/system";
-import { playerChair } from "@/engine/world/decor";
+import { playerChair, playerDesk } from "@/engine/world/decor";
 import type { Npc } from "@/engine/world/npcs";
 import { resetArrivalState } from "./arrival";
 import { deskSession } from "./hub";
@@ -71,11 +71,17 @@ async function enterWorld(d: Director, where: "desk" | "office" | "stay" = "offi
   useRender.getState().set({ room: null, station: "" });
   const p = worldRuntime.player;
   if (where === "desk") {
-    const ch = playerChair(decorNow());
-    if (ch) {
-      p.x = ch.x + 0.9;
-      p.z = ch.z + 0.6;
-      p.rot = Math.PI * 0.75;
+    // Debout à côté du bureau (sur un flanc libre, sinon devant), tourné vers la porte.
+    const desk = playerDesk(decorNow());
+    if (desk) {
+      const [w, dd] = FOOTPRINT[desk.type];
+      const c = Math.cos(desk.rot);
+      const s = Math.sin(desk.rot);
+      const at = (lx: number, lz: number): [number, number] => [desk.x + lx * c + lz * s, desk.z - lx * s + lz * c];
+      const spots = [at(w / 2 + 0.5, 0.1), at(-w / 2 - 0.5, 0.1), at(0, dd / 2 + 0.6), at(0.6, dd / 2 + 0.6)];
+      const free = spots.find(([x, z]) => worldSys.col?.clear(x, z, x, z, 0.32)) ?? spots[2]!;
+      [p.x, p.z] = worldSys.col ? worldSys.col.resolve(free[0], free[1], 0.27) : free;
+      p.rot = desk.rot;
     }
   } else if (where === "office") {
     p.x = 6.2;
@@ -260,11 +266,13 @@ function serviceMail(n: Npc) {
 
 // --------------------------------------------------------------------------------------- dialogues
 
-async function talkTo(d: Director, q: Queue, id: string) {
+/** Conversation avec un PNJ ; rend vrai si le joueur veut ensuite consulter son casier. */
+async function talkTo(d: Director, q: Queue, id: string): Promise<boolean> {
   const n = npc(id);
+  let openSlot = false;
   if (n.busy) {
     toast(`${n.def.name} est occupé${["vivian", "nora", "lena", "priya"].includes(id) ? "e" : ""}.`);
-    return;
+    return false;
   }
   await standBy(n);
   await converse(d, n, async () => {
@@ -299,8 +307,8 @@ async function talkTo(d: Director, q: Queue, id: string) {
           { id: "bye", label: "« Bonne journée. »" },
         ]);
         if (c === "harlow") {
-          const h = npc("harlow");
-          if (h.seatedAt === "harlow-seat" || !h.busy) {
+          const h = worldSys.npcs.get("harlow");
+          if (!h || h.seatedAt === "harlow-seat" || !h.busy) {
             await npcSay(d, n, W.vivian.harlowYes);
             ui().set({ objective: W.objectiveHarlow });
             profile().setFlag("harlowOk", "1");
@@ -370,13 +378,14 @@ async function talkTo(d: Director, q: Queue, id: string) {
       case "marcus": {
         await npcSay(d, n, pick(W.marcus.hello));
         const c = await choose(d, q, "Marcus Bell", [
-          { id: "mail", label: "« Du courrier pour moi ? »" },
+          { id: "mail", label: "« Du courrier pour moi ? »", hint: "Il vous l'apporte" },
+          { id: "slot", label: "Consulter votre casier", hint: "Messages vocaux et courrier" },
           { id: "bye", label: "« Bonne journée, Marcus. »" },
         ]);
         if (c === "mail") {
           await npcSay(d, n, W.marcus.mailYes);
           serviceMail(n);
-        }
+        } else if (c === "slot") openSlot = true;
         break;
       }
       case "sam":
@@ -393,6 +402,7 @@ async function talkTo(d: Director, q: Queue, id: string) {
         await npcSay(d, n, pick(W.extra));
     }
   });
+  return openSlot;
 }
 
 async function selfCoffee(d: Director) {
@@ -408,11 +418,13 @@ async function selfCoffee(d: Director) {
   giveCoffeeToPlayer();
 }
 
-async function sitAtDesk(d: Director, start?: "board" | "phone" | "cases") {
+async function sitAtDesk(d: Director, start?: "board" | "phone" | "cases", quick = false) {
   const ch = playerChair(decorNow());
   const pl = worldSys.player!;
   const p = worldRuntime.player;
-  if (ch) {
+  // Raccourci (tableau, casier) : on consulte debout et on reprend là où l'on était.
+  const back = { x: p.x, z: p.z, rot: p.rot };
+  if (ch && !quick) {
     worldRuntime.frozen = true;
     p.x = ch.x;
     p.z = ch.z;
@@ -422,11 +434,12 @@ async function sitAtDesk(d: Director, start?: "board" | "phone" | "cases") {
     await d.wait(0.9);
   }
   await leaveWorld(d);
-  const fileOnDesk = profile().flags.fileOnDesk === "1";
+  const fileOnDesk = !start && profile().flags.fileOnDesk === "1";
   if (fileOnDesk) profile().setFlag("fileOnDesk", "");
-  await deskSession(d, { start: start ?? (fileOnDesk ? "cases" : undefined) });
+  await deskSession(d, { start: start ?? (fileOnDesk ? "cases" : undefined), quick });
   pl.stand();
-  await enterWorld(d, "desk");
+  if (quick) Object.assign(p, back);
+  await enterWorld(d, quick ? "stay" : "desk");
 }
 
 export const worldSequence: Sequence = async (d) => {
@@ -456,11 +469,11 @@ export const worldSequence: Sequence = async (d) => {
       ui().set({ prompt: null });
       if (id.startsWith("npc:")) {
         const who = id.slice(4);
-        await talkTo(d, q, who);
+        if (await talkTo(d, q, who)) await sitAtDesk(d, "phone", true);
         if (who === "theo" && ui().objective === W.objectiveFirst) ui().set({ objective: null });
       } else if (id === "desk") await sitAtDesk(d);
-      else if (id === "board") await sitAtDesk(d, "board");
-      else if (id === "mail") await sitAtDesk(d, "phone");
+      else if (id === "board") await sitAtDesk(d, "board", true);
+      else if (id === "mail") await sitAtDesk(d, "phone", true);
       else if (id === "coffee") await selfCoffee(d);
       else if (id === "elevator") toast(W.elevator);
       else if (id === "archives") {
